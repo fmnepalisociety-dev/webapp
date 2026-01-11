@@ -8,13 +8,16 @@
         <NuxtLink to="/events">Events</NuxtLink>
       </li>
       <li>
-        <NuxtLink to="/contacts">Contact</NuxtLink>
-      </li>
-      <li>
         <NuxtLink to="/committee">Committee</NuxtLink>
       </li>
       <li>
         <NuxtLink to="/members">Members</NuxtLink>
+      </li>
+      <li>
+        <NuxtLink to="/about">About</NuxtLink>
+      </li>
+      <li>
+        <NuxtLink to="/contacts">Contact</NuxtLink>
       </li>
     </ul>
   </nav>
