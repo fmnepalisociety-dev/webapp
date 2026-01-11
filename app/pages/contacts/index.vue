@@ -1,4 +1,13 @@
 <template>
+
+  <section id="contacts" class="contacts">
+    <div class="contact-card">
+      <h3>Nepal Society of Fargo Moorhead</h3>
+      <p>Organization</p>
+      <p>Email: <a href="mailto:fmnepalisociety@gmail.com">fmnepalisociety@gmail.com</a></p>
+    </div>
+  </section>
+  
   <section id="contacts" class="contacts">
     <div class="contact-card">
       <h3>Shyam Kandel</h3>
