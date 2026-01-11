@@ -11,6 +11,9 @@
         <NuxtLink to="/contacts">Contact</NuxtLink>
       </li>
       <li>
+        <NuxtLink to="/committee">Committee</NuxtLink>
+      </li>
+      <li>
         <NuxtLink to="/members">Members</NuxtLink>
       </li>
     </ul>

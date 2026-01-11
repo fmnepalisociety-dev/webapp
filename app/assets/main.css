@@ -203,6 +203,7 @@ section {
     flex: 1 1 200px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     border-top: 4px solid #ff0000;
+    margin: 10px 0;
 }
 
 .contact-card h3 {
