@@ -1,5 +1,6 @@
 
 const isGitHubPages = process.env.GITHUB_PAGES === 'true'
+const BASE = isGitHubPages ? '/webapp/' : '/'
 
 export default defineNuxtConfig({
   typescript: {
@@ -22,19 +23,19 @@ export default defineNuxtConfig({
   },
 
   app: {
-    baseURL: isGitHubPages ? '/webapp/' : '/',
+    baseURL: BASE,
     head: {
       htmlAttrs: {
         lang: 'en',
       },
-      title: 'NSFM',
+      title: 'Nepali Society of Fargo-Moorhead',
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1',
       link: [
-        { rel: 'apple-touch-icon', sizes: '180x180', href: '/favicon.png' },
-        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon.png' },
-        { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon.png' },
-        { rel: 'manifest', href: '/site.webmanifest' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: BASE + '/favicon.png' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: BASE + '/favicon.png' },
+        { rel: 'icon', type: 'image/png', sizes: '16x16', href: BASE + '/favicon.png' },
+        { rel: 'manifest', href: BASE + '/site.webmanifest' },
       ],
     },
   },
