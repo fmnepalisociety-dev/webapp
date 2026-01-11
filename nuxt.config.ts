@@ -23,7 +23,7 @@ export default defineNuxtConfig({
       htmlAttrs: {
         lang: 'en',
       },
-      title: 'Highpass',
+      title: 'NSFM',
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1',
       link: [
