@@ -1,3 +1,6 @@
+
+const isGitHubPages = process.env.GITHUB_PAGES === 'true'
+
 export default defineNuxtConfig({
   typescript: {
     // typeCheck: true, // turn this on once we've burned down issues (so builds don't fail)
@@ -19,6 +22,7 @@ export default defineNuxtConfig({
   },
 
   app: {
+    baseURL: isGitHubPages ? '/webapp/' : '/',
     head: {
       htmlAttrs: {
         lang: 'en',
