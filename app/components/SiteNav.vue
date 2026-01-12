@@ -46,6 +46,9 @@
             <NuxtLink to="/about/president-message">President's Message</NuxtLink>
           </li>
           <li>
+            <NuxtLink to="/about/origin-story">Origin Story</NuxtLink>
+          </li>
+          <li>
             <NuxtLink to="/contacts">Contact</NuxtLink>
           </li>
         </ul>
