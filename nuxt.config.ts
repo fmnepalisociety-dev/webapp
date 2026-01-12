@@ -1,6 +1,11 @@
-
 const isGitHubPages = process.env.GITHUB_PAGES === 'true'
-const BASE = isGitHubPages ? '/webapp/' : '/'
+
+/*
+ * After pointing the main domain - just need /
+ * If Github-Page Link, then append the project path, eg, /webapp
+ */
+// const BASE = isGitHubPages ? '/webapp/' : '/'
+const BASE = '/';
 
 export default defineNuxtConfig({
   typescript: {
@@ -10,7 +15,7 @@ export default defineNuxtConfig({
 
   ssr: false,
 
-  devtools: { enabled: true, timeline: { enabled: true } },
+  devtools: {enabled: true, timeline: {enabled: true}},
 
   css: ['~/assets/main.css'],
   ssr: false,
@@ -32,10 +37,10 @@ export default defineNuxtConfig({
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1',
       link: [
-        { rel: 'apple-touch-icon', sizes: '180x180', href: BASE + '/favicon.png' },
-        { rel: 'icon', type: 'image/png', sizes: '32x32', href: BASE + '/favicon.png' },
-        { rel: 'icon', type: 'image/png', sizes: '16x16', href: BASE + '/favicon.png' },
-        { rel: 'manifest', href: BASE + '/site.webmanifest' },
+        {rel: 'apple-touch-icon', sizes: '180x180', href: BASE + '/favicon.png'},
+        {rel: 'icon', type: 'image/png', sizes: '32x32', href: BASE + '/favicon.png'},
+        {rel: 'icon', type: 'image/png', sizes: '16x16', href: BASE + '/favicon.png'},
+        {rel: 'manifest', href: BASE + '/site.webmanifest'},
       ],
     },
   },
