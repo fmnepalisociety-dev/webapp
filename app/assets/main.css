@@ -68,46 +68,6 @@ header {
     font-weight: normal;
 }
 
-/* Sticky Nav */
-.main-nav {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    /* Subtle continuation of header gradient */
-    background: linear-gradient(
-            90deg,
-            rgba(28, 51, 130, 0.95),
-            rgba(163, 20, 50, 0.90)
-    );
-
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.main-nav ul {
-    list-style: none;
-    margin: 0;
-    padding: 8px 0;
-    display: flex;
-    justify-content: center;
-    gap: 24px;
-}
-
-.main-nav a {
-    color: #ffffff;
-    text-decoration: none;
-    font-weight: 600;
-    letter-spacing: 0.6px;
-    padding: 8px 16px;
-    border-radius: 999px; /* pill style */
-    transition: background 0.25s ease, color 0.25s ease;
-}
-
-.main-nav a:hover {
-    background: rgba(255, 255, 255, 0.18);
-    color: #ffd700; /* subtle gold accent */
-}
-
 /* Container */
 .container {
     max-width: 800px;
