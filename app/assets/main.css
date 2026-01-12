@@ -51,30 +51,6 @@ header {
     width: 100%;
 }
 
-.side-flag {
-    width: 12%;
-    min-width: 30px;
-    max-width: 70px;
-    height: auto;
-    flex: 0 1 auto;
-}
-
-.nepal-flag {
-    width: 10%;
-}
-
-.us-flag {
-    width: 12%;
-}
-
-.main-logo-img {
-    width: 40%;
-    min-width: 120px;
-    max-width: 250px;
-    height: auto;
-    flex: 0 0 auto;
-}
-
 .header-text-centered {
     text-align: center;
 }
