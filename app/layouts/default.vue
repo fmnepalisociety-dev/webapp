@@ -1,10 +1,10 @@
 <template>
-  <div>
-    <SiteHeader />
-    <SiteNav />
-    <div class="container">
-      <slot />
+  <div class="page-wrapper">
+    <SiteHeader/>
+    <SiteNav/>
+    <div class="container main">
+      <slot/>
     </div>
-    <SiteFooter />
+    <SiteFooter/>
   </div>
 </template>
