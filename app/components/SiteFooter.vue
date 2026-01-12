@@ -38,6 +38,62 @@
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 </script>
 <style scoped>
+
+.footer-container {
+  max-width: 900px;
+  margin: 0 auto;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+}
+
+/* Left links */
+.footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-link-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-link-row i {
+  width: 20px;
+  text-align: center;
+  font-size: 1.1em;
+}
+
+.footer-link-row:hover i {
+  color: #ffd700;
+}
+
+footer a {
+  color: white;
+  text-decoration: underline;
+}
+
+/* Right side */
+.footer-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-logo {
+  height: 90px;
+}
+
+.footer-copy {
+  font-size: 0.9em;
+  opacity: 0.9;
+}
+
 .footer-link-row {
   display: flex;
   align-items: center;
@@ -54,5 +110,12 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 .footer-links:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 512px) {
+  .footer-container {
+    flex-direction: column;
+    align-items: center;
+  }
 }
 </style>
