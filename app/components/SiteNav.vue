@@ -161,19 +161,14 @@
    ========================= */
 @media (max-width: 768px) {
   .main-nav ul {
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row;
+    gap: 1px;
   }
 
-  .dropdown {
-    position: static;
-    transform: none;
-    box-shadow: none;
-    margin-top: 4px;
-  }
-
-  .has-dropdown:hover .dropdown {
-    display: block;
+  .main-nav a,
+  .nav-parent {
+    padding: 8px 8px;
+    border-radius: 999px;
   }
 }
 </style>
