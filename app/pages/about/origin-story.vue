@@ -39,7 +39,7 @@
       src="/img/origin/deusi-bhailo-group.png"
       class="event-image"
       alt="NSFM-Maghe-Sakranti">
-    <p class="image-caption">The Deusi-Bhaiho group celebrated Tihar in 2025 with music and laughter, as friends and
+    <p class="image-caption">The Deusi-Bhailo group celebrated Tihar in 2025 with music and laughter, as friends and
       families came together to sing and dance. The initiation of a community gathering that led to the formation of the
       Nepali Society of Fargo–Moorhead (NSFM).</p>
   </div>
