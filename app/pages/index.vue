@@ -1,5 +1,20 @@
 <template>
   <div class="about-page">
+
+    <TimeWindow
+      start="2026-01-13T00:00:00"
+      end="2026-01-17T23:59:59"
+      timezone="GMT"
+    >
+      <div class="image-section">
+        <img
+          src="/img/nsfm-maaghe-sakranti-2026.jpg"
+          class="event-image"
+          alt="NSFM-Maghe-Sakranti">
+        <p class="image-caption">Happy Maghe Sankranti</p>
+      </div>
+    </TimeWindow>
+
     <div class="intro">
       <p>
         We are a community-based, non-profit organization dedicated to bringing together the Nepalese community in the
