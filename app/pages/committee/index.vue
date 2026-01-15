@@ -45,24 +45,38 @@ const roleOrder = [
   "Secretary",
   "Treasurer",
   "Joint-Treasurer",
-  "IT Officer",
   "Event Coordinator",
+  "IT Officer",
   "Executive Member",
   "Advisory Member"
 ]
 
-// Sort the committee according to roleOrder
+// Sort committee by role order
 const sortedCommittee = computed(() => {
   return [...committee.value].sort((a, b) => {
-    const indexA = roleOrder.indexOf(a.role)
-    const indexB = roleOrder.indexOf(b.role)
+    const roleA = a.role?.trim().toLowerCase() || ''
+    const roleB = b.role?.trim().toLowerCase() || ''
 
-    // Roles not in list will go to the end
+    const indexA = roleOrder.findIndex(r => r.toLowerCase() === roleA)
+    const indexB = roleOrder.findIndex(r => r.toLowerCase() === roleB)
+
     const rankA = indexA === -1 ? roleOrder.length : indexA
     const rankB = indexB === -1 ? roleOrder.length : indexB
 
     return rankA - rankB
   })
 })
+
+// Group members by role
+const groupedByRole = computed(() => {
+  const groups: Record<string, typeof committee.value> = {}
+  for (const member of sortedCommittee.value) {
+    const role = member.role || "Other"
+    if (!groups[role]) groups[role] = []
+    groups[role].push(member)
+  }
+  return groups
+})
+
 </script>
 
