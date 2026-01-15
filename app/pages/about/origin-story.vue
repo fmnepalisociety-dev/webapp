@@ -34,6 +34,36 @@
       <p class="signature">Thank you,<br>Nepali Society of Fargo-Moorhead</p>
     </div>
   </div>
+  <div class="image-section">
+    <img
+      src="/img/origin/deusi-bhailo-group.png"
+      class="event-image"
+      alt="NSFM-Maghe-Sakranti">
+    <p class="image-caption">The Deusi-Bhaiho group celebrated Tihar in 2025 with music and laughter, as friends and
+      families came together to sing and dance. The initiation of a community gathering that led to the formation of the
+      Nepali Society of Fargo–Moorhead (NSFM).</p>
+  </div>
+
+  <div class="image-section">
+    <img
+      src="/img/origin/nsfm-formation-day.png"
+      class="event-image"
+      alt="NSFM-Maghe-Sakranti">
+    <p class="image-caption">Nepali community members present on the day of establishment of the Nepali Society of
+      Fargo–Moorhead (NSFM), December 7, 2025.</p>
+  </div>
+
+  <div class="image-section">
+    <img
+      src="/img/origin/nsfm-1st-committee.png"
+      class="event-image"
+      alt="NSFM-Maghe-Sakranti">
+    <p class="image-caption">NSFM’s first Executive Committee, December 7, 2025: Dr. Shyam Kandel (President), Dr.
+      Bishnu Adhikari & Shyam Shrestha (Vice Presidents), Dr. Krishna Acharya (General Secretary), Kabita Shrestha
+      (Secretary), Puspa Shrestha (Treasurer), Keshab Raj Kharel (Joint Treasurer), Anuj Shrestha (IT Officer), Srijana
+      Khanal (Event Coordinator), Sabina Dahal, Abhishek Giri, Sujan Khanal, Bhagawati Rijal Sapkota (Executive
+      Members).</p>
+  </div>
 </template>
 
 <script lang="ts" setup>

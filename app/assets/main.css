@@ -79,14 +79,26 @@ section {
     scroll-margin-top: 50px;
 }
 
+
+/* Images Section */
+.image-section {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.image-caption {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #555;
+    font-style: italic;
+}
+
 .event-image {
     max-width: 100%;
     height: auto;
-    margin: 20px 0;
     border-radius: 25px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    background-color: #ffffff;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
 }
 
 /* Event Section */

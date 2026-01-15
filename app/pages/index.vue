@@ -67,24 +67,6 @@
   margin-bottom: 1.5rem;
 }
 
-.image-section {
-  text-align: center;
-  margin: 2rem 0;
-}
-
-.event-image {
-  width: 100%;
-  max-width: 700px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.image-caption {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-  color: #555;
-}
-
 .details p {
   margin-bottom: 1rem;
   line-height: 1.6;
