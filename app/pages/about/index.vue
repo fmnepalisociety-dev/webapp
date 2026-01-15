@@ -2,7 +2,7 @@
   <div class="about-us">
     <div class="body">
       <p>
-        We are a community-based, non-profit organization dedicated to bringing together the Nepalese community in the
+        We are a community-based, non-profit organization dedicated to bringing together the Nepali community in the
         Fargo–Moorhead area. Our mission is to celebrate Nepali culture, traditions, and language while fostering
         meaningful engagement with the wider local community.
       </p>

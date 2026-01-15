@@ -1,7 +1,7 @@
 <template>
   <div class="origin-story">
     <div class="header">
-      <h2>Our Story: Origin of Nepalese Society of Fargo-Moorhead</h2>
+      <h2>Our Story: Origin of Nepali Society of Fargo-Moorhead</h2>
     </div>
     <div class="body">
       <p>

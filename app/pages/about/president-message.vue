@@ -7,8 +7,8 @@
       <p>Namaste and warm greetings!</p>
 
       <p>
-        It is my great honor to introduce our newly established Nepalese Society in Fargo, North Dakota
-        (formal designation: Nepalese Society in Fargo-Moorhead). We envision bringing individuals
+        It is my great honor to introduce our newly established Nepali Society in Fargo, North Dakota
+        (formal designation: Nepali Society of Fargo-Moorhead). We envision bringing individuals
         together who celebrate Nepali culture, traditions, and language along with the US culture and
         tradition. We encourage active participation in social, cultural, and community initiatives,
         and contributing positively to our community and beyond. I encourage every member to get
