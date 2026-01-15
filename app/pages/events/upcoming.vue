@@ -9,9 +9,9 @@
         :key="event.id"
         class="event-info"
       >
-        <div class="bg-blue-400 px-4 py-2 text-white font-bold text-lg">
+        <h2 class="bg-blue-400 px-4 py-2 text-white font-bold text-lg">
           {{ event.heading }}
-        </div>
+        </h2>
         <div class="p-4 bg-blue-50 space-y-2">
           <p v-html="event.body" class="text-gray-700 leading-relaxed"></p>
           <ul class="text-blue-900 space-y-1">
@@ -19,7 +19,12 @@
             <li><strong>Time:</strong> {{ event.event_time }}</li>
             <li>
               <strong>Location:</strong>
-              <a :href="event.event_location" target="_blank" class="text-blue-600 hover:underline">
+              <a
+                :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.event_location)}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-blue-600 hover:underline"
+              >
                 {{ event.event_location }}
               </a>
             </li>

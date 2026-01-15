@@ -9,9 +9,9 @@
         :key="event.id"
         class="event-info"
       >
-        <div class="bg-blue-400 px-4 py-2 text-white font-bold text-lg">
+        <h2 class="bg-blue-400 px-4 py-2 text-white font-bold text-lg">
           {{ event.heading }}
-        </div>
+        </h2>
         <div class="p-4 bg-blue-50 space-y-2">
           <p v-html="event.body" class="text-gray-700 leading-relaxed"></p>
           <ul class="text-blue-900 space-y-1">
