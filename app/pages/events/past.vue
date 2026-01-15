@@ -19,7 +19,12 @@
             <li><strong>Time:</strong> {{ event.event_time }}</li>
             <li>
               <strong>Location:</strong>
-              <a :href="event.event_location" target="_blank" class="text-blue-600 hover:underline">
+              <a
+                :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.event_location)}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-blue-600 hover:underline"
+              >
                 {{ event.event_location }}
               </a>
             </li>
