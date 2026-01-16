@@ -15,13 +15,25 @@
         <!-- Role -->
         <p class="text-gray-600 mt-1">Role: {{ member.role }}</p>
 
-        <!-- Image if available -->
-        <img
-          v-if="member.image_path"
-          :src="member.image_path"
-          alt="Member Image"
-          class="mx-auto w-24 h-24 object-cover rounded-full mb-4 shadow-sm"
-        />
+        <!-- Image -->
+        <div class="image-section flex justify-center">
+          <SupabaseImage
+            bucket="nsfm"
+            :path="member.image_path"
+            is-public
+            :alt="member.display_name"
+            max-height="200px"
+            classes="person-image"
+          >
+            <!-- Custom fallback for this usage -->
+            <FontAwesomeIcon
+              :icon="faUser"
+              class="text-gray-400 rounded-full border border-gray-300 p-4"
+              :style="{ fontSize: '100px' }"
+            />
+          </SupabaseImage>
+        </div>
+
       </div>
     </section>
 
@@ -29,9 +41,14 @@
   </section>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import {ref, computed} from 'vue'
 import {getCommittee} from '~/composables/useCommittee'
+import {useSupabaseImage} from "~/composables/useSupabaseImage";
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import {faUser} from '@fortawesome/free-solid-svg-icons'
+
+const {getImageUrl} = useSupabaseImage();
 
 // Fetch committee members
 const committee = ref([])
