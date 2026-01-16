@@ -1,54 +1,58 @@
 <template>
-  <div>
-    <h2 class="text-3xl font-bold text-blue-800 mb-6">Our Committee</h2>
-  </div>
-  <section id="committee" class="contacts max-w-4xl mx-auto p-6 space-y-6">
-    <section>
-      <div v-for="member in sortedCommittee" :key="member.id"
-           class="contact-card">
+  <div class="committee-wrapper">
+    <div>
+      <h2 class="text-3xl font-bold text-blue-800 mb-6">Our Committee</h2>
+    </div>
 
-        <!-- Name -->
-        <h3 class="text-xl font-semibold text-gray-800">
-          {{ member.display_name }}
-        </h3>
+    <div v-for="(members, role) in groupedByRole" :key="role" class="space-y-4">
+      <!-- Role -->
+      <h3 class="role-text text-2xl font-semibold text-gray-800 border-b border-gray-300 pb-1">
+        {{ role }}
+      </h3>
 
-        <!-- Role -->
-        <p class="text-gray-600 mt-1">Role: {{ member.role }}</p>
+      <section id="contacts" class="contacts-committee">
 
-        <!-- Image -->
-        <div class="image-section flex justify-center">
-          <SupabaseImage
-            bucket="nsfm"
-            :path="member.image_path"
-            is-public
-            :alt="member.display_name"
-            max-height="200px"
-            classes="person-image"
-          >
-            <!-- Custom fallback for this usage -->
-            <FontAwesomeIcon
-              :icon="faUser"
-              class="text-gray-400 rounded-full border border-gray-300 p-4"
-              :style="{ fontSize: '100px' }"
-            />
-          </SupabaseImage>
+        <!-- Members Row -->
+        <div v-for="member in members" :key="member.id" class="contact-card-executive">
+
+          <!-- Member Image -->
+          <div class="person-section flex justify-center">
+            <SupabaseImage
+              bucket="nsfm"
+              :path="member.image_path"
+              is-public
+              :alt="member.display_name"
+              max-height="200px"
+              classes="person-image"
+            >
+              <!-- Fallback -->
+              <FontAwesomeIcon
+                :icon="faUser"
+                class="text-gray-400 rounded-full border border-gray-300 p-4"
+                :style="{ fontSize: '80px' }"
+              />
+            </SupabaseImage>
+          </div>
+
+          <!-- Name -->
+          <div class="person-text flex justify-center">
+            <h3 class="text-xl font-semibold text-gray-800">
+              {{ member.display_name }}
+            </h3>
+          </div>
+
         </div>
-
-      </div>
-    </section>
-
-    <p v-if="committee.length === 0" class="text-gray-500 italic">No committee members yet.</p>
-  </section>
+      </section>
+    </div>
+  </div>
 </template>
+
 
 <script lang="ts" setup>
 import {ref, computed} from 'vue'
 import {getCommittee} from '~/composables/useCommittee'
-import {useSupabaseImage} from "~/composables/useSupabaseImage";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {faUser} from '@fortawesome/free-solid-svg-icons'
-
-const {getImageUrl} = useSupabaseImage();
 
 // Fetch committee members
 const committee = ref([])
@@ -97,3 +101,51 @@ const groupedByRole = computed(() => {
 
 </script>
 
+<style scoped>
+.committee-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.contacts-committee {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  max-width: 1200px;
+  width: 100%;
+}
+
+.role-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.contact-card-executive {
+  width: 170px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 5px;
+  margin: 10px 0;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.contact-card-executive .person-image {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 25px;
+  margin-bottom: 10px;
+}
+
+</style>
