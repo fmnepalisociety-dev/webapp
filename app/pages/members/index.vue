@@ -8,7 +8,7 @@
         :key="m.id"
         class="p-4 bg-white shadow-sm rounded-lg hover:shadow-md transition-shadow flex items-center"
       >
-        <span class="text-gray-700 font-medium">{{ m.firstname }} {{ m.lastname }}</span>
+        <span class="text-gray-700 font-medium">{{ formatName(m.firstname) }} {{ formatName(m.lastname) }}</span>
       </li>
     </ul>
   </main>
@@ -18,6 +18,11 @@
 import {getMembers} from "~/composables/useMembers.js";
 
 const members = await getMembers();
+
+const formatName = (value) => {
+  if (!value) return "";
+  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+};
 </script>
 
 <style scoped>
