@@ -1,49 +1,53 @@
 <template>
   <div class="committee-wrapper">
-    <div>
-      <h2 class="text-3xl font-bold text-blue-800 mb-6">Our Committee</h2>
-    </div>
 
-    <div v-for="(members, role) in groupedByRole" :key="role" class="space-y-4">
-      <!-- Role -->
-      <h3 class="role-text text-2xl font-semibold text-gray-800 border-b border-gray-300 pb-1">
-        {{ role }}
-      </h3>
+    <h2 class="text-3xl font-bold text-blue-800 mb-8 text-center">
+      Our Committee
+    </h2>
 
-      <section id="contacts" class="contacts-committee">
+    <section class="contacts-committee">
 
-        <!-- Members Row -->
-        <div v-for="member in members" :key="member.id" class="contact-card-executive">
+      <div
+        v-for="member in sortedCommittee"
+        :key="member.id"
+        class="contact-card-executive"
+      >
 
-          <!-- Member Image -->
-          <div class="person-section flex justify-center">
-            <SupabaseImage
-              bucket="nsfm"
-              :path="member.image_path"
-              is-public
-              :alt="member.display_name"
-              max-height="200px"
-              classes="person-image"
-            >
-              <!-- Fallback -->
-              <FontAwesomeIcon
-                :icon="faUser"
-                class="text-gray-400 rounded-full border border-gray-300 p-4"
-                :style="{ fontSize: '80px' }"
-              />
-            </SupabaseImage>
-          </div>
-
-          <!-- Name -->
-          <div class="person-text flex justify-center">
-            <h3 class="text-xl font-semibold text-gray-800">
-              {{ member.display_name }}
-            </h3>
-          </div>
-
+        <!-- Role -->
+        <div class="text-center">
+          <h3 class="text-lg font-semibold text-gray-800">
+            {{ member.role }}
+          </h3>
         </div>
-      </section>
-    </div>
+
+        <!-- Member Image -->
+        <div class="person-section flex justify-center">
+          <SupabaseImage
+            bucket="nsfm"
+            :path="member.image_path"
+            is-public
+            :alt="member.display_name"
+            max-height="200px"
+            classes="person-image"
+          >
+            <FontAwesomeIcon
+              :icon="faUser"
+              class="text-gray-400 rounded-full border border-gray-300 p-4"
+              :style="{ fontSize: '80px' }"
+            />
+          </SupabaseImage>
+        </div>
+
+        <!-- Name -->
+        <div class="text-center">
+          <h4>
+            {{ member.display_name }}
+          </h4>
+        </div>
+
+      </div>
+
+    </section>
   </div>
 </template>
 
@@ -120,15 +124,8 @@ const groupedByRole = computed(() => {
   width: 100%;
 }
 
-.role-text {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
 .contact-card-executive {
-  width: 170px;
+  width: 220px;
   display: flex;
   flex-direction: column;
   align-items: center;
