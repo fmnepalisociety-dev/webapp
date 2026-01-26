@@ -119,7 +119,7 @@ const closeMenu = () => (isOpen.value = false)
   color: #fff;
   font-weight: 600;
   letter-spacing: 0.6px;
-  padding: 8px 16px;
+  padding: 12px 16px;
   border-radius: 999px;
   cursor: pointer;
   text-decoration: none;
@@ -141,7 +141,7 @@ const closeMenu = () => (isOpen.value = false)
 
 .dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%); /* fixed, centered */
   min-width: 180px;
@@ -171,6 +171,7 @@ const closeMenu = () => (isOpen.value = false)
 
 .dropdown li {
   text-align: center;
+  list-style: none;
 }
 
 .dropdown a {
