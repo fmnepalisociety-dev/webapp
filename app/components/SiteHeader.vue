@@ -11,8 +11,8 @@
 
         <!-- Column 2: Text -->
         <div class="text-column">
-          <h1>Nepali Society of Fargo Moorhead</h1>
-          <h2 class="devnagari">| नेपाली समाज फार्गो मूरहेड |</h2>
+          <h1 class="text-header">Nepali Society of Fargo Moorhead</h1>
+          <h2 class="text-header devnagari">| नेपाली समाज फार्गो मूरहेड |</h2>
         </div>
 
         <!-- Column 3: Flags -->
@@ -86,6 +86,15 @@
   .header-grid {
     grid-template-columns: 1fr;
     text-align: center;
+    gap: 0;
+  }
+
+  .text-column {
+    line-height: 1;
+  }
+
+  .text-header {
+    margin: 12px 0;
   }
 
   .logo-column .main-logo-img {
