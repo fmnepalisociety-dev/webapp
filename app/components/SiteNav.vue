@@ -265,7 +265,7 @@ const closeMenu = () => (isOpen.value = false)
   }
 
   .nav-list li {
-    margin: 10px 0;
+    margin: 10px 20px;
   }
 
   .nav-list.open {
