@@ -97,10 +97,6 @@
     margin: 12px 0;
   }
 
-  .logo-column .main-logo-img {
-    width: 120px;
-  }
-
   /* Hide flags on small devices */
   .flags-column {
     display: none;
