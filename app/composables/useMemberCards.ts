@@ -5,7 +5,7 @@ export async function getMembersForCards(): Promise<Member[]> {
 
   const { data, error } = await $supabase
   .from('members')
-  .select('id, firstname, lastname');//, member_id, membership_type, expiry_date, image_path')
+  .select('id, firstname, lastname, email');//, member_id, membership_type, expiry_date, image_path')
 
   if (error) {
     console.error('[getMembersForCards]', error);
@@ -58,7 +58,12 @@ export function isExpired(date: string | null): boolean {
 }
 
 export function getMemberId(member: Member): string {
-  return member.member_id ?? `M-${member.id}`;
+  if (member.member_id) {
+    return member.member_id;
+  }
+
+  const id = String(member.id).padStart(4, '0');
+  return `NSFM-${id}`;
 }
 
 export function getMembershipType(member: Member): string {
