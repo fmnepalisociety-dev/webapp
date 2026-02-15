@@ -18,7 +18,6 @@ const props = defineProps<{
 const qrData = computed(() => generateQrData(props.member));
 const name = computed(() => formatMemberName(props.member));
 const memberId = computed(() => getMemberId(props.member));
-const memberEmail = computed(() => props.member.email);
 const membershipType = computed(() => getMembershipType(props.member));
 const expiryDisplay = computed(() => formatExpiryDate(props.member.expiry_date));
 const expired = computed(() => isExpired(props.member.expiry_date));
@@ -73,10 +72,6 @@ const expired = computed(() => isExpired(props.member.expiry_date));
         <div class="id-card__detail">
           <span class="id-card__label">ID:</span>
           <span>{{ memberId }}</span>
-        </div>
-        <div class="id-card__detail">
-          <span class="id-card__label">Email:</span>
-          <span>{{ memberEmail }}</span>
         </div>
         <div class="id-card__detail">
           <span class="id-card__label">Type:</span>

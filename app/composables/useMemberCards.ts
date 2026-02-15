@@ -5,7 +5,7 @@ export async function getMembersForCards(): Promise<Member[]> {
 
   const { data, error } = await $supabase
   .from('members')
-  .select('id, firstname, lastname, email');//, member_id, membership_type, expiry_date, image_path')
+  .select('id, firstname, lastname, membership_id, membership_type, expiry_date, image_path');
 
   if (error) {
     console.error('[getMembersForCards]', error);
