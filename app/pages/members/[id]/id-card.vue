@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { Member } from '~/types/member';
+import { faPrint } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const route = useRoute();
 const memberId = route.params.id as string;
@@ -12,10 +14,10 @@ const error = ref<string | null>(null);
 onMounted(async () => {
   try {
     const { data, error: fetchError } = await $supabase
-      .from('members')
-      .select('*')
-      .eq('id', memberId)
-      .single();
+    .from('members')
+    .select('*')
+    .eq('id', memberId)
+    .single();
 
     if (fetchError) throw fetchError;
 
@@ -27,6 +29,79 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+
+const handlePrint = () => {
+  // Get the ID card element
+  const cardElement = document.querySelector('.id-card');
+  if (!cardElement) return;
+
+  // Create a new window with only the ID card
+  const printWindow = window.open('', '_blank', 'width=600,height=800');
+  if (!printWindow) return;
+
+  // Get all style and link tags from the current document
+  const headContent = Array.from(document.head.querySelectorAll('style, link[rel="stylesheet"]'))
+    .map(el => el.outerHTML)
+    .join('\n');
+
+  // Write the HTML for print
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Print ID Card</title>
+        <meta charset="UTF-8">
+        ${headContent}
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: white;
+          }
+          .id-card {
+            width: 2.125in !important;
+            height: 3.375in !important;
+            box-shadow: none !important;
+          }
+          @media print {
+            @page {
+              size: 2.125in 3.375in;
+              margin: 0;
+            }
+            body {
+              margin: 0;
+              padding: 0;
+              display: block;
+            }
+            .id-card {
+              box-shadow: none !important;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        ${cardElement.outerHTML}
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+
+  // Wait for content to load, then print
+  printWindow.onload = () => {
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 500);
+  };
+};
 </script>
 
 <template>
@@ -45,11 +120,14 @@ onMounted(async () => {
 
       <div v-else-if="member" class="card-container">
         <h1 class="page-title">Member ID Card</h1>
-        <MemberIdCard :member="member" />
-        <div class="actions">
-          <NuxtLink to="/members/id-cards" class="back-link">
-            View All ID Cards
-          </NuxtLink>
+        <div class="print-area">
+          <MemberIdCard :member="member" />
+        </div>
+        <div class="actions no-print">
+          <button @click="handlePrint" class="print-button">
+            <FontAwesomeIcon :icon="faPrint" />
+            Print Card
+          </button>
         </div>
       </div>
     </div>
@@ -95,9 +173,33 @@ onMounted(async () => {
   text-align: center;
 }
 
+.print-area {
+  display: flex;
+  justify-content: center;
+}
+
 .actions {
   display: flex;
   gap: 1rem;
+  justify-content: center;
+}
+
+.print-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #1c3382;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.print-button:hover {
+  background: #152966;
 }
 
 .back-link {
