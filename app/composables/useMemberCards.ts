@@ -16,15 +16,15 @@ export async function getMembersForCards(): Promise<Member[]> {
 }
 
 export function generateQrData(member: Member): string {
-  const cardData: MemberCardData = {
-    v: 1,
-    org: 'NSFM',
-    id: member.member_id ?? `M-${member.id}`,
-    n: formatMemberName(member),
-    t: member.membership_type ?? 'Standard',
-    exp: member.expiry_date
-  };
-  return JSON.stringify(cardData);
+  // Generate URL to the member's ID card page
+  // In production, this will use the actual domain (fmnepali.org)
+  // In development, it will use localhost:3000
+  if (import.meta.client) {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/members/${member.id}/id-card`;
+  }
+  // Fallback for SSR (shouldn't happen since ssr: false, but just in case)
+  return `https://www.fmnepali.org/members/${member.id}/id-card`;
 }
 
 export function formatMemberName(member: Member): string {
