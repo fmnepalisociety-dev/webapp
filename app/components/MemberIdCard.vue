@@ -44,18 +44,26 @@ const expired = computed(() => isExpired(props.member.expiry_date));
 
     <!-- Body -->
     <div class="id-card__body">
-      <!-- Photo -->
-      <div class="id-card__photo">
-        <SupabaseImage
-          v-if="member.image_path"
-          bucket="members"
-          :path="member.image_path"
-          :alt="name"
-          max-height="80px"
-          classes="id-card__photo-img"
-        />
-        <div v-else class="id-card__photo-placeholder">
-          <FontAwesomeIcon :icon="faUser" class="id-card__photo-icon" />
+      <!-- Top Row: Photo and QR Code -->
+      <div class="id-card__top-row">
+        <!-- Photo -->
+        <div class="id-card__photo">
+          <SupabaseImage
+            v-if="member.image_path"
+            bucket="members"
+            :path="member.image_path"
+            :alt="name"
+            max-height="80px"
+            classes="id-card__photo-img"
+          />
+          <div v-else class="id-card__photo-placeholder">
+            <FontAwesomeIcon :icon="faUser" class="id-card__photo-icon" />
+          </div>
+        </div>
+
+        <!-- QR Code -->
+        <div class="id-card__qr">
+          <QrCode :value="qrData" :size="80" level="M" />
         </div>
       </div>
 
@@ -79,11 +87,6 @@ const expired = computed(() => isExpired(props.member.expiry_date));
           <span :class="{'text-red-600': expired}">{{ expiryDisplay }}</span>
         </div>
       </div>
-
-      <!-- QR Code -->
-      <div class="id-card__qr">
-        <QrCode :value="qrData" :size="70" level="M" />
-      </div>
     </div>
 
     <!-- Footer -->
@@ -98,8 +101,8 @@ const expired = computed(() => isExpired(props.member.expiry_date));
 
 <style scoped>
 .id-card {
-  width: 337.5px;
-  height: 212.5px;
+  width: 212.5px;
+  height: 337.5px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   background: #ffffff;
@@ -117,37 +120,46 @@ const expired = computed(() => isExpired(props.member.expiry_date));
 .id-card__header {
   background: linear-gradient(135deg, #1c3382 0%, #a31432 100%);
   color: white;
-  padding: 8px 12px;
+  padding: 10px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
 }
 
 .id-card__logo {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
 }
 
 .id-card__org {
-  flex: 1;
+  text-align: center;
 }
 
 .id-card__org-name {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   line-height: 1.2;
 }
 
 .id-card__org-name-np {
-  font-size: 10px;
+  font-size: 9px;
   opacity: 0.9;
 }
 
 .id-card__body {
   display: flex;
+  flex-direction: column;
   padding: 12px;
   gap: 12px;
-  height: 120px;
+  flex: 1;
+}
+
+.id-card__top-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .id-card__photo {
@@ -182,27 +194,25 @@ const expired = computed(() => isExpired(props.member.expiry_date));
 }
 
 .id-card__info {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-width: 0;
+  gap: 4px;
 }
 
 .id-card__name {
   font-size: 14px;
   font-weight: 700;
   color: #1c3382;
-  margin-bottom: 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin-bottom: 4px;
+  text-align: center;
 }
 
 .id-card__detail {
   font-size: 10px;
   color: #374151;
   line-height: 1.6;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .id-card__label {
