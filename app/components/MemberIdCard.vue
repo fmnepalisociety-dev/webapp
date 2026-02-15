@@ -48,16 +48,19 @@ const expired = computed(() => isExpired(props.member.expiry_date));
         <!-- Photo -->
         <div class="id-card__photo">
           <SupabaseImage
-            v-if="member.image_path"
-            bucket="members"
+            bucket="nsfm"
             :path="member.image_path"
-            :alt="name"
+            is-public
+            :alt="member.display_name"
             max-height="80px"
             classes="id-card__photo-img"
-          />
-          <div v-else class="id-card__photo-placeholder">
-            <FontAwesomeIcon :icon="faUser" class="id-card__photo-icon" />
-          </div>
+          >
+            <FontAwesomeIcon
+              :icon="faUser"
+              class="text-gray-400 rounded-full border border-gray-300 p-4"
+              :style="{ fontSize: '80px' }"
+            />
+          </SupabaseImage>
         </div>
 
         <!-- QR Code -->
@@ -164,28 +167,8 @@ const expired = computed(() => isExpired(props.member.expiry_date));
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f3f4f6;
   border-radius: 4px;
   overflow: hidden;
-}
-
-.id-card__photo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.id-card__photo-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-}
-
-.id-card__photo-icon {
-  font-size: 32px;
-  color: #9ca3af;
 }
 
 .id-card__info {
