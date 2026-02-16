@@ -21,7 +21,29 @@ const members = await getMembers();
 
 const formatName = (value) => {
   if (!value) return "";
-  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+
+  return value
+    .split(/\s+/)
+    .map(word => {
+      if (!word) return '';
+
+      // If word has any uppercase letters, check if they're intentional
+      const hasUppercase = /[A-Z]/.test(word);
+      if (hasUppercase) {
+        // If all uppercase (like KC, USA), keep it
+        if (word === word.toUpperCase()) {
+          return word;
+        }
+        // If has capital letters after the first position (like McDonald, O'Brien, kC), preserve it
+        if (word.slice(1) !== word.slice(1).toLowerCase()) {
+          return word.charAt(0).toUpperCase() + word.slice(1);
+        }
+      }
+
+      // Otherwise, capitalize first letter only
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ');
 };
 </script>
 
