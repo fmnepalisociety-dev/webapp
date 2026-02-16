@@ -32,77 +32,85 @@ onMounted(async () => {
   }
 });
 
-const handlePrint = () => {
-  // Get the ID card element
-  const cardElement = document.querySelector('.id-card');
+const handlePrint = async () => {
+  const cardElement = document.querySelector('.id-card') as HTMLElement;
   if (!cardElement) return;
 
-  // Create a new window with only the ID card
-  const printWindow = window.open('', '_blank', 'width=600,height=800');
-  if (!printWindow) return;
+  try {
+    // Capture the ID card as canvas with high quality
+    const canvas = await html2canvas(cardElement, {
+      scale: 3,
+      backgroundColor: '#ffffff',
+      logging: false,
+      useCORS: true,
+    });
 
-  // Get all style and link tags from the current document
-  const headContent = Array.from(document.head.querySelectorAll('style, link[rel="stylesheet"]'))
-    .map(el => el.outerHTML)
-    .join('\n');
+    // Convert canvas to image
+    const imgData = canvas.toDataURL('image/png');
 
-  // Write the HTML for print
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>Print ID Card</title>
-        <meta charset="UTF-8">
-        ${headContent}
-        <style>
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
-          body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: white;
-          }
-          .id-card {
-            width: 2.125in !important;
-            height: 3.375in !important;
-            box-shadow: none !important;
-          }
-          @media print {
-            @page {
-              size: 2.125in 3.375in;
-              margin: 0;
-            }
-            body {
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank', 'width=600,height=800');
+    if (!printWindow) return;
+
+    // Write HTML with the captured image
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Print ID Card</title>
+          <meta charset="UTF-8">
+          <style>
+            * {
               margin: 0;
               padding: 0;
-              display: block;
+              box-sizing: border-box;
             }
-            .id-card {
-              box-shadow: none !important;
+            body {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              min-height: 100vh;
+              background: white;
             }
-          }
-        </style>
-      </head>
-      <body>
-        ${cardElement.outerHTML}
-      </body>
-    </html>
-  `);
+            img {
+              width: 2.125in;
+              height: 3.375in;
+            }
+            @media print {
+              @page {
+                size: 2.125in 3.375in;
+                margin: 0;
+              }
+              body {
+                margin: 0;
+                padding: 0;
+                display: block;
+              }
+              img {
+                display: block;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <img src="${imgData}" alt="ID Card" />
+        </body>
+      </html>
+    `);
 
-  printWindow.document.close();
+    printWindow.document.close();
 
-  // Wait for content to load, then print
-  printWindow.onload = () => {
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 500);
-  };
+    // Wait for image to load, then print
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+    };
+  } catch (error) {
+    console.error('Error printing card:', error);
+    alert('Failed to print ID card. Please try again.');
+  }
 };
 
 const handleDownloadCard = async () => {
