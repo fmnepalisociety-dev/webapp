@@ -219,15 +219,16 @@ const expired = computed(() => isExpired(props.member.expiry_date));
 
 .id-card__expired-badge {
   position: absolute;
-  top: 50%;
+  bottom: 30px;
   left: 50%;
-  transform: translate(-50%, -50%) rotate(-15deg);
-  background: rgba(220, 38, 38, 0.9);
+  transform: translateX(-50%) rotate(-15deg);
+  background: rgba(220, 38, 38, 0.5);
   color: white;
   padding: 4px 16px;
   font-size: 18px;
   font-weight: 700;
   border-radius: 4px;
   letter-spacing: 2px;
+  pointer-events: none;
 }
 </style>

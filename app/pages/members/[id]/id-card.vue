@@ -37,13 +37,28 @@ const handlePrint = async () => {
   if (!cardElement) return;
 
   try {
+    // Temporarily remove expired styling for full opacity
+    const hadExpiredClass = cardElement.classList.contains('id-card--expired');
+    if (hadExpiredClass) {
+      cardElement.classList.remove('id-card--expired');
+    }
+
     // Capture the ID card as canvas with high quality
     const canvas = await html2canvas(cardElement, {
       scale: 3,
       backgroundColor: '#ffffff',
       logging: false,
       useCORS: true,
+      ignoreElements: (element) => {
+        // Hide expired badge when printing
+        return element.classList.contains('id-card__expired-badge');
+      },
     });
+
+    // Restore expired class if it was there
+    if (hadExpiredClass) {
+      cardElement.classList.add('id-card--expired');
+    }
 
     // Convert canvas to image
     const imgData = canvas.toDataURL('image/png');
@@ -120,13 +135,28 @@ const handleDownloadCard = async () => {
   if (!cardElement) return;
 
   try {
+    // Temporarily remove expired styling for full opacity
+    const hadExpiredClass = cardElement.classList.contains('id-card--expired');
+    if (hadExpiredClass) {
+      cardElement.classList.remove('id-card--expired');
+    }
+
     // Capture the ID card as canvas
     const canvas = await html2canvas(cardElement, {
       scale: 3, // Higher resolution
       backgroundColor: '#ffffff',
       logging: false,
       useCORS: true,
+      ignoreElements: (element) => {
+        // Hide expired badge when downloading
+        return element.classList.contains('id-card__expired-badge');
+      },
     });
+
+    // Restore expired class if it was there
+    if (hadExpiredClass) {
+      cardElement.classList.add('id-card--expired');
+    }
 
     // Convert to blob and download
     canvas.toBlob((blob) => {
