@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { Member } from '~/types/member';
-import { faPrint } from '@fortawesome/free-solid-svg-icons';
+import { faPrint, faDownload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { formatMemberName, getMemberId } from '~/composables/useMemberCards';
+import html2canvas from 'html2canvas';
 
 const route = useRoute();
 const memberId = route.params.id as string;
@@ -102,6 +104,43 @@ const handlePrint = () => {
     }, 500);
   };
 };
+
+const handleDownloadCard = async () => {
+  if (!member.value) return;
+
+  const cardElement = document.querySelector('.id-card') as HTMLElement;
+  if (!cardElement) return;
+
+  try {
+    // Capture the ID card as canvas
+    const canvas = await html2canvas(cardElement, {
+      scale: 3, // Higher resolution
+      backgroundColor: '#ffffff',
+      logging: false,
+      useCORS: true,
+    });
+
+    // Convert to blob and download
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const name = formatMemberName(member.value!);
+      const memberId = getMemberId(member.value!);
+
+      link.href = url;
+      link.download = `${memberId}_${name.replace(/\s+/g, '_')}_ID_Card.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  } catch (error) {
+    console.error('Error downloading card:', error);
+    alert('Failed to download ID card. Please try again.');
+  }
+};
 </script>
 
 <template>
@@ -124,6 +163,10 @@ const handlePrint = () => {
           <MemberIdCard :member="member" />
         </div>
         <div class="actions no-print">
+          <button @click="handleDownloadCard" class="save-button">
+            <FontAwesomeIcon :icon="faDownload" />
+            Download Card
+          </button>
           <button @click="handlePrint" class="print-button">
             <FontAwesomeIcon :icon="faPrint" />
             Print Card
@@ -182,13 +225,14 @@ const handlePrint = () => {
   display: flex;
   gap: 1rem;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
+.save-button,
 .print-button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #1c3382;
   color: white;
   padding: 0.5rem 1rem;
   border: none;
@@ -196,6 +240,18 @@ const handlePrint = () => {
   cursor: pointer;
   font-size: 1rem;
   transition: all 0.2s;
+}
+
+.save-button {
+  background: #16a34a;
+}
+
+.save-button:hover {
+  background: #15803d;
+}
+
+.print-button {
+  background: #1c3382;
 }
 
 .print-button:hover {

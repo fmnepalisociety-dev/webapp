@@ -8,12 +8,3 @@ export interface Member {
   expiry_date: string | null;
   image_path: string | null;
 }
-
-export interface MemberCardData {
-  v: number; // schema version
-  org: string; // "NSFM"
-  id: string; // member ID
-  n: string; // name
-  t: string; // membership type
-  exp: string | null; // expiry date
-}
