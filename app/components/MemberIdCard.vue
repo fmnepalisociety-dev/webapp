@@ -36,7 +36,11 @@ const expired = computed(() => isExpired(props.member.expiry_date));
         class="id-card__logo"
       />
       <div class="id-card__org">
-        <div class="id-card__org-name">Nepali Society - Fargo Moorhead</div>
+        <div class="id-card__org-main">
+          <span class="id-card__org-large">Nepali Society</span>
+          <span class="id-card__org-small">of</span>
+          <span class="id-card__org-medium">Fargo-Moorhead</span>
+        </div>
         <div class="id-card__org-name-np">नेपाली समाज - फार्गो मुरहेड</div>
       </div>
     </div>
@@ -118,31 +122,56 @@ const expired = computed(() => isExpired(props.member.expiry_date));
 .id-card__header {
   background: linear-gradient(135deg, #1c3382 0%, #a31432 100%);
   color: white;
-  padding: 10px;
+  padding: 10px 12px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
 }
 
 .id-card__logo {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
 }
 
 .id-card__org {
-  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.id-card__org-name {
-  font-size: 10px;
-  font-weight: 600;
+.id-card__org-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px;
   line-height: 1.2;
 }
 
+.id-card__org-large {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.id-card__org-small {
+  font-size: 8px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.id-card__org-medium {
+  font-size: 13px;
+  font-weight: 600;
+  flex-basis: 100%;
+}
+
 .id-card__org-name-np {
-  font-size: 9px;
+  font-size: 10px;
   opacity: 0.9;
+  line-height: 1.2;
 }
 
 .id-card__body {
