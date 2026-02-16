@@ -1,16 +1,42 @@
 <template>
-  <main class="p-6 max-w-2xl mx-auto">
-    <h1 class="text-2xl font-bold mb-4 text-gray-800">Members</h1>
+  <main class="p-6 max-w-5xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6 text-gray-800">Members</h1>
 
-    <ul class="space-y-3">
-      <li
-        v-for="m in members"
-        :key="m.id"
-        class="p-4 bg-white shadow-sm rounded-lg hover:shadow-md transition-shadow flex items-center"
-      >
-        <span class="text-gray-700 font-medium">{{ formatName(m.firstname) }} {{ formatName(m.lastname) }}</span>
-      </li>
-    </ul>
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+      <!-- Table -->
+      <table class="w-full">
+        <thead class="bg-gray-50 border-b border-gray-200">
+          <tr>
+            <th class="px-24 py-6 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+              #
+            </th>
+            <th class="px-24 py-6 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+              Membership ID
+            </th>
+            <th class="px-24 py-6 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+              Name
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr
+            v-for="(m, index) in members"
+            :key="m.id"
+            class="hover:bg-gray-50 transition-colors"
+          >
+            <td class="px-24 py-6 text-center text-sm text-gray-500">
+              {{ index + 1 }}
+            </td>
+            <td class="px-24 py-6 text-center text-sm text-gray-600 font-mono">
+              {{ m.membership_id || 'N/A' }}
+            </td>
+            <td class="px-24 py-6 text-left text-sm text-gray-800 font-medium">
+              {{ formatName(m.firstname) }} {{ formatName(m.lastname) }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </main>
 </template>
 
