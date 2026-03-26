@@ -1,19 +1,14 @@
 <template>
   <div class="about-page">
 
-    <TimeWindow
-      start="2026-01-13T00:00:00"
-      end="2026-01-17T23:59:59"
-      timezone="GMT"
-    >
-      <div class="image-section">
-        <img
-          src="/img/nsfm-maaghe-sakranti-2026.jpg"
-          class="event-image"
-          alt="NSFM-Maghe-Sakranti">
-        <p class="image-caption">Happy Maghe Sankranti</p>
-      </div>
-    </TimeWindow>
+    <div v-for="flyer in flyers" :key="flyer.id" class="image-section">
+      <img
+        v-if="flyerImages[flyer.id]"
+        :src="flyerImages[flyer.id]"
+        class="event-image"
+        :alt="flyer.title">
+      <p v-if="flyer.caption" class="image-caption">{{ flyer.caption }}</p>
+    </div>
 
     <div class="intro">
       <p>
@@ -41,7 +36,20 @@
 </template>
 
 <script setup lang="ts">
-// Static content; can later be loaded from a database
+import {getActiveFlyers} from '~/composables/useFlyers';
+import type {Flyer} from '~/types/flyer';
+
+const {getPublicImageUrl} = useSupabaseImage();
+
+const flyers = ref<Flyer[]>([]);
+const flyerImages = ref<Record<number, string | null>>({});
+
+onMounted(async () => {
+  flyers.value = await getActiveFlyers();
+  for (const flyer of flyers.value) {
+    flyerImages.value[flyer.id] = getPublicImageUrl('nsfm', flyer.image_path);
+  }
+});
 </script>
 
 <style scoped>
