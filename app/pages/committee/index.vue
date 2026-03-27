@@ -21,7 +21,7 @@
         </div>
 
         <!-- Member Image -->
-        <div class="person-section flex justify-center">
+        <ZoomImage class="person-section flex justify-center">
           <SupabaseImage
             bucket="nsfm"
             :path="member.image_path"
@@ -36,7 +36,7 @@
               :style="{ fontSize: '80px' }"
             />
           </SupabaseImage>
-        </div>
+        </ZoomImage>
 
         <!-- Name -->
         <div class="text-center">
@@ -144,5 +144,6 @@ const groupedByRole = computed(() => {
   border-radius: 25px;
   margin-bottom: 10px;
 }
+
 
 </style>

@@ -52,8 +52,7 @@
 
       <p v-if="latestUpcoming.promo" v-html="latestUpcoming.promo" class="text-gray-600"></p>
 
-      <img v-if="latestUpcoming.image_path" :src="latestUpcoming.image_path" alt="Event Image"
-           class="mt-4 rounded-lg shadow-sm"/>
+      <ZoomImage v-if="latestUpcoming.image_path" :src="latestUpcoming.image_path" alt="Event Image" class="mt-4" />
 
       <NuxtLink
         v-if="upcomingEvents.length > 1"
@@ -85,8 +84,7 @@
 
       <p v-if="latestPast.promo" v-html="latestPast.promo" class="text-gray-600"></p>
 
-      <img v-if="latestPast.image_path" :src="latestPast.image_path" alt="Event Image"
-           class="mt-4 rounded-lg shadow-sm"/>
+      <ZoomImage v-if="latestPast.image_path" :src="latestPast.image_path" alt="Event Image" class="mt-4" />
 
       <NuxtLink
         v-if="pastEvents.length > 1"

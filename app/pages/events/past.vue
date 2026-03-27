@@ -30,7 +30,7 @@
             </li>
           </ul>
           <p v-if="event.promo" v-html="event.promo" class="text-gray-600"></p>
-          <img v-if="event.image_path" :src="event.image_path" alt="Event Image" class="mt-2 rounded shadow-sm w-full"/>
+          <ZoomImage v-if="event.image_path" :src="event.image_path" alt="Event Image" class="mt-2" />
         </div>
       </div>
     </section>

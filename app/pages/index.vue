@@ -2,11 +2,12 @@
   <div class="about-page">
 
     <div v-for="flyer in flyers" :key="flyer.id" class="image-section">
-      <img
+      <ZoomImage
         v-if="flyerImages[flyer.id]"
         :src="flyerImages[flyer.id]"
-        class="event-image"
-        :alt="flyer.title">
+        :alt="flyer.title"
+        img-class="event-image"
+      />
       <p v-if="flyer.caption" class="image-caption">{{ flyer.caption }}</p>
     </div>
 
@@ -19,10 +20,11 @@
     </div>
 
     <div class="image-section">
-      <img
+      <ZoomImage
         src="/img/nsfm-group-2025.jpg"
-        class="event-image"
-        alt="Nepali Society Fargo-Moorhead Group 2025">
+        img-class="event-image"
+        alt="Nepali Society Fargo-Moorhead Group 2025"
+      />
       <p class="image-caption">Celebrating the Dhaka-Topi Diwas & New Year 2026</p>
     </div>
 
