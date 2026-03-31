@@ -10,9 +10,12 @@
         <font-awesome-icon :icon="['fas', 'circle-check']" />
         RSVP for this event
       </NuxtLink>
-      <div class="rsvp-qr">
+      <div class="rsvp-qr" ref="qrContainer">
         <QrCode :value="rsvpUrl" :size="96" />
         <span class="rsvp-qr-label">Scan to RSVP</span>
+        <button class="rsvp-qr-download" title="Download QR code" @click="downloadQr">
+          <font-awesome-icon :icon="['fas', 'download']" /> Save QR
+        </button>
       </div>
     </div>
 
@@ -62,8 +65,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { isRsvpOpen, type RsvpConfig } from '~/composables/useRsvp';
+
+const qrContainer = ref<HTMLElement | null>(null);
 
 const props = defineProps<{
   event: {
@@ -85,6 +90,34 @@ const rsvpUrl = computed(() => {
   const base = typeof window !== 'undefined' ? window.location.origin : '';
   return `${base}/events/${props.event.id}/rsvp`;
 });
+
+function downloadQr() {
+  const svg = qrContainer.value?.querySelector('svg');
+  if (!svg) return;
+
+  const clone = svg.cloneNode(true) as SVGElement;
+  clone.setAttribute('width', '1024');
+  clone.setAttribute('height', '1024');
+
+  const svgBlob = new Blob([new XMLSerializer().serializeToString(clone)], {
+    type: 'image/svg+xml;charset=utf-8',
+  });
+  const url = URL.createObjectURL(svgBlob);
+  const img = new Image();
+  img.onload = () => {
+    const canvas = Object.assign(document.createElement('canvas'), { width: 1024, height: 1024 });
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 1024, 1024);
+    ctx.drawImage(img, 0, 0, 1024, 1024);
+    URL.revokeObjectURL(url);
+    Object.assign(document.createElement('a'), {
+      download: `rsvp-qr-${props.event.id}.png`,
+      href: canvas.toDataURL('image/png'),
+    }).click();
+  };
+  img.src = url;
+}
 
 const locationText = computed(() => {
   if (!props.event.event_location) return '';
@@ -175,5 +208,21 @@ const locationUrl = computed(() => {
   font-size: 0.7rem;
   color: #6b7280;
   text-align: center;
+}
+
+.rsvp-qr-download {
+  font-size: 0.65rem;
+  color: #2563eb;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.rsvp-qr-download:hover {
+  text-decoration: underline;
 }
 </style>
