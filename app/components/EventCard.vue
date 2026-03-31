@@ -2,14 +2,19 @@
   <section class="event-info">
     <h2 class="text-2xl font-bold text-gray-800">{{ event.heading }}</h2>
 
-    <NuxtLink
-      v-if="showRsvp"
-      :to="`/events/${event.id}/rsvp`"
-      class="btn btn-blue"
-    >
-      <font-awesome-icon :icon="['fas', 'circle-check']" />
-      RSVP for this event
-    </NuxtLink>
+    <div v-if="showRsvp" class="rsvp-row">
+      <NuxtLink
+        :to="`/events/${event.id}/rsvp`"
+        class="btn btn-blue"
+      >
+        <font-awesome-icon :icon="['fas', 'circle-check']" />
+        RSVP for this event
+      </NuxtLink>
+      <div class="rsvp-qr">
+        <QrCode :value="rsvpUrl" :size="96" />
+        <span class="rsvp-qr-label">Scan to RSVP</span>
+      </div>
+    </div>
 
     <p v-html="event.body" class="text-gray-700 leading-relaxed"></p>
 
@@ -75,6 +80,11 @@ const props = defineProps<{
 }>();
 
 const showRsvp = computed(() => isRsvpOpen(props.event.rsvp));
+
+const rsvpUrl = computed(() => {
+  const base = typeof window !== 'undefined' ? window.location.origin : '';
+  return `${base}/events/${props.event.id}/rsvp`;
+});
 
 const locationText = computed(() => {
   if (!props.event.event_location) return '';
@@ -145,5 +155,25 @@ const locationUrl = computed(() => {
 .btn-blue:active {
   transform: translateY(1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.rsvp-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 0.25rem;
+}
+
+.rsvp-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.rsvp-qr-label {
+  font-size: 0.7rem;
+  color: #6b7280;
+  text-align: center;
 }
 </style>
