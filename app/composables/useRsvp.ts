@@ -4,7 +4,7 @@ export interface RsvpField {
   type: 'text' | 'number' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox' | 'readonly' | 'image';
   required?: boolean;
   options?: string[];
-  value?: string; // for readonly text or image src
+  value?: string;
 }
 
 export interface RsvpSection {
@@ -15,13 +15,13 @@ export interface RsvpSection {
 export type RsvpFieldOrSection = RsvpField | RsvpSection;
 
 export interface RsvpConfig {
-  id: string;
-  event_id: string;
-  fields: RsvpFieldOrSection[];
   active: boolean;
+  start_date?: string;
+  close_date?: string;
+  fields: RsvpFieldOrSection[];
 }
 
-function isSection(item: RsvpFieldOrSection): item is RsvpSection {
+export function isSection(item: RsvpFieldOrSection): item is RsvpSection {
   return 'section' in item;
 }
 
@@ -41,18 +41,12 @@ export function isEditableField(field: RsvpField): boolean {
   return field.type !== 'readonly' && field.type !== 'image';
 }
 
-export async function getRsvpConfig(eventId: string): Promise<RsvpConfig | null> {
-  const { $supabase } = useNuxtApp();
-
-  const { data, error } = await $supabase
-    .from('event_rsvp_config')
-    .select('*')
-    .eq('event_id', eventId)
-    .eq('active', true)
-    .single();
-
-  if (error || !data) return null;
-  return data as RsvpConfig;
+export function isRsvpOpen(rsvp?: RsvpConfig | null): boolean {
+  if (!rsvp?.active) return false;
+  const now = new Date();
+  if (rsvp.start_date && new Date(rsvp.start_date) > now) return false;
+  if (rsvp.close_date && new Date(rsvp.close_date) < now) return false;
+  return true;
 }
 
 export async function submitRsvp(eventId: string, responses: Record<string, unknown>) {
@@ -67,16 +61,4 @@ export async function submitRsvp(eventId: string, responses: Record<string, unkn
     console.error('[submitRsvp]', error);
     throw new Error('Failed to submit RSVP. Please try again.');
   }
-}
-
-export async function getEventsWithRsvp(): Promise<string[]> {
-  const { $supabase } = useNuxtApp();
-
-  const { data, error } = await $supabase
-    .from('event_rsvp_config')
-    .select('event_id')
-    .eq('active', true);
-
-  if (error || !data) return [];
-  return data.map((r: { event_id: string }) => r.event_id);
 }

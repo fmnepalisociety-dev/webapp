@@ -8,7 +8,6 @@
         v-for="event in upcomingEvents"
         :key="event.id"
         :event="event"
-        :show-rsvp="eventsWithRsvp.has(event.id)"
       />
     </section>
 
@@ -20,9 +19,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { getUpcomingEvents } from '~/composables/useEvents';
-import { getEventsWithRsvp } from '~/composables/useRsvp';
 
-const [events, rsvpEventIds] = await Promise.all([getUpcomingEvents(), getEventsWithRsvp()]);
-const upcomingEvents = ref(events);
-const eventsWithRsvp = ref(new Set(rsvpEventIds));
+const upcomingEvents = ref(await getUpcomingEvents());
 </script>

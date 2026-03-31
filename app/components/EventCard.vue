@@ -58,6 +58,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { isRsvpOpen, type RsvpConfig } from '~/composables/useRsvp';
 
 const props = defineProps<{
   event: {
@@ -69,9 +70,11 @@ const props = defineProps<{
     event_location: string;
     promo?: string;
     image_path?: string;
+    rsvp?: RsvpConfig | null;
   };
-  showRsvp?: boolean;
 }>();
+
+const showRsvp = computed(() => isRsvpOpen(props.event.rsvp));
 
 const locationText = computed(() => {
   if (!props.event.event_location) return '';

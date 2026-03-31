@@ -2,7 +2,7 @@
   <main class="rsvp-page">
     <div v-if="loading" class="text-center text-gray-500 py-12">Loading...</div>
 
-    <div v-else-if="!config" class="text-center py-12">
+    <div v-else-if="!rsvpConfig" class="text-center py-12">
       <h1 class="text-2xl font-bold text-gray-700 mb-2">RSVP Not Available</h1>
       <p class="text-gray-500">RSVP is not open for this event.</p>
       <NuxtLink to="/events" class="text-blue-600 hover:underline mt-4 inline-block">
@@ -39,7 +39,7 @@
 
       <!-- Form -->
       <form @submit.prevent="handleSubmit" class="rsvp-form">
-        <template v-for="(item, idx) in config.fields" :key="idx">
+        <template v-for="(item, idx) in rsvpConfig.fields" :key="idx">
 
           <!-- Section -->
           <fieldset v-if="isSection(item)" class="rsvp-fieldset">
@@ -70,12 +70,12 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import {
-  getRsvpConfig,
   submitRsvp,
   flatFields,
   isEditableField,
-  type RsvpFieldOrSection,
-  type RsvpSection,
+  isSection,
+  isRsvpOpen,
+  type RsvpConfig,
 } from '~/composables/useRsvp';
 import { getEvents } from '~/composables/useEvents';
 import RsvpFieldRenderer from '~/components/RsvpFieldRenderer.vue';
@@ -87,21 +87,17 @@ const loading = ref(true);
 const submitted = ref(false);
 const submitting = ref(false);
 const errorMsg = ref('');
-const config = ref<Awaited<ReturnType<typeof getRsvpConfig>>>(null);
+const rsvpConfig = ref<RsvpConfig | null>(null);
 const event = ref<any>(null);
 const formData = reactive<Record<string, any>>({});
 
-function isSection(item: RsvpFieldOrSection): item is RsvpSection {
-  return 'section' in item;
-}
-
-const [rsvpConfig, allEvents] = await Promise.all([getRsvpConfig(eventId), getEvents()]);
-
-config.value = rsvpConfig;
+const allEvents = await getEvents();
 event.value = allEvents.find((e: any) => e.id === eventId) ?? null;
 
-if (config.value) {
-  for (const field of flatFields(config.value.fields)) {
+if (event.value?.rsvp && isRsvpOpen(event.value.rsvp)) {
+  rsvpConfig.value = event.value.rsvp as RsvpConfig;
+
+  for (const field of flatFields(rsvpConfig.value.fields)) {
     if (isEditableField(field)) {
       formData[field.key] = field.type === 'checkbox' ? false : '';
     }

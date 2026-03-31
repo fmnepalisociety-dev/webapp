@@ -14,7 +14,7 @@
         All Events
       </NuxtLink>
 
-      <EventCard :event="event" :show-rsvp="hasRsvp" />
+      <EventCard :event="event" />
     </template>
 
   </main>
@@ -23,13 +23,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { getEvents } from '~/composables/useEvents';
-import { getEventsWithRsvp } from '~/composables/useRsvp';
 
 const route = useRoute();
 const eventId = route.params.id as string;
 
-const [allEvents, rsvpEventIds] = await Promise.all([getEvents(), getEventsWithRsvp()]);
-
+const allEvents = await getEvents();
 const event = ref(allEvents.find((e: any) => e.id === eventId) ?? null);
-const hasRsvp = ref(new Set(rsvpEventIds).has(eventId));
 </script>
