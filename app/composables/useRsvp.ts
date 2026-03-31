@@ -1,16 +1,44 @@
 export interface RsvpField {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox';
+  type: 'text' | 'number' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox' | 'readonly' | 'image';
   required?: boolean;
   options?: string[];
+  value?: string; // for readonly text or image src
 }
+
+export interface RsvpSection {
+  section: string;
+  fields: RsvpField[];
+}
+
+export type RsvpFieldOrSection = RsvpField | RsvpSection;
 
 export interface RsvpConfig {
   id: string;
   event_id: string;
-  fields: RsvpField[];
+  fields: RsvpFieldOrSection[];
   active: boolean;
+}
+
+function isSection(item: RsvpFieldOrSection): item is RsvpSection {
+  return 'section' in item;
+}
+
+export function flatFields(fields: RsvpFieldOrSection[]): RsvpField[] {
+  const result: RsvpField[] = [];
+  for (const item of fields) {
+    if (isSection(item)) {
+      result.push(...item.fields);
+    } else {
+      result.push(item);
+    }
+  }
+  return result;
+}
+
+export function isEditableField(field: RsvpField): boolean {
+  return field.type !== 'readonly' && field.type !== 'image';
 }
 
 export async function getRsvpConfig(eventId: string): Promise<RsvpConfig | null> {

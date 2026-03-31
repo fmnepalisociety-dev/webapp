@@ -1,5 +1,5 @@
 <template>
-  <main class="p-6 max-w-2xl mx-auto">
+  <main class="rsvp-page">
     <div v-if="loading" class="text-center text-gray-500 py-12">Loading...</div>
 
     <div v-else-if="!config" class="text-center py-12">
@@ -11,7 +11,7 @@
     </div>
 
     <div v-else-if="submitted" class="text-center py-12">
-      <div class="text-green-600 text-5xl mb-4">&#10003;</div>
+      <font-awesome-icon :icon="['fas', 'circle-check']" class="text-green-500 text-5xl mb-4" />
       <h1 class="text-2xl font-bold text-green-700 mb-2">Thank You!</h1>
       <p class="text-gray-600">Your RSVP has been submitted successfully.</p>
       <NuxtLink to="/events" class="text-blue-600 hover:underline mt-4 inline-block">
@@ -20,69 +20,46 @@
     </div>
 
     <div v-else>
-      <h1 class="text-2xl font-bold text-blue-800 mb-1">
-        {{ event?.heading ?? 'Event RSVP' }}
-      </h1>
-      <p v-if="event" class="text-gray-500 mb-6">{{ event.event_date }}</p>
+      <!-- Header -->
+      <div class="rsvp-header">
+        <h1 class="text-2xl font-bold text-blue-800">
+          {{ event?.heading ?? 'Event RSVP' }}
+        </h1>
+        <p v-if="event" class="text-gray-500 text-sm mt-1">{{ event.event_date }}</p>
+        <NuxtLink
+          v-if="event"
+          :to="`/events/${eventId}`"
+          target="_blank"
+          class="event-back-link"
+        >
+          <font-awesome-icon :icon="['fas', 'arrow-up-right-from-square']" class="text-xs" />
+          View event details
+        </NuxtLink>
+      </div>
 
-      <form @submit.prevent="handleSubmit" class="space-y-5">
-        <div v-for="field in config.fields" :key="field.key">
-          <label :for="field.key" class="block font-medium text-gray-700 mb-1">
-            {{ field.label }}
-            <span v-if="field.required" class="text-red-500">*</span>
-          </label>
+      <!-- Form -->
+      <form @submit.prevent="handleSubmit" class="rsvp-form">
+        <template v-for="(item, idx) in config.fields" :key="idx">
 
-          <!-- Text / Email / Tel / Number -->
-          <input
-            v-if="['text', 'email', 'tel', 'number'].includes(field.type)"
-            :id="field.key"
-            :type="field.type"
-            v-model="formData[field.key]"
-            :required="field.required"
-            class="rsvp-input"
-          />
+          <!-- Section -->
+          <fieldset v-if="isSection(item)" class="rsvp-fieldset">
+            <legend class="rsvp-legend">{{ item.section }}</legend>
+            <div class="rsvp-fieldset-fields">
+              <template v-for="field in item.fields" :key="field.key">
+                <RsvpFieldRenderer :field="field" :form-data="formData" />
+              </template>
+            </div>
+          </fieldset>
 
-          <!-- Textarea -->
-          <textarea
-            v-else-if="field.type === 'textarea'"
-            :id="field.key"
-            v-model="formData[field.key]"
-            :required="field.required"
-            rows="3"
-            class="rsvp-input"
-          ></textarea>
+          <!-- Top-level field -->
+          <RsvpFieldRenderer v-else :field="item" :form-data="formData" />
 
-          <!-- Select -->
-          <select
-            v-else-if="field.type === 'select'"
-            :id="field.key"
-            v-model="formData[field.key]"
-            :required="field.required"
-            class="rsvp-input"
-          >
-            <option value="" disabled>Select...</option>
-            <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
-          </select>
-
-          <!-- Checkbox -->
-          <div v-else-if="field.type === 'checkbox'" class="flex items-center gap-2">
-            <input
-              :id="field.key"
-              type="checkbox"
-              v-model="formData[field.key]"
-              class="w-4 h-4"
-            />
-            <label :for="field.key" class="text-gray-700">{{ field.label }}</label>
-          </div>
-        </div>
+        </template>
 
         <p v-if="errorMsg" class="text-red-600 text-sm">{{ errorMsg }}</p>
 
-        <button
-          type="submit"
-          :disabled="submitting"
-          class="rsvp-submit"
-        >
+        <button type="submit" :disabled="submitting" class="rsvp-submit">
+          <font-awesome-icon v-if="submitting" :icon="['fas', 'spinner']" spin />
           {{ submitting ? 'Submitting...' : 'Submit RSVP' }}
         </button>
       </form>
@@ -92,8 +69,16 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
-import { getRsvpConfig, submitRsvp } from '~/composables/useRsvp';
+import {
+  getRsvpConfig,
+  submitRsvp,
+  flatFields,
+  isEditableField,
+  type RsvpFieldOrSection,
+  type RsvpSection,
+} from '~/composables/useRsvp';
 import { getEvents } from '~/composables/useEvents';
+import RsvpFieldRenderer from '~/components/RsvpFieldRenderer.vue';
 
 const route = useRoute();
 const eventId = route.params.id as string;
@@ -106,16 +91,20 @@ const config = ref<Awaited<ReturnType<typeof getRsvpConfig>>>(null);
 const event = ref<any>(null);
 const formData = reactive<Record<string, any>>({});
 
-// Fetch config and event info in parallel
+function isSection(item: RsvpFieldOrSection): item is RsvpSection {
+  return 'section' in item;
+}
+
 const [rsvpConfig, allEvents] = await Promise.all([getRsvpConfig(eventId), getEvents()]);
 
 config.value = rsvpConfig;
 event.value = allEvents.find((e: any) => e.id === eventId) ?? null;
 
-// Initialize form data with empty values
 if (config.value) {
-  for (const field of config.value.fields) {
-    formData[field.key] = field.type === 'checkbox' ? false : '';
+  for (const field of flatFields(config.value.fields)) {
+    if (isEditableField(field)) {
+      formData[field.key] = field.type === 'checkbox' ? false : '';
+    }
   }
 }
 
@@ -136,19 +125,58 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
-.rsvp-input {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  font-size: 1rem;
-  transition: border-color 0.15s;
+.rsvp-page {
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 1.5rem;
 }
 
-.rsvp-input:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+.rsvp-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.event-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.event-back-link:hover {
+  text-decoration: underline;
+}
+
+.rsvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rsvp-fieldset {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.rsvp-legend {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #1e3a5f;
+  padding: 0 0.5rem;
+}
+
+.rsvp-fieldset-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
 }
 
 .rsvp-submit {
@@ -162,6 +190,10 @@ async function handleSubmit() {
   border-radius: 0.5rem;
   cursor: pointer;
   transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .rsvp-submit:hover:not(:disabled) {
