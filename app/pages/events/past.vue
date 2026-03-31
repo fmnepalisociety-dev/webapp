@@ -4,35 +4,11 @@
     <h1 class="text-3xl font-bold text-blue-800 mb-6">Past Events</h1>
 
     <section v-if="pastEvents.length > 0" class="space-y-4">
-      <div
+      <EventCard
         v-for="event in pastEvents"
         :key="event.id"
-        class="event-info"
-      >
-        <h2 class="bg-blue-400 px-4 py-2 text-white font-bold text-lg">
-          {{ event.heading }}
-        </h2>
-        <div class="p-4 bg-blue-50 space-y-2">
-          <p v-html="event.body" class="text-gray-700 leading-relaxed"></p>
-          <ul class="text-blue-900 space-y-1">
-            <li><strong>Date:</strong> {{ event.event_date }}</li>
-            <li><strong>Time:</strong> {{ event.event_time }}</li>
-            <li>
-              <strong>Location:</strong>
-              <a
-                :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.event_location)}`"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-blue-600 hover:underline"
-              >
-                {{ event.event_location }}
-              </a>
-            </li>
-          </ul>
-          <p v-if="event.promo" v-html="event.promo" class="text-gray-600"></p>
-          <ZoomImage v-if="event.image_path" :src="event.image_path" alt="Event Image" class="mt-2" />
-        </div>
-      </div>
+        :event="event"
+      />
     </section>
 
     <p v-else class="text-gray-600 italic">No past events available.</p>
@@ -41,8 +17,8 @@
 </template>
 
 <script setup lang="ts">
-import {ref} from 'vue'
-import {getPastEvents} from '~/composables/useEvents'
+import { ref } from 'vue';
+import { getPastEvents } from '~/composables/useEvents';
 
-const pastEvents = ref(await getPastEvents())
+const pastEvents = ref(await getPastEvents());
 </script>
