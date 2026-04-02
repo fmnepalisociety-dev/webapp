@@ -38,7 +38,7 @@
       </div>
 
       <!-- Form -->
-      <form @submit.prevent="handleSubmit" class="rsvp-form">
+      <form @submit.prevent="handleSubmit" novalidate class="rsvp-form">
         <template v-for="(item, idx) in rsvpConfig.fields" :key="idx">
 
           <!-- Section -->
@@ -56,7 +56,10 @@
 
         </template>
 
-        <p v-if="errorMsg" class="text-red-600 text-sm">{{ errorMsg }}</p>
+        <div v-if="errorMsg" class="rsvp-error" ref="errorRef">
+          <font-awesome-icon :icon="['fas', 'circle-exclamation']" />
+          <span>{{ errorMsg }}</span>
+        </div>
 
         <button type="submit" :disabled="submitting" class="rsvp-submit">
           <font-awesome-icon v-if="submitting" :icon="['fas', 'spinner']" spin />
@@ -68,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, nextTick } from 'vue';
 import {
   submitRsvp,
   flatFields,
@@ -87,6 +90,8 @@ const loading = ref(true);
 const submitted = ref(false);
 const submitting = ref(false);
 const errorMsg = ref('');
+const errorRef = ref<HTMLElement | null>(null);
+const fieldErrors = reactive<Record<string, string>>({});
 const rsvpConfig = ref<RsvpConfig | null>(null);
 const event = ref<any>(null);
 const formData = reactive<Record<string, any>>({});
@@ -106,18 +111,66 @@ if (event.value?.rsvp && isRsvpOpen(event.value.rsvp)) {
 
 loading.value = false;
 
+function validate(): boolean {
+  if (!rsvpConfig.value) return false;
+  // Clear previous errors
+  for (const key of Object.keys(fieldErrors)) delete fieldErrors[key];
+
+  const fields = flatFields(rsvpConfig.value.fields).filter(isEditableField);
+  let valid = true;
+
+  for (const field of fields) {
+    if (!field.required) continue;
+    const val = formData[field.key];
+    if (val === '' || val === undefined || val === null) {
+      fieldErrors[field.key] = `${field.label} is required`;
+      valid = false;
+    } else if (field.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+      fieldErrors[field.key] = 'Please enter a valid email address';
+      valid = false;
+    }
+  }
+
+  return valid;
+}
+
+async function scrollToError() {
+  await nextTick();
+  // Try to scroll to first field error
+  const firstErrorKey = Object.keys(fieldErrors)[0];
+  if (firstErrorKey) {
+    const el = document.getElementById(firstErrorKey);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el?.focus();
+    return;
+  }
+  // Fallback to general error box
+  errorRef.value?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 async function handleSubmit() {
-  submitting.value = true;
   errorMsg.value = '';
+
+  if (!validate()) {
+    errorMsg.value = 'Please fill in all required fields.';
+    await scrollToError();
+    return;
+  }
+
+  submitting.value = true;
   try {
     await submitRsvp(eventId, { ...formData });
     submitted.value = true;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch (e: any) {
-    errorMsg.value = e.message || 'Something went wrong.';
+    errorMsg.value = e.message || 'Something went wrong. Please try again.';
+    await scrollToError();
   } finally {
     submitting.value = false;
   }
 }
+
+provide('fieldErrors', fieldErrors);
 </script>
 
 <style scoped>
@@ -199,5 +252,18 @@ async function handleSubmit() {
 .rsvp-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.rsvp-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  color: #dc2626;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 </style>

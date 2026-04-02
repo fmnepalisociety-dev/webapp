@@ -1,5 +1,5 @@
 <template>
-  <div :class="['rsvp-field', { 'rsvp-field--inline': isInline }]">
+  <div :class="['rsvp-field', { 'rsvp-field--inline': isInline }, { 'rsvp-field--error': !!errorMsg }]">
 
     <!-- Readonly text -->
     <template v-if="field.type === 'readonly'">
@@ -45,7 +45,7 @@
           :type="field.type"
           v-model="formData[field.key]"
           :required="field.required"
-          class="rsvp-input"
+          :class="['rsvp-input', { 'rsvp-input--error': !!errorMsg }]"
         />
 
         <!-- Textarea -->
@@ -55,7 +55,7 @@
           v-model="formData[field.key]"
           :required="field.required"
           rows="2"
-          class="rsvp-input"
+          :class="['rsvp-input', { 'rsvp-input--error': !!errorMsg }]"
         ></textarea>
 
         <!-- Select -->
@@ -64,24 +64,29 @@
           :id="field.key"
           v-model="formData[field.key]"
           :required="field.required"
-          class="rsvp-input"
+          :class="['rsvp-input', { 'rsvp-input--error': !!errorMsg }]"
         >
           <option value="" disabled>Select...</option>
           <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
         </select>
+        <span v-if="errorMsg" class="field-error">{{ errorMsg }}</span>
       </div>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import type { RsvpField } from '~/composables/useRsvp';
 
 const props = defineProps<{
   field: RsvpField;
   formData: Record<string, any>;
 }>();
+
+const fieldErrors = inject<Record<string, string>>('fieldErrors', {});
+
+const errorMsg = computed(() => fieldErrors[props.field.key] || '');
 
 const isInline = computed(() => {
   return !['readonly', 'image', 'checkbox', 'textarea'].includes(props.field.type);
@@ -177,6 +182,21 @@ const isInline = computed(() => {
   max-width: 100%;
   border-radius: 0.5rem;
   border: 1px solid #e5e7eb;
+}
+
+.rsvp-input--error {
+  border-color: #ef4444;
+}
+
+.rsvp-input--error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+.field-error {
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
 }
 
 /* Stack on small screens */
