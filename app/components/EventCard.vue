@@ -1,6 +1,8 @@
 <template>
   <section class="event-info">
-    <h2 class="text-2xl font-bold text-gray-800">{{ event.heading }}</h2>
+    <h2 class="text-2xl font-bold text-gray-800">
+      <NuxtLink :to="`/events/${event.id}`" class="event-heading-link">{{ event.heading }}</NuxtLink>
+    </h2>
 
     <div v-if="showRsvp" class="rsvp-row">
       <NuxtLink
@@ -223,6 +225,15 @@ const locationUrl = computed(() => {
 }
 
 .rsvp-qr-download:hover {
+  text-decoration: underline;
+}
+
+.event-heading-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.event-heading-link:hover {
   text-decoration: underline;
 }
 </style>

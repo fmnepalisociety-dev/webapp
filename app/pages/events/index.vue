@@ -9,8 +9,8 @@
       <ul class="bg-blue-50 rounded-b-lg p-4 space-y-2">
         <li v-for="event in upcomingEvents" :key="event.id"
             class="p-2 rounded hover:bg-blue-100 transition">
-          <span class="font-medium text-blue-900">{{ event.heading }}</span>
-          <span class="text-blue-400 mx-1">|</span>
+          <NuxtLink :to="`/events/${event.id}`" class="font-medium text-blue-900 hover:underline">{{ event.heading }}</NuxtLink>
+          <span class="text-blue-400" style="margin: 0 0.5rem;">|</span>
           <span class="text-sm text-blue-700">{{ event.event_date }}</span>
         </li>
         <li v-if="upcomingEvents.length === 0" class="text-blue-900 text-sm italic">No upcoming events</li>
@@ -32,8 +32,8 @@
       <ul class="bg-blue-50 rounded-b-lg p-4 space-y-2">
         <li v-for="event in pastEvents" :key="event.id"
             class="p-2 rounded hover:bg-blue-100 transition">
-          <span class="font-medium text-blue-900">{{ event.heading }}</span>
-          <span class="text-blue-400 mx-1">|</span>
+          <NuxtLink :to="`/events/${event.id}`" class="font-medium text-blue-900 hover:underline">{{ event.heading }}</NuxtLink>
+          <span class="text-blue-400" style="margin: 0 0.5rem;">|</span>
           <span class="text-sm text-blue-700">{{ event.event_date }}</span>
         </li>
         <li v-if="pastEvents.length === 0" class="text-blue-900 text-sm italic">No past events</li>
