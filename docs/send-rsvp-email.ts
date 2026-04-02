@@ -30,12 +30,23 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
     const { data: event } = await supabase
       .from('events')
-      .select('heading, event_date, rsvp')
+      .select('heading, event_date, event_time, event_location, rsvp')
       .eq('id', event_id)
       .single();
 
     const eventName = event?.heading ?? 'Event';
     const eventDate = event?.event_date ?? '';
+    const eventTime = event?.event_time ?? '';
+    const eventLocation = event?.event_location ?? '';
+
+    // Parse location text and optional URL from "Location Name [url]" format
+    const locationMatch = eventLocation.match(/^(.*?)\s*\[(.+)]$/);
+    const locationText = locationMatch ? locationMatch[1].trim() : eventLocation;
+    const locationUrl = locationMatch ? locationMatch[2].trim() : null;
+
+    // Build event page link
+    const siteBase = 'https://fmnepali.org';
+    const eventLink = `${siteBase}/events/${event_id}`;
 
     // Build field list from the event's rsvp config
     const rsvpConfig = event?.rsvp;
@@ -67,13 +78,46 @@ serve(async (req) => {
       .filter(Boolean)
       .join('');
 
+    // Build event info rows
+    const eventInfoRows = [
+      eventDate
+        ? `<tr>
+            <td style="padding:6px 0;color:#6b7280;font-size:14px;width:70px;">Date</td>
+            <td style="padding:6px 0;color:#1e3a5f;font-size:14px;font-weight:600;">${eventDate}</td>
+          </tr>`
+        : '',
+      eventTime
+        ? `<tr>
+            <td style="padding:6px 0;color:#6b7280;font-size:14px;width:70px;">Time</td>
+            <td style="padding:6px 0;color:#1e3a5f;font-size:14px;font-weight:600;">${eventTime}</td>
+          </tr>`
+        : '',
+      locationText
+        ? `<tr>
+            <td style="padding:6px 0;color:#6b7280;font-size:14px;width:70px;">Location</td>
+            <td style="padding:6px 0;color:#1e3a5f;font-size:14px;font-weight:600;">${
+              locationUrl
+                ? `<a href="${locationUrl}" style="color:#2563eb;text-decoration:none;">${locationText}</a>`
+                : locationText
+            }</td>
+          </tr>`
+        : '',
+    ]
+      .filter(Boolean)
+      .join('');
+
     const html = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:520px;margin:0 auto;padding:24px;">
         <h2 style="color:#1e3a5f;margin-bottom:4px;">Welcome!</h2>
         <p style="color:#374151;font-size:15px;">
           You have successfully registered for <strong>${eventName}</strong>.
         </p>
-        ${eventDate ? `<p style="color:#6b7280;font-size:14px;">Date: <strong>${eventDate}</strong></p>` : ''}
+        ${
+          eventInfoRows
+            ? `<table style="border-collapse:collapse;margin-top:8px;">${eventInfoRows}</table>`
+            : ''
+        }
+        <a href="${eventLink}" style="display:inline-block;margin-top:12px;font-size:13px;color:#2563eb;text-decoration:none;">View event details &rarr;</a>
         <h3 style="color:#1e3a5f;margin-top:24px;margin-bottom:8px;">Your RSVP Details</h3>
         <table style="border-collapse:collapse;width:100%;border:1px solid #e5e7eb;border-radius:8px;">
           ${detailsHtml}
@@ -81,7 +125,7 @@ serve(async (req) => {
         <p style="color:#9ca3af;font-size:13px;margin-top:24px;">
           Thank you for your RSVP. We look forward to seeing you!
         </p>
-        <p style="color:#9ca3af;font-size:12px;">— Nepali Society FM</p>
+        <p style="color:#9ca3af;font-size:12px;">— <a href="${siteBase}" style="color:#9ca3af;">Nepali Society FM</a></p>
       </div>
     `;
 
