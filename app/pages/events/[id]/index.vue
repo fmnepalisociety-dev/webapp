@@ -9,10 +9,12 @@
     </div>
 
     <template v-else>
-      <NuxtLink to="/events" class="text-blue-600 hover:underline text-sm inline-flex items-center gap-1">
-        <font-awesome-icon :icon="['fas', 'arrow-left']" class="text-xs" />
-        All Events
-      </NuxtLink>
+      <div class="back-link-wrapper">
+        <NuxtLink to="/events" class="back-link">
+          <font-awesome-icon :icon="['fas', 'chevron-left']" />
+          Back to All Events
+        </NuxtLink>
+      </div>
 
       <EventCard :event="event" />
     </template>
@@ -30,3 +32,33 @@ const eventId = route.params.id as string;
 const allEvents = await getEvents();
 const event = ref(allEvents.find((e: any) => e.id === eventId) ?? null);
 </script>
+
+<style scoped>
+.back-link-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1d4ed8;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border: 1px solid #bfdbfe;
+  border-radius: 0.5rem;
+  background: #eff6ff;
+  transition: all 0.15s;
+}
+
+.back-link:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.back-link:active {
+  background: #bfdbfe;
+}
+</style>
