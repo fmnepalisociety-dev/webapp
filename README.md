@@ -71,7 +71,7 @@ When a user submits an RSVP, a confirmation email is automatically sent using a 
 2. **Create Edge Function** in Supabase Dashboard
    - Go to **Edge Functions** > **Create Function**
    - Name: `send-rsvp-email`
-   - Paste the function code from `docs/send-rsvp-email.ts`
+   - Paste the function code from `docs/rsvp-email/send-rsvp-email.ts`
 
 3. **Add secrets** to the Edge Function
    - In Edge Function settings, add secret: `RESEND_API_KEY` = your Resend API key
@@ -85,10 +85,36 @@ When a user submits an RSVP, a confirmation email is automatically sent using a 
    - Type: **Supabase Edge Function**
    - Function: `send-rsvp-email`
 
+#### Preview Email Locally
+
+You can preview the confirmation email HTML locally using the preview script:
+
+```bash
+# With default sample data
+npx tsx docs/rsvp-email/preview-rsvp-email.ts
+
+# With custom data from a JSON file
+npx tsx docs/rsvp-email/preview-rsvp-email.ts my-data.json
+```
+
+This generates `docs/rsvp-email/email-preview.html` — open it in your browser to see the result.
+
 #### Email "From" Address
 
 - For testing, Resend provides `onboarding@resend.dev`
 - For production, add and verify your domain in Resend, then update the `from` field in the Edge Function
+
+## Docs
+
+Reference docs and scripts are organized by module in `docs/`:
+
+```
+docs/
+  rsvp-email/
+    send-rsvp-email.ts       # Supabase Edge Function source
+    preview-rsvp-email.ts     # Local email preview script
+    email-preview.html        # Generated preview (git-ignored)
+```
 
 ## Deployment
 

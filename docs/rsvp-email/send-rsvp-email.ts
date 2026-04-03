@@ -137,7 +137,7 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Nepali Society FM <noreply@your-verified-domain.org>',
+        from: 'Nepali Society FM <noreply@fmnepali.org>',
         to: [email],
         subject: `RSVP Confirmation — ${eventName}`,
         html,
