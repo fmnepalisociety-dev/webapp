@@ -55,7 +55,7 @@ serve(async (req) => {
       for (const item of rsvpConfig.fields) {
         if (item.section && item.fields) {
           for (const f of item.fields) {
-            if (f.type !== 'readonly' && f.type !== 'image') {
+            if (f.type !== 'readonly' && f.type !== 'image' && f.type !== 'template') {
               fields.push({ key: f.key, label: f.label });
             }
           }

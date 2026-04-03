@@ -14,6 +14,11 @@
       </div>
     </template>
 
+    <!-- Dynamic HTML template -->
+    <template v-else-if="field.type === 'template'">
+      <div v-html="renderedTemplate"></div>
+    </template>
+
     <!-- Checkbox (inline by nature) -->
     <template v-else-if="field.type === 'checkbox'">
       <div class="checkbox-row">
@@ -45,6 +50,7 @@
           :type="field.type"
           v-model="formData[field.key]"
           :required="field.required"
+          :min="field.type === 'number' ? 0 : undefined"
           :class="['rsvp-input', { 'rsvp-input--error': !!errorMsg }]"
         />
 
@@ -89,7 +95,7 @@ const fieldErrors = inject<Record<string, string>>('fieldErrors', {});
 const errorMsg = computed(() => fieldErrors[props.field.key] || '');
 
 const isInline = computed(() => {
-  return !['readonly', 'image', 'checkbox', 'textarea'].includes(props.field.type);
+  return !['readonly', 'image', 'checkbox', 'textarea', 'template'].includes(props.field.type);
 });
 
 const isVisible = computed(() => {
@@ -101,6 +107,31 @@ const isRequired = computed(() => {
   if (props.field.required) return true;
   if (props.field.required_if) return isVisible.value;
   return false;
+});
+
+/**
+ * Evaluate a simple arithmetic expression where identifiers are form field keys.
+ * Supports: + - * / ( ) and numeric literals.
+ * Any unknown identifier resolves to 0.
+ */
+function evalExpr(expr: string): string {
+  // Replace identifiers (sequences of word chars) with their numeric form values
+  const substituted = expr.replace(/[a-zA-Z_]\w*/g, (key) => {
+    return String(Math.max(0, parseFloat(props.formData[key]) || 0));
+  });
+  // Only allow digits, whitespace, and basic arithmetic — reject anything else
+  if (!/^[\d\s+\-*/().]+$/.test(substituted)) return '0';
+  try {
+    const result = Function(`"use strict"; return (${substituted});`)();
+    return typeof result === 'number' && isFinite(result) ? String(result) : '0';
+  } catch {
+    return '0';
+  }
+}
+
+const renderedTemplate = computed(() => {
+  if (!props.field.value) return '';
+  return props.field.value.replace(/\{\{(.+?)\}\}/g, (_, expr) => evalExpr(expr.trim()));
 });
 </script>
 

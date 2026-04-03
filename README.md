@@ -51,7 +51,7 @@ Events can have an RSVP form configured via the `rsvp` JSON column on the `event
 }
 ```
 
-**Field types**: `text`, `number`, `email`, `tel`, `textarea`, `select`, `checkbox`, `readonly`, `image`
+**Field types**: `text`, `number`, `email`, `tel`, `textarea`, `select`, `checkbox`, `readonly`, `image`, `template`
 
 **Config options**:
 - `active` — set to `true` to open the RSVP

@@ -1,7 +1,7 @@
 export interface RsvpField {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox' | 'readonly' | 'image';
+  type: 'text' | 'number' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox' | 'readonly' | 'image' | 'template';
   required?: boolean;
   required_if?: { field: string; value: string };
   options?: string[];
@@ -39,7 +39,7 @@ export function flatFields(fields: RsvpFieldOrSection[]): RsvpField[] {
 }
 
 export function isEditableField(field: RsvpField): boolean {
-  return field.type !== 'readonly' && field.type !== 'image';
+  return field.type !== 'readonly' && field.type !== 'image' && field.type !== 'template';
 }
 
 export function isRsvpOpen(rsvp?: RsvpConfig | null): boolean {

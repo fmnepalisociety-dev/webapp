@@ -130,6 +130,9 @@ function validate(): boolean {
     } else if (field.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
       fieldErrors[field.key] = 'Please enter a valid email address';
       valid = false;
+    } else if (field.type === 'number' && parseFloat(val) < 0) {
+      fieldErrors[field.key] = `${field.label} cannot be negative`;
+      valid = false;
     }
   }
 
