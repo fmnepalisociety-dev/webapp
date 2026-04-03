@@ -3,6 +3,7 @@ export type FlyerType = 'timebound' | 'permanent';
 export interface TimeboundMeta {
   start_date: string;
   end_date: string;
+  event_id?: string;
 }
 
 export interface Flyer {
