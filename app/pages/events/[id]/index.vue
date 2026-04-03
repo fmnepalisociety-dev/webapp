@@ -16,7 +16,7 @@
         </NuxtLink>
       </div>
 
-      <EventCard :event="event" />
+      <EventCard :event="event" expanded />
     </template>
 
   </main>

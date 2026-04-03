@@ -90,16 +90,6 @@
 import { computed, ref, onMounted, nextTick } from 'vue';
 import { isRsvpOpen, type RsvpConfig } from '~/composables/useRsvp';
 
-const { getPublicImageUrl } = useSupabaseImage();
-
-const qrContainer = ref<HTMLElement | null>(null);
-const lightboxOpen = ref(false);
-const bodyEl = ref<HTMLElement | null>(null);
-const bodyExpanded = ref(false);
-const bodyOverflows = ref(false);
-
-const COLLAPSED_HEIGHT = 72; // ~4.5 lines
-
 const props = defineProps<{
   event: {
     id: string;
@@ -112,7 +102,18 @@ const props = defineProps<{
     image?: string;
     rsvp?: RsvpConfig | null;
   };
+  expanded?: boolean;
 }>();
+
+const { getPublicImageUrl } = useSupabaseImage();
+
+const qrContainer = ref<HTMLElement | null>(null);
+const lightboxOpen = ref(false);
+const bodyEl = ref<HTMLElement | null>(null);
+const bodyExpanded = ref(props.expanded ?? false);
+const bodyOverflows = ref(false);
+
+const COLLAPSED_HEIGHT = 72; // ~4.5 lines
 
 onMounted(async () => {
   await nextTick();
@@ -261,6 +262,8 @@ const locationUrl = computed(() => {
   flex-wrap: wrap;
   gap: 0.4rem;
   margin-bottom: 0.65rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e5e7eb;
 }
 
 .detail-chip {
@@ -291,6 +294,8 @@ const locationUrl = computed(() => {
 /* Body with collapse */
 .event-body-wrap {
   margin-bottom: 0.5rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid #e5e7eb;
 }
 
 .event-body {
@@ -298,6 +303,8 @@ const locationUrl = computed(() => {
   line-height: 1.6;
   font-size: 0.9rem;
   margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .event-body.collapsed {
