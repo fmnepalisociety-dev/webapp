@@ -1,5 +1,5 @@
 <template>
-  <div :class="['rsvp-field', { 'rsvp-field--inline': isInline }, { 'rsvp-field--error': !!errorMsg }]">
+  <div v-if="isVisible" :class="['rsvp-field', { 'rsvp-field--inline': isInline }, { 'rsvp-field--error': !!errorMsg }]">
 
     <!-- Readonly text -->
     <template v-if="field.type === 'readonly'">
@@ -25,7 +25,7 @@
         />
         <label :for="field.key" class="checkbox-label">
           {{ field.label }}
-          <span v-if="field.required" class="required-star">*</span>
+          <span v-if="isRequired" class="required-star">*</span>
         </label>
       </div>
     </template>
@@ -34,7 +34,7 @@
     <template v-else>
       <label :for="field.key" class="field-label">
         {{ field.label }}
-        <span v-if="field.required" class="required-star">*</span>
+        <span v-if="isRequired" class="required-star">*</span>
       </label>
 
       <div class="field-input-wrapper">
@@ -90,6 +90,17 @@ const errorMsg = computed(() => fieldErrors[props.field.key] || '');
 
 const isInline = computed(() => {
   return !['readonly', 'image', 'checkbox', 'textarea'].includes(props.field.type);
+});
+
+const isVisible = computed(() => {
+  if (!props.field.required_if) return true;
+  return props.formData[props.field.required_if.field] === props.field.required_if.value;
+});
+
+const isRequired = computed(() => {
+  if (props.field.required) return true;
+  if (props.field.required_if) return isVisible.value;
+  return false;
 });
 </script>
 

@@ -3,6 +3,7 @@ export interface RsvpField {
   label: string;
   type: 'text' | 'number' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox' | 'readonly' | 'image';
   required?: boolean;
+  required_if?: { field: string; value: string };
   options?: string[];
   value?: string;
 }

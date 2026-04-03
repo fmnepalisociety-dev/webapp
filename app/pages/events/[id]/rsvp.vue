@@ -120,7 +120,9 @@ function validate(): boolean {
   let valid = true;
 
   for (const field of fields) {
-    if (!field.required) continue;
+    const isRequired = field.required
+      || (field.required_if && formData[field.required_if.field] === field.required_if.value);
+    if (!isRequired) continue;
     const val = formData[field.key];
     if (val === '' || val === undefined || val === null) {
       fieldErrors[field.key] = `${field.label} is required`;
