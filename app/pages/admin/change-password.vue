@@ -1,6 +1,9 @@
 <template>
   <div class="change-pw">
     <h1 class="admin-page-title">Change Password</h1>
+    <p v-if="mustChangePassword" class="change-pw-notice">
+      You must change your password before continuing.
+    </p>
 
     <form class="change-pw-form" @submit.prevent="handleChange">
       <div class="change-pw-field">
@@ -29,6 +32,7 @@
 definePageMeta({ layout: 'admin', middleware: 'auth' });
 
 const { $supabase } = useNuxtApp();
+const { mustChangePassword, clearForceReset } = useAuth();
 
 const password = ref('');
 const confirmPw = ref('');
@@ -54,9 +58,11 @@ async function handleChange() {
   try {
     const { error } = await $supabase.auth.updateUser({ password: password.value });
     if (error) throw error;
-    successMsg.value = 'Password updated successfully.';
+    await clearForceReset();
+    successMsg.value = 'Password updated successfully. Redirecting...';
     password.value = '';
     confirmPw.value = '';
+    setTimeout(() => navigateTo('/admin'), 1500);
   } catch (e: any) {
     errorMsg.value = e.message || 'Failed to update password.';
   } finally {
@@ -139,5 +145,12 @@ async function handleChange() {
 .change-pw-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.change-pw-notice {
+  color: #d97706;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
 }
 </style>

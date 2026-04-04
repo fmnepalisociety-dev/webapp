@@ -33,5 +33,15 @@ export function useAuth() {
     navigateTo('/admin/login');
   }
 
-  return { user, loading, init, login, logout };
+  const mustChangePassword = computed(() => {
+    return user.value?.user_metadata?.must_change_password === true;
+  });
+
+  async function clearForceReset() {
+    await $supabase.auth.updateUser({
+      data: { must_change_password: false },
+    });
+  }
+
+  return { user, loading, mustChangePassword, init, login, logout, clearForceReset };
 }
