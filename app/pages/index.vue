@@ -2,7 +2,11 @@
   <div class="about-page">
 
     <div v-for="flyer in flyers" :key="flyer.id" class="image-section">
-      <div class="flyer-wrap" :class="{ 'has-event': flyerEvent(flyer) }">
+      <div
+        class="flyer-wrap"
+        :class="{ 'has-event': flyerEvent(flyer), 'overlay-visible': activeFlyerId === flyer.id }"
+        @click="handleFlyerTap(flyer)"
+      >
         <ZoomImage
           v-if="flyerImages[flyer.id]"
           :src="flyerImages[flyer.id]"
@@ -10,11 +14,10 @@
           img-class="event-image"
         />
 
-        <NuxtLink
-          v-if="flyerEvent(flyer)"
-          :to="`/events/${flyerEvent(flyer)!.id}`"
-          class="flyer-event-overlay"
-        >
+        <div v-if="flyerEvent(flyer)" class="flyer-event-overlay">
+          <button class="flyer-overlay-close" @click.stop="activeFlyerId = null">
+            <font-awesome-icon :icon="['fas', 'xmark']" />
+          </button>
           <div class="flyer-event-info">
             <h3 class="flyer-event-heading">{{ flyerEvent(flyer)!.heading }}</h3>
             <div class="flyer-event-chips">
@@ -41,7 +44,7 @@
               <font-awesome-icon :icon="['fas', 'chevron-right']" />
             </span>
           </div>
-        </NuxtLink>
+        </div>
       </div>
       <p v-if="flyer.caption" class="image-caption">{{ flyer.caption }}</p>
     </div>
@@ -106,6 +109,28 @@ function locationText(location: string) {
   const match = location.match(/^(.*?)\s*\[(.+)]$/);
   return match ? match[1].trim() : location;
 }
+
+const activeFlyerId = ref<number | null>(null);
+
+function handleFlyerTap(flyer: Flyer) {
+  const evt = flyerEvent(flyer);
+  if (!evt) return;
+
+  const isTouchDevice = window.matchMedia('(hover: none)').matches;
+
+  if (isTouchDevice) {
+    // Mobile: first tap shows overlay, second tap navigates
+    if (activeFlyerId.value === flyer.id) {
+      activeFlyerId.value = null;
+      navigateTo(`/events/${evt.id}`);
+    } else {
+      activeFlyerId.value = flyer.id;
+    }
+  } else {
+    // Desktop: click navigates (overlay already visible via hover)
+    navigateTo(`/events/${evt.id}`);
+  }
+}
 </script>
 
 <style scoped>
@@ -143,6 +168,10 @@ function locationText(location: string) {
   overflow: hidden;
 }
 
+.flyer-wrap.has-event {
+  cursor: pointer;
+}
+
 .flyer-event-overlay {
   position: absolute;
   inset: 0;
@@ -158,8 +187,38 @@ function locationText(location: string) {
   transition: opacity 0.3s ease;
 }
 
-.flyer-wrap.has-event:hover .flyer-event-overlay {
+.flyer-wrap.has-event:hover .flyer-event-overlay,
+.flyer-wrap.overlay-visible .flyer-event-overlay {
   opacity: 1;
+}
+
+.flyer-overlay-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: white;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  transition: background 0.2s;
+}
+
+.flyer-overlay-close:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+@media (hover: none) {
+  .flyer-overlay-close {
+    display: flex;
+  }
 }
 
 .flyer-event-info {
@@ -239,7 +298,8 @@ function locationText(location: string) {
   flex-shrink: 0;
 }
 
-.flyer-wrap.has-event:hover .flyer-event-cta:hover {
+.flyer-wrap.has-event:hover .flyer-event-cta:hover,
+.flyer-wrap.overlay-visible .flyer-event-cta {
   background: rgba(37, 99, 235, 0.4);
 }
 
@@ -248,7 +308,8 @@ function locationText(location: string) {
   transition: transform 0.2s;
 }
 
-.flyer-wrap.has-event:hover .flyer-event-cta svg {
+.flyer-wrap.has-event:hover .flyer-event-cta svg,
+.flyer-wrap.overlay-visible .flyer-event-cta svg {
   transform: translateX(3px);
 }
 </style>
