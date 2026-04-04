@@ -21,6 +21,10 @@
         -->
       </nav>
       <div class="admin-sidebar-footer">
+        <NuxtLink to="/admin/change-password" class="admin-nav-link">
+          <font-awesome-icon :icon="['fas', 'key']" />
+          Change Password
+        </NuxtLink>
         <NuxtLink to="/" class="admin-nav-link">
           <font-awesome-icon :icon="['fas', 'arrow-left']" />
           Back to Site

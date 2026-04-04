@@ -26,6 +26,7 @@ import {
   faUserTie,
   faRightFromBracket,
   faArrowLeft,
+  faKey,
 } from '@fortawesome/free-solid-svg-icons'
 import {faFacebook} from '@fortawesome/free-brands-svg-icons'
 
@@ -53,6 +54,7 @@ library.add(
   faUserTie,
   faRightFromBracket,
   faArrowLeft,
+  faKey,
 )
 
 export default defineNuxtPlugin((nuxtApp) => {
