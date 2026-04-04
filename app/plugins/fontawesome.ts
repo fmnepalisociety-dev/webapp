@@ -22,6 +22,10 @@ import {
   faArrowUpRightFromSquare,
   faCircleExclamation,
   faSpinner,
+  faUsers,
+  faUserTie,
+  faRightFromBracket,
+  faArrowLeft,
 } from '@fortawesome/free-solid-svg-icons'
 import {faFacebook} from '@fortawesome/free-brands-svg-icons'
 
@@ -45,6 +49,10 @@ library.add(
   faArrowUpRightFromSquare,
   faCircleExclamation,
   faSpinner,
+  faUsers,
+  faUserTie,
+  faRightFromBracket,
+  faArrowLeft,
 )
 
 export default defineNuxtPlugin((nuxtApp) => {
