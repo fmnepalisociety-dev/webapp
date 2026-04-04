@@ -1,28 +1,38 @@
 <template>
   <div class="login-wrapper">
-    <form class="login-card" @submit.prevent="handleSetPassword">
+    <div class="login-card">
       <h1 class="login-title">Set Your Password</h1>
-      <p class="login-subtitle">Welcome! Please set a password for your admin account.</p>
 
-      <div class="login-field">
-        <label for="password">New Password</label>
-        <input id="password" v-model="password" type="password" required minlength="8"
-          autocomplete="new-password" />
+      <div v-if="!ready && !errorMsg" class="login-subtitle">Verifying invite link...</div>
+
+      <div v-else-if="!ready && errorMsg" style="text-align: center;">
+        <div class="login-error">{{ errorMsg }}</div>
+        <NuxtLink to="/admin/login" class="login-link">Go to login</NuxtLink>
       </div>
 
-      <div class="login-field">
-        <label for="confirm">Confirm Password</label>
-        <input id="confirm" v-model="confirm" type="password" required minlength="8"
-          autocomplete="new-password" />
-      </div>
+      <form v-else @submit.prevent="handleSetPassword">
+        <p class="login-subtitle">Welcome! Please set a password for your admin account.</p>
 
-      <div v-if="errorMsg" class="login-error">{{ errorMsg }}</div>
-      <div v-if="success" class="login-success">Password set! Redirecting to admin...</div>
+        <div class="login-field">
+          <label for="password">New Password</label>
+          <input id="password" v-model="password" type="password" required minlength="8"
+            autocomplete="new-password" />
+        </div>
 
-      <button type="submit" :disabled="submitting || success" class="login-btn">
-        {{ submitting ? 'Setting password...' : 'Set Password' }}
-      </button>
-    </form>
+        <div class="login-field">
+          <label for="confirm">Confirm Password</label>
+          <input id="confirm" v-model="confirm" type="password" required minlength="8"
+            autocomplete="new-password" />
+        </div>
+
+        <div v-if="errorMsg" class="login-error">{{ errorMsg }}</div>
+        <div v-if="success" class="login-success">Password set! Redirecting to admin...</div>
+
+        <button type="submit" :disabled="submitting || success" class="login-btn">
+          {{ submitting ? 'Setting password...' : 'Set Password' }}
+        </button>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -36,6 +46,35 @@ const confirm = ref('');
 const errorMsg = ref('');
 const submitting = ref(false);
 const success = ref(false);
+const ready = ref(false);
+
+// Exchange the token from the URL hash for a session
+onMounted(async () => {
+  const hash = window.location.hash.substring(1);
+  const params = new URLSearchParams(hash);
+  const accessToken = params.get('access_token');
+  const refreshToken = params.get('refresh_token');
+
+  if (accessToken && refreshToken) {
+    const { error } = await $supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+    if (error) {
+      errorMsg.value = 'Invalid or expired invite link. Please request a new invitation.';
+    } else {
+      ready.value = true;
+    }
+  } else {
+    // Maybe already has a session (e.g. page refresh)
+    const { data } = await $supabase.auth.getSession();
+    if (data.session) {
+      ready.value = true;
+    } else {
+      errorMsg.value = 'Invalid invite link. Please request a new invitation.';
+    }
+  }
+});
 
 async function handleSetPassword() {
   errorMsg.value = '';
@@ -157,5 +196,15 @@ async function handleSetPassword() {
 .login-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.login-link {
+  color: #2563eb;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.login-link:hover {
+  text-decoration: underline;
 }
 </style>
