@@ -256,9 +256,10 @@ const closeMenu = () => (isOpen.value = false)
     padding: 0;
     background: linear-gradient(
       135deg,
-      rgba(28, 51, 130, 0.9),
-      rgba(163, 20, 50, 0.8)
+      rgba(28, 51, 130, 0.95),
+      rgba(163, 20, 50, 0.9)
     );
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.35s ease;
@@ -266,12 +267,22 @@ const closeMenu = () => (isOpen.value = false)
   }
 
   .nav-list li {
-    margin: 10px 20px;
+    margin: 0;
   }
 
   .nav-list.open {
     max-height: 90vh;
-    padding: 16px 0;
+    padding: 8px 0;
+  }
+
+  .nav-list > li > a,
+  .nav-parent {
+    display: block;
+    padding: 6px 20px;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    border-radius: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .has-dropdown .dropdown {
@@ -283,10 +294,10 @@ const closeMenu = () => (isOpen.value = false)
     visibility: visible !important;
     pointer-events: auto;
     box-shadow: none;
-    padding-left: 20px; /* indent */
-    margin-bottom: 8px;
+    padding: 0 0 4px;
+    margin: 0;
     border-radius: 0;
-    background: none;
+    background: rgba(0, 0, 0, 0.12);
   }
 
   .dropdown li {
@@ -296,13 +307,15 @@ const closeMenu = () => (isOpen.value = false)
 
   .dropdown a {
     display: block;
-    padding: 8px 12px;
-    color: #fff;
+    padding: 5px 16px 5px 36px;
+    font-size: 0.82rem;
+    line-height: 1.2;
+    color: rgba(255, 255, 255, 0.85);
     text-decoration: none;
   }
 
   .dropdown a:hover {
-    background: rgba(255, 215, 0, 0.2);
+    background: rgba(255, 255, 255, 0.1);
     color: #ffd700;
   }
 }

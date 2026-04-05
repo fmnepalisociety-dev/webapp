@@ -116,7 +116,7 @@ function handleFlyerTap(flyer: Flyer) {
   const evt = flyerEvent(flyer);
   if (!evt) return;
 
-  const isTouchDevice = window.matchMedia('(hover: none)').matches;
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
   if (isTouchDevice) {
     // Mobile: first tap shows overlay, second tap navigates
@@ -204,7 +204,7 @@ function handleFlyerTap(flyer: Flyer) {
   border-radius: 50%;
   font-size: 1.25rem;
   cursor: pointer;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   z-index: 3;
@@ -213,12 +213,6 @@ function handleFlyerTap(flyer: Flyer) {
 
 .flyer-overlay-close:hover {
   background: rgba(0, 0, 0, 0.8);
-}
-
-@media (hover: none) {
-  .flyer-overlay-close {
-    display: flex;
-  }
 }
 
 .flyer-event-info {
