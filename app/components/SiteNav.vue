@@ -90,7 +90,7 @@ const closeMenu = () => (isOpen.value = false)
     rgba(28, 51, 130, 0.95),
     rgba(163, 20, 50, 0.92)
   );
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .nav-inner {
@@ -226,23 +226,24 @@ const closeMenu = () => (isOpen.value = false)
    MOBILE MENU FIXED SUBMENUS
    ========================= */
 @media (max-width: 768px) {
-  /* Make the main nav stack from top */
   .nav-inner {
-    padding: 12px 16px; /* button height included */
+    flex-direction: column;
+    padding: 0;
     position: relative;
   }
 
   .hamburger-container {
     width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 36px 8px 16px;
   }
 
   .hamburger {
     display: block;
-    background: linear-gradient(
-      135deg,
-      rgba(28, 51, 130, 0.9),
-      rgba(163, 20, 50, 0.8)
-    );
+    position: static;
+    padding: 6px;
+    background: none;
   }
 
   .nav-list {
@@ -252,7 +253,7 @@ const closeMenu = () => (isOpen.value = false)
     right: 0;
     flex-direction: column;
     gap: 0;
-    padding: 16px 0;
+    padding: 0;
     background: linear-gradient(
       135deg,
       rgba(28, 51, 130, 0.9),
@@ -270,7 +271,7 @@ const closeMenu = () => (isOpen.value = false)
 
   .nav-list.open {
     max-height: 90vh;
-    display: block;
+    padding: 16px 0;
   }
 
   .has-dropdown .dropdown {
