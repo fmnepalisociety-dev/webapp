@@ -22,6 +22,8 @@
       <p>Phone: (605) 592-6858</p>
     </div>
   </section>
+
+  <OfficialBanner />
 </template>
 <script lang="ts" setup>
 </script>

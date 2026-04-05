@@ -28,7 +28,9 @@
       <p class="signature">Join us as we celebrate our culture, engage with our community, and create a meaningful
         journey together.</p>
     </div>
+
   </div>
+  <OfficialBanner />
 </template>
 
 <script lang="ts" setup>

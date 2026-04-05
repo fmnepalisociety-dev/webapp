@@ -31,7 +31,9 @@
 
       <p class="signature">Sincerely,<br>Shyam Kandel</p>
     </div>
+
   </div>
+  <OfficialBanner />
 </template>
 
 <script lang="ts" setup>

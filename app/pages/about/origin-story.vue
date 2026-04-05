@@ -67,6 +67,8 @@
       Khanal (Event Coordinator), Sabina Dahal, Abhishek Giri, Sujan Khanal, Bhagawati Rijal Sapkota (Executive
       Members).</p>
   </div>
+
+  <OfficialBanner />
 </template>
 
 <script lang="ts" setup>

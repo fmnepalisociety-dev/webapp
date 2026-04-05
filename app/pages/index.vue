@@ -72,6 +72,8 @@
         neighbors, friends, and the wider Fargo-Moorhead community.
       </p>
     </div>
+
+    <OfficialBanner />
   </div>
 </template>
 
