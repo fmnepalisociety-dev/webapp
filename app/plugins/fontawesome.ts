@@ -27,6 +27,9 @@ import {
   faRightFromBracket,
   faArrowLeft,
   faKey,
+  faMagnifyingGlass,
+  faPrint,
+  faCamera,
 } from '@fortawesome/free-solid-svg-icons'
 import {faFacebook} from '@fortawesome/free-brands-svg-icons'
 
@@ -55,6 +58,9 @@ library.add(
   faRightFromBracket,
   faArrowLeft,
   faKey,
+  faMagnifyingGlass,
+  faPrint,
+  faCamera,
 )
 
 export default defineNuxtPlugin((nuxtApp) => {

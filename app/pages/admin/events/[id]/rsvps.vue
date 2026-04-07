@@ -21,11 +21,32 @@
 
       <div v-if="!rsvps.length" class="admin-empty">No RSVPs yet for this event.</div>
 
+      <!-- Search -->
+      <div v-if="rsvps.length" class="search-bar">
+        <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="search-icon" />
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search RSVPs..."
+          class="search-input"
+        />
+      </div>
+
       <!-- Totals summary -->
-      <div v-if="rsvps.length && totalCards.length" class="totals-bar">
+      <div v-if="rsvps.length" class="totals-bar">
+        <div class="total-card">
+          <span class="total-label">Entries</span>
+          <span class="total-value">
+            {{ filteredRsvps.length }}
+            <span v-if="isFiltered" class="total-of">/ {{ rsvps.length }}</span>
+          </span>
+        </div>
         <div class="total-card" v-for="t in totalCards" :key="t.key">
           <span class="total-label">{{ t.label }}</span>
-          <span class="total-value">{{ t.value }}</span>
+          <span class="total-value">
+            {{ t.filtered }}
+            <span v-if="isFiltered" class="total-of">/ {{ t.total }}</span>
+          </span>
         </div>
       </div>
 
@@ -39,10 +60,13 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(rsvp, idx) in rsvps" :key="rsvp.id">
+            <tr v-for="(rsvp, idx) in filteredRsvps" :key="rsvp.id">
               <td>{{ idx + 1 }}</td>
               <td v-for="col in columns" :key="col">{{ displayValue(rsvp.responses[col]) }}</td>
               <td>{{ formatDate(rsvp.created_at) }}</td>
+            </tr>
+            <tr v-if="!filteredRsvps.length">
+              <td :colspan="columns.length + 2" class="admin-empty">No results match your search.</td>
             </tr>
           </tbody>
         </table>
@@ -67,6 +91,7 @@ const loading = ref(true);
 const event = ref<any>(null);
 const rsvps = ref<any[]>([]);
 const columns = ref<string[]>([]);
+const searchQuery = ref('');
 
 onMounted(async () => {
   // Load event details
@@ -98,16 +123,34 @@ onMounted(async () => {
   loading.value = false;
 });
 
+const filteredRsvps = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return rsvps.value;
+  return rsvps.value.filter((r) => {
+    if (!r.responses || typeof r.responses !== 'object') return false;
+    return Object.values(r.responses).some(
+      (val) => val != null && String(val).toLowerCase().includes(q)
+    );
+  });
+});
+
+function sumField(list: any[], key: string): number {
+  return list.reduce((sum, r) => {
+    const val = parseFloat(r.responses?.[key]);
+    return sum + (isNaN(val) ? 0 : val);
+  }, 0);
+}
+
+const isFiltered = computed(() => filteredRsvps.value.length !== rsvps.value.length);
+
 const totalCards = computed(() => {
   const rsvpConfig = event.value?.rsvp as RsvpConfig | undefined;
   if (!rsvpConfig?.totals?.length) return [];
   return rsvpConfig.totals.map((t) => ({
     key: t.key,
     label: t.label,
-    value: rsvps.value.reduce((sum, r) => {
-      const val = parseFloat(r.responses?.[t.key]);
-      return sum + (isNaN(val) ? 0 : val);
-    }, 0),
+    filtered: sumField(filteredRsvps.value, t.key),
+    total: sumField(rsvps.value, t.key),
   }));
 });
 
@@ -262,6 +305,39 @@ function downloadCsv() {
   color: #334155;
 }
 
+.search-bar {
+  position: relative;
+  margin-bottom: 1rem;
+  max-width: 20rem;
+  margin-left: auto;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.4rem;
+  font-size: 0.9rem;
+  background: white;
+  transition: border-color 0.15s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
 .totals-bar {
   display: flex;
   gap: 1rem;
@@ -293,5 +369,11 @@ function downloadCsv() {
   font-weight: 700;
   color: #1e293b;
   margin-top: 0.15rem;
+}
+
+.total-of {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #94a3b8;
 }
 </style>
