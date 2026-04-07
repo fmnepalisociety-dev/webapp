@@ -55,7 +55,19 @@
           <thead>
             <tr>
               <th>#</th>
-              <th v-for="col in columns" :key="col">{{ formatHeader(col) }}</th>
+              <th v-for="col in columns" :key="col">
+                {{ formatHeader(col) }}
+                <div v-if="filterMap[col]" class="th-filter-row">
+                  <select
+                    v-model="activeFilters[col]"
+                    class="th-filter"
+                    :class="{ 'th-filter--active': activeFilters[col] }"
+                  >
+                    <option value="">All</option>
+                    <option v-for="opt in filterMap[col]" :key="opt" :value="opt">{{ opt }}</option>
+                  </select>
+                </div>
+              </th>
               <th>Submitted</th>
             </tr>
           </thead>
@@ -66,7 +78,7 @@
               <td>{{ formatDate(rsvp.created_at) }}</td>
             </tr>
             <tr v-if="!filteredRsvps.length">
-              <td :colspan="columns.length + 2" class="admin-empty">No results match your search.</td>
+              <td :colspan="columns.length + 2" class="admin-empty">No results match your search/filters.</td>
             </tr>
           </tbody>
         </table>
@@ -92,6 +104,7 @@ const event = ref<any>(null);
 const rsvps = ref<any[]>([]);
 const columns = ref<string[]>([]);
 const searchQuery = ref('');
+const activeFilters = reactive<Record<string, string>>({});
 
 onMounted(async () => {
   // Load event details
@@ -123,15 +136,51 @@ onMounted(async () => {
   loading.value = false;
 });
 
+const filterMap = computed(() => {
+  const rsvpConfig = event.value?.rsvp as RsvpConfig | undefined;
+  if (!rsvpConfig?.filters?.length) return {} as Record<string, string[]>;
+  const map: Record<string, string[]> = {};
+  for (const f of rsvpConfig.filters) {
+    const optSet = new Set<string>();
+    for (const r of rsvps.value) {
+      const val = r.responses?.[f.key];
+      if (val != null && val !== '') {
+        optSet.add(typeof val === 'boolean' ? (val ? 'Yes' : 'No') : String(val));
+      }
+    }
+    map[f.key] = Array.from(optSet).sort();
+  }
+  return map;
+});
+
 const filteredRsvps = computed(() => {
+  let result = rsvps.value;
+
+  // Apply dropdown filters
+  for (const key of Object.keys(activeFilters)) {
+    const filterVal = activeFilters[key];
+    if (!filterVal) continue;
+    result = result.filter((r) => {
+      const val = r.responses?.[key];
+      const display = val == null || val === '' ? '-'
+        : typeof val === 'boolean' ? (val ? 'Yes' : 'No')
+        : String(val);
+      return display === filterVal;
+    });
+  }
+
+  // Apply search
   const q = searchQuery.value.trim().toLowerCase();
-  if (!q) return rsvps.value;
-  return rsvps.value.filter((r) => {
-    if (!r.responses || typeof r.responses !== 'object') return false;
-    return Object.values(r.responses).some(
-      (val) => val != null && String(val).toLowerCase().includes(q)
-    );
-  });
+  if (q) {
+    result = result.filter((r) => {
+      if (!r.responses || typeof r.responses !== 'object') return false;
+      return Object.values(r.responses).some(
+        (val) => val != null && String(val).toLowerCase().includes(q)
+      );
+    });
+  }
+
+  return result;
 });
 
 function sumField(list: any[], key: string): number {
@@ -288,14 +337,15 @@ function downloadCsv() {
 
 .admin-table th {
   text-align: left;
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 0.75rem;
   background: #f1f5f9;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #475569;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   white-space: nowrap;
+  vertical-align: top;
 }
 
 .admin-table td {
@@ -305,11 +355,41 @@ function downloadCsv() {
   color: #334155;
 }
 
+.th-filter-row {
+  margin-top: 0.3rem;
+}
+
+.th-filter {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.15rem 0.3rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #64748b;
+  background: white;
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.th-filter:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.th-filter--active {
+  border-color: #2563eb;
+  color: #1e40af;
+  background: #eff6ff;
+}
+
 .search-bar {
   position: relative;
-  margin-bottom: 1rem;
   max-width: 20rem;
   margin-left: auto;
+  margin-bottom: 1rem;
 }
 
 .search-icon {

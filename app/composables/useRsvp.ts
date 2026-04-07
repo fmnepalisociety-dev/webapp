@@ -20,12 +20,18 @@ export interface RsvpTotalField {
   label: string;
 }
 
+export interface RsvpFilterField {
+  key: string;
+  label: string;
+}
+
 export interface RsvpConfig {
   active: boolean;
   start_date?: string;
   close_date?: string;
   fields: RsvpFieldOrSection[];
   totals?: RsvpTotalField[];
+  filters?: RsvpFilterField[];
 }
 
 export function isSection(item: RsvpFieldOrSection): item is RsvpSection {
