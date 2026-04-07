@@ -10,13 +10,59 @@
       </NuxtLink>
     </div>
 
-    <div v-else-if="submitted" class="text-center py-12">
-      <font-awesome-icon :icon="['fas', 'circle-check']" class="text-green-500 text-5xl mb-4" />
-      <h1 class="text-2xl font-bold text-green-700 mb-2">Thank You!</h1>
-      <p class="text-gray-600">Your RSVP has been submitted successfully.</p>
-      <NuxtLink to="/events" class="text-blue-600 hover:underline mt-4 inline-block">
-        Back to Events
-      </NuxtLink>
+    <div v-else-if="submitted" class="confirmation" ref="confirmationRef">
+      <div class="confirmation-header">
+        <h1 class="confirmation-title">Thank You!</h1>
+        <p class="confirmation-subtitle">
+          You have successfully registered for <strong>{{ event?.heading ?? 'the event' }}</strong>.
+        </p>
+      </div>
+
+      <!-- Event Details -->
+      <div v-if="event" class="confirmation-event">
+        <table class="event-info-table">
+          <tr v-if="event.event_date">
+            <td class="event-info-label">Date</td>
+            <td class="event-info-value">{{ event.event_date }}</td>
+          </tr>
+          <tr v-if="event.event_time">
+            <td class="event-info-label">Time</td>
+            <td class="event-info-value">{{ event.event_time }}</td>
+          </tr>
+          <tr v-if="event.event_location">
+            <td class="event-info-label">Location</td>
+            <td class="event-info-value">{{ parseLocation(event.event_location).text }}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- RSVP Details -->
+      <div class="confirmation-details">
+        <h3 class="confirmation-details-title">Your RSVP Details</h3>
+        <table class="details-table">
+          <tr v-for="field in submittedFields" :key="field.key">
+            <td class="details-label">{{ field.label }}</td>
+            <td class="details-value">{{ field.value }}</td>
+          </tr>
+        </table>
+      </div>
+
+      <p class="confirmation-closing">We look forward to seeing you!</p>
+
+      <!-- Print / Screenshot prompt -->
+      <div class="confirmation-actions no-print">
+        <p class="save-hint">
+          <font-awesome-icon :icon="['fas', 'camera']" />
+          Please print or take a screenshot of this confirmation for your records.
+        </p>
+        <button class="print-btn" @click="printConfirmation">
+          <font-awesome-icon :icon="['fas', 'print']" />
+          Print Confirmation
+        </button>
+        <NuxtLink to="/events" class="back-link">
+          Back to Events
+        </NuxtLink>
+      </div>
     </div>
 
     <div v-else>
@@ -71,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, nextTick } from 'vue';
+import { ref, reactive, computed, nextTick } from 'vue';
 import {
   submitRsvp,
   flatFields,
@@ -91,10 +137,12 @@ const submitted = ref(false);
 const submitting = ref(false);
 const errorMsg = ref('');
 const errorRef = ref<HTMLElement | null>(null);
+const confirmationRef = ref<HTMLElement | null>(null);
 const fieldErrors = reactive<Record<string, string>>({});
 const rsvpConfig = ref<RsvpConfig | null>(null);
 const event = ref<any>(null);
 const formData = reactive<Record<string, any>>({});
+const submittedData = ref<Record<string, any>>({});
 
 const allEvents = await getEvents();
 event.value = allEvents.find((e: any) => e.id === eventId) ?? null;
@@ -110,6 +158,30 @@ if (event.value?.rsvp && isRsvpOpen(event.value.rsvp)) {
 }
 
 loading.value = false;
+
+function parseLocation(loc: string) {
+  const match = loc.match(/^(.*?)\s*\[(.+)]$/);
+  return { text: match ? match[1].trim() : loc, url: match ? match[2].trim() : null };
+}
+
+const submittedFields = computed(() => {
+  if (!rsvpConfig.value) return [];
+  return flatFields(rsvpConfig.value.fields)
+    .filter(isEditableField)
+    .filter((f) => {
+      const val = submittedData.value[f.key];
+      return val !== undefined && val !== '' && val !== null;
+    })
+    .map((f) => ({
+      key: f.key,
+      label: f.label,
+      value: f.type === 'checkbox' ? (submittedData.value[f.key] ? 'Yes' : 'No') : submittedData.value[f.key],
+    }));
+});
+
+function printConfirmation() {
+  window.print();
+}
 
 function validate(): boolean {
   if (!rsvpConfig.value) return false;
@@ -164,7 +236,9 @@ async function handleSubmit() {
 
   submitting.value = true;
   try {
-    await submitRsvp(eventId, { ...formData });
+    const snapshot = { ...formData };
+    await submitRsvp(eventId, snapshot);
+    submittedData.value = snapshot;
     submitted.value = true;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch (e: any) {
@@ -270,5 +344,162 @@ provide('fieldErrors', fieldErrors);
   color: #dc2626;
   font-size: 0.9rem;
   font-weight: 500;
+}
+
+/* Confirmation styles */
+.confirmation {
+  padding: 1.5rem 0;
+}
+
+.confirmation-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.confirmation-icon {
+  font-size: 3rem;
+  color: #22c55e;
+  margin-bottom: 0.75rem;
+}
+
+.confirmation-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #15803d;
+  margin: 0 0 0.5rem;
+}
+
+.confirmation-subtitle {
+  color: #374151;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.confirmation-event {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.event-info-table {
+  border-collapse: collapse;
+}
+
+.event-info-label {
+  padding: 0.35rem 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+  width: 5rem;
+}
+
+.event-info-value {
+  padding: 0.35rem 0;
+  color: #1e3a5f;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.confirmation-details {
+  margin-bottom: 1.5rem;
+}
+
+.confirmation-details-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 0 0 0.5rem;
+}
+
+.details-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.details-label {
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  width: 40%;
+  font-size: 0.9rem;
+}
+
+.details-value {
+  padding: 0.5rem 0.75rem;
+  color: #1e3a5f;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.9rem;
+}
+
+.confirmation-closing {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin: 0 0 1.5rem;
+}
+
+.confirmation-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.save-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin: 0;
+  text-align: center;
+}
+
+.print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  background-color: #0033a0;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.print-btn:hover {
+  background-color: #002080;
+}
+
+.back-link {
+  color: #2563eb;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .rsvp-page {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .confirmation {
+    padding: 0;
+  }
 }
 </style>
