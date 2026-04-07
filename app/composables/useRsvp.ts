@@ -15,11 +15,17 @@ export interface RsvpSection {
 
 export type RsvpFieldOrSection = RsvpField | RsvpSection;
 
+export interface RsvpTotalField {
+  key: string;
+  label: string;
+}
+
 export interface RsvpConfig {
   active: boolean;
   start_date?: string;
   close_date?: string;
   fields: RsvpFieldOrSection[];
+  totals?: RsvpTotalField[];
 }
 
 export function isSection(item: RsvpFieldOrSection): item is RsvpSection {

@@ -21,7 +21,15 @@
 
       <div v-if="!rsvps.length" class="admin-empty">No RSVPs yet for this event.</div>
 
-      <div v-else class="rsvps-table-wrapper">
+      <!-- Totals summary -->
+      <div v-if="rsvps.length && totalCards.length" class="totals-bar">
+        <div class="total-card" v-for="t in totalCards" :key="t.key">
+          <span class="total-label">{{ t.label }}</span>
+          <span class="total-value">{{ t.value }}</span>
+        </div>
+      </div>
+
+      <div v-if="rsvps.length" class="rsvps-table-wrapper">
         <table class="admin-table">
           <thead>
             <tr>
@@ -47,6 +55,7 @@
 
 <script setup lang="ts">
 import { getEvents } from '~/composables/useEvents';
+import type { RsvpConfig } from '~/composables/useRsvp';
 
 definePageMeta({ layout: 'admin', middleware: 'auth' });
 
@@ -87,6 +96,19 @@ onMounted(async () => {
   columns.value = Array.from(colSet);
 
   loading.value = false;
+});
+
+const totalCards = computed(() => {
+  const rsvpConfig = event.value?.rsvp as RsvpConfig | undefined;
+  if (!rsvpConfig?.totals?.length) return [];
+  return rsvpConfig.totals.map((t) => ({
+    key: t.key,
+    label: t.label,
+    value: rsvps.value.reduce((sum, r) => {
+      const val = parseFloat(r.responses?.[t.key]);
+      return sum + (isNaN(val) ? 0 : val);
+    }, 0),
+  }));
 });
 
 function formatHeader(key: string): string {
@@ -238,5 +260,38 @@ function downloadCsv() {
   border-top: 1px solid #e2e8f0;
   font-size: 0.9rem;
   color: #334155;
+}
+
+.totals-bar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.total-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 1.25rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  min-width: 7rem;
+}
+
+.total-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.total-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 0.15rem;
 }
 </style>
