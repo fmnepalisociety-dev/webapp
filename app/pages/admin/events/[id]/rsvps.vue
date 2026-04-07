@@ -21,17 +21,6 @@
 
       <div v-if="!rsvps.length" class="admin-empty">No RSVPs yet for this event.</div>
 
-      <!-- Search -->
-      <div v-if="rsvps.length" class="search-bar">
-        <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="search-icon" />
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Search RSVPs..."
-          class="search-input"
-        />
-      </div>
-
       <!-- Totals summary -->
       <div v-if="rsvps.length" class="totals-bar">
         <div class="total-card">
@@ -47,6 +36,23 @@
             {{ t.filtered }}
             <span v-if="isFiltered" class="total-of">/ {{ t.total }}</span>
           </span>
+        </div>
+      </div>
+
+      <!-- Search + Reset -->
+      <div v-if="rsvps.length" class="table-toolbar">
+        <button v-if="isFiltered" class="clear-btn" @click="resetFilters">
+          <font-awesome-icon :icon="['fas', 'xmark']" />
+          Clear Filters
+        </button>
+        <div class="search-bar">
+          <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="search-icon" />
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search RSVPs..."
+            class="search-input"
+          />
         </div>
       </div>
 
@@ -133,6 +139,14 @@ onMounted(async () => {
   }
   columns.value = Array.from(colSet);
 
+  // Initialize filter keys so selects default to "All"
+  const rsvpConfig = event.value?.rsvp as RsvpConfig | undefined;
+  if (rsvpConfig?.filters) {
+    for (const f of rsvpConfig.filters) {
+      activeFilters[f.key] = '';
+    }
+  }
+
   loading.value = false;
 });
 
@@ -191,6 +205,13 @@ function sumField(list: any[], key: string): number {
 }
 
 const isFiltered = computed(() => filteredRsvps.value.length !== rsvps.value.length);
+
+function resetFilters() {
+  searchQuery.value = '';
+  for (const key of Object.keys(activeFilters)) {
+    activeFilters[key] = '';
+  }
+}
 
 const totalCards = computed(() => {
   const rsvpConfig = event.value?.rsvp as RsvpConfig | undefined;
@@ -385,11 +406,37 @@ function downloadCsv() {
   background: #eff6ff;
 }
 
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.clear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.75rem;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.clear-btn:hover {
+  background: #fecaca;
+}
+
 .search-bar {
   position: relative;
-  max-width: 20rem;
-  margin-left: auto;
-  margin-bottom: 1rem;
+  width: 16rem;
 }
 
 .search-icon {
