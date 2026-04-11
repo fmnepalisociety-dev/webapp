@@ -18,6 +18,12 @@
             NSFM - Nepali Society (Facebook)
           </a>
         </div>
+        <div class="footer-link-row">
+          <FontAwesomeIcon :icon="['fab','youtube']"/>
+          <a href="https://www.youtube.com/@NepaliSocietyFM" target="_blank">
+            Nepali Society FM (YouTube)
+          </a>
+        </div>
       </section>
 
       <div class="footer-right">
@@ -62,18 +68,35 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
   gap: 10px;
 }
 
-.footer-link-row i {
+.footer-link-row svg {
   width: 20px;
   text-align: center;
   font-size: 1.1em;
+  transition: color 0.2s;
 }
 
-.footer-link-row:hover i {
+.footer-link-row:hover svg[data-icon="globe"] {
   color: #ffd700;
+}
+
+.footer-link-row:hover svg[data-icon="envelope"] {
+  color: #ffd700;
+}
+
+.footer-link-row:hover svg[data-icon="facebook"] {
+  color: #1877f2;
+}
+
+.footer-link-row:hover svg[data-icon="youtube"] {
+  color: #ff0000;
 }
 
 footer a {
   color: white;
+  text-decoration: none;
+}
+
+footer a:hover {
   text-decoration: underline;
 }
 

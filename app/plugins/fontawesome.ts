@@ -31,12 +31,13 @@ import {
   faPrint,
   faCamera,
 } from '@fortawesome/free-solid-svg-icons'
-import {faFacebook} from '@fortawesome/free-brands-svg-icons'
+import {faFacebook, faYoutube} from '@fortawesome/free-brands-svg-icons'
 
 library.add(
   faGlobe,
   faEnvelope,
   faFacebook,
+  faYoutube,
   faCalendarDays,
   faClock,
   faLocationDot,
