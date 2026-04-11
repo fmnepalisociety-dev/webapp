@@ -1,38 +1,42 @@
 <template>
-  <main class="p-6 max-w-5xl mx-auto">
-    <h1 class="text-2xl font-bold mb-6 text-gray-800">Members</h1>
+  <main class="members-page">
+    <div class="members-header">
+      <h1 class="members-title">Members</h1>
+      <span class="members-count">{{ filteredMembers.length }} members</span>
+    </div>
 
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-      <!-- Table -->
-      <table class="w-full">
-        <thead class="bg-gray-50 border-b border-gray-200">
+    <div class="members-search">
+      <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="search-icon" />
+      <input
+        v-model="search"
+        type="text"
+        placeholder="Search members..."
+        class="search-input"
+      />
+      <button v-if="search" class="search-clear" @click="search = ''">
+        <font-awesome-icon :icon="['fas', 'xmark']" />
+      </button>
+    </div>
+
+    <div class="members-table-wrap">
+      <table class="members-table">
+        <thead>
           <tr>
-            <th class="px-24 py-6 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-              #
-            </th>
-            <th class="px-24 py-6 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-              Membership ID
-            </th>
-            <th class="px-24 py-6 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-              Name
-            </th>
+            <th class="col-num">#</th>
+            <th class="col-id">Membership ID</th>
+            <th class="col-name">Name</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-100">
-          <tr
-            v-for="(m, index) in members"
-            :key="m.id"
-            class="hover:bg-gray-50 transition-colors"
-          >
-            <td class="px-24 py-6 text-center text-sm text-gray-500">
-              {{ index + 1 }}
+        <tbody>
+          <tr v-for="(m, index) in filteredMembers" :key="m.id">
+            <td class="col-num">{{ index + 1 }}</td>
+            <td class="col-id">
+              <span class="id-badge">{{ m.membership_id || 'N/A' }}</span>
             </td>
-            <td class="px-24 py-6 text-center text-sm text-gray-600 font-mono">
-              {{ m.membership_id || 'N/A' }}
-            </td>
-            <td class="px-24 py-6 text-left text-sm text-gray-800 font-medium">
-              {{ formatName(m.firstname) }} {{ formatName(m.lastname) }}
-            </td>
+            <td class="col-name">{{ formatName(m.firstname) }} {{ formatName(m.lastname) }}</td>
+          </tr>
+          <tr v-if="filteredMembers.length === 0">
+            <td colspan="3" class="no-results">No members found</td>
           </tr>
         </tbody>
       </table>
@@ -41,32 +45,35 @@
 </template>
 
 <script setup>
-import {getMembers} from "~/composables/useMembers.js";
+import { ref, computed } from 'vue';
+import { getMembers } from '~/composables/useMembers.js';
 
 const members = await getMembers();
+const search = ref('');
+
+const filteredMembers = computed(() => {
+  if (!search.value.trim()) return members;
+  const q = search.value.toLowerCase();
+  return members.filter((m) => {
+    const name = `${m.firstname ?? ''} ${m.lastname ?? ''}`.toLowerCase();
+    const id = (m.membership_id ?? '').toLowerCase();
+    return name.includes(q) || id.includes(q);
+  });
+});
 
 const formatName = (value) => {
-  if (!value) return "";
-
+  if (!value) return '';
   return value
     .split(/\s+/)
-    .map(word => {
+    .map((word) => {
       if (!word) return '';
-
-      // If word has any uppercase letters, check if they're intentional
       const hasUppercase = /[A-Z]/.test(word);
       if (hasUppercase) {
-        // If all uppercase (like KC, USA), keep it
-        if (word === word.toUpperCase()) {
-          return word;
-        }
-        // If has capital letters after the first position (like McDonald, O'Brien, kC), preserve it
+        if (word === word.toUpperCase()) return word;
         if (word.slice(1) !== word.slice(1).toLowerCase()) {
           return word.charAt(0).toUpperCase() + word.slice(1);
         }
       }
-
-      // Otherwise, capitalize first letter only
       return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     })
     .join(' ');
@@ -74,8 +81,172 @@ const formatName = (value) => {
 </script>
 
 <style scoped>
-body {
-  background-color: #f9fafb;
-  font-family: system-ui, sans-serif;
+.members-page {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.members-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.members-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 0;
+}
+
+.members-count {
+  font-size: 0.82rem;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 0.2rem 0.6rem;
+  border-radius: 1rem;
+}
+
+/* Search */
+.members-search {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: 0.8rem;
+}
+
+.search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.55rem 2rem 0.55rem 2.25rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  transition: border-color 0.15s;
+  background: #fff;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.search-clear {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.search-clear:hover {
+  color: #374151;
+}
+
+/* Table */
+.members-table-wrap {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.members-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.members-table thead {
+  background: #f8fafc;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.members-table th {
+  padding: 0.65rem 1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.members-table td {
+  padding: 0.55rem 1rem;
+  font-size: 0.88rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.members-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.members-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.col-num {
+  text-align: center;
+  width: 3rem;
+  color: #9ca3af;
+}
+
+.col-id {
+  text-align: center;
+  width: 8rem;
+}
+
+.col-name {
+  text-align: left;
+  color: #1e3a5f;
+  font-weight: 500;
+}
+
+.id-badge {
+  display: inline-block;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.no-results {
+  text-align: center;
+  color: #9ca3af;
+  padding: 2rem 1rem !important;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 480px) {
+  .members-page {
+    padding: 1rem;
+  }
+
+  .members-table th,
+  .members-table td {
+    padding: 0.45rem 0.6rem;
+  }
+
+  .col-id {
+    width: auto;
+  }
 }
 </style>
