@@ -80,7 +80,12 @@
           <tbody>
             <tr v-for="(rsvp, idx) in filteredRsvps" :key="rsvp.id">
               <td>{{ idx + 1 }}</td>
-              <td v-for="col in columns" :key="col">{{ displayValue(rsvp.responses[col]) }}</td>
+              <td
+                v-for="(col, colIdx) in columns"
+                :key="col"
+                :style="colIdx === 0 ? { cursor: 'default', userSelect: 'none' } : {}"
+                @click="colIdx === 0 && handleSecretTap(rsvp)"
+              >{{ displayValue(rsvp.responses[col]) }}</td>
               <td>{{ formatDate(rsvp.created_at) }}</td>
             </tr>
             <tr v-if="!filteredRsvps.length">
@@ -89,6 +94,40 @@
           </tbody>
         </table>
       </div>
+      <!-- Edit modal -->
+      <Teleport to="body">
+        <div v-if="editingRsvp" class="modal-overlay" @click.self="closeEdit">
+          <div class="modal">
+            <div class="modal-header">
+              <h2 class="modal-title">Edit RSVP</h2>
+              <button class="modal-close" @click="closeEdit">
+                <font-awesome-icon :icon="['fas', 'xmark']" />
+              </button>
+            </div>
+            <form class="modal-body" @submit.prevent="saveEdit">
+              <div class="modal-field" v-for="col in columns" :key="col">
+                <label class="modal-label">{{ formatHeader(col) }}</label>
+                <textarea
+                  v-if="isLongText(editForm[col])"
+                  v-model="editForm[col]"
+                  class="modal-input"
+                  rows="3"
+                />
+                <input v-else v-model="editForm[col]" class="modal-input" />
+              </div>
+              <div class="modal-actions">
+                <button type="button" class="modal-btn modal-btn--cancel" @click="closeEdit">
+                  Cancel
+                </button>
+                <button type="submit" class="modal-btn modal-btn--save" :disabled="saving">
+                  {{ saving ? 'Saving...' : 'Save' }}
+                </button>
+              </div>
+              <p v-if="editError" class="modal-error">{{ editError }}</p>
+            </form>
+          </div>
+        </div>
+      </Teleport>
     </template>
 
     <div v-else class="admin-empty">Event not found.</div>
@@ -149,6 +188,99 @@ onMounted(async () => {
 
   loading.value = false;
 });
+
+// Secret tap to edit
+const tapState = reactive<{ rsvpId: string | null; count: number; timer: ReturnType<typeof setTimeout> | null }>({
+  rsvpId: null,
+  count: 0,
+  timer: null,
+});
+
+function handleSecretTap(rsvp: any) {
+  if (tapState.rsvpId !== rsvp.id) {
+    // Different row — reset
+    if (tapState.timer) clearTimeout(tapState.timer);
+    tapState.rsvpId = rsvp.id;
+    tapState.count = 1;
+  } else {
+    tapState.count++;
+  }
+
+  // Reset timer on each tap
+  if (tapState.timer) clearTimeout(tapState.timer);
+  tapState.timer = setTimeout(() => {
+    tapState.rsvpId = null;
+    tapState.count = 0;
+  }, 10000);
+
+  if (tapState.count >= 10) {
+    if (tapState.timer) clearTimeout(tapState.timer);
+    tapState.rsvpId = null;
+    tapState.count = 0;
+    openEdit(rsvp);
+  }
+}
+
+// Edit modal state
+const editingRsvp = ref<any>(null);
+const editForm = reactive<Record<string, string>>({});
+const saving = ref(false);
+const editError = ref('');
+
+function openEdit(rsvp: any) {
+  editingRsvp.value = rsvp;
+  editError.value = '';
+  // Populate form with current response values
+  for (const col of columns.value) {
+    editForm[col] = rsvp.responses?.[col] ?? '';
+  }
+}
+
+function closeEdit() {
+  editingRsvp.value = null;
+}
+
+function isLongText(val: unknown): boolean {
+  return typeof val === 'string' && val.length > 80;
+}
+
+async function saveEdit() {
+  if (!editingRsvp.value) return;
+  saving.value = true;
+  editError.value = '';
+
+  const updatedResponses: Record<string, unknown> = {};
+  for (const col of columns.value) {
+    const original = editingRsvp.value.responses?.[col];
+    const edited = editForm[col];
+    // Preserve original types (number, boolean)
+    if (typeof original === 'number') {
+      const num = parseFloat(edited);
+      updatedResponses[col] = isNaN(num) ? edited : num;
+    } else if (typeof original === 'boolean') {
+      updatedResponses[col] = edited === 'true' || edited === 'Yes';
+    } else {
+      updatedResponses[col] = edited;
+    }
+  }
+
+  const { error } = await $supabase
+    .from('event_rsvps')
+    .update({ responses: updatedResponses })
+    .eq('id', editingRsvp.value.id);
+
+  if (error) {
+    console.error('[admin:rsvps:edit]', error);
+    editError.value = 'Failed to save. Please try again.';
+    saving.value = false;
+    return;
+  }
+
+  // Update local data
+  editingRsvp.value.responses = updatedResponses;
+  saving.value = false;
+  closeEdit();
+}
 
 const filterMap = computed(() => {
   const rsvpConfig = event.value?.rsvp as RsvpConfig | undefined;
@@ -502,5 +634,136 @@ function downloadCsv() {
   font-size: 0.9rem;
   font-weight: 500;
   color: #94a3b8;
+}
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 32rem;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.modal-close:hover {
+  color: #475569;
+}
+
+.modal-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+
+.modal-field {
+  margin-bottom: 0.85rem;
+}
+
+.modal-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.3rem;
+}
+
+.modal-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.35rem;
+  font-size: 0.9rem;
+  color: #1e293b;
+  transition: border-color 0.15s;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.modal-btn {
+  padding: 0.5rem 1.1rem;
+  border-radius: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s;
+}
+
+.modal-btn--cancel {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.modal-btn--cancel:hover {
+  background: #e2e8f0;
+}
+
+.modal-btn--save {
+  background: #0033a0;
+  color: white;
+}
+
+.modal-btn--save:hover {
+  background: #002080;
+}
+
+.modal-btn--save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+  text-align: center;
 }
 </style>
