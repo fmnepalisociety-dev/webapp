@@ -29,6 +29,7 @@ export interface RsvpConfig {
   active: boolean;
   start_date?: string;
   close_date?: string;
+  closed_message?: string;
   fields: RsvpFieldOrSection[];
   totals?: RsvpTotalField[];
   filters?: RsvpFilterField[];

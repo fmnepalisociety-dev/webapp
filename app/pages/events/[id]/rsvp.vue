@@ -2,12 +2,21 @@
   <main class="rsvp-page">
     <div v-if="loading" class="text-center text-gray-500 py-12">Loading...</div>
 
-    <div v-else-if="!rsvpConfig" class="text-center py-12">
-      <h1 class="text-2xl font-bold text-gray-700 mb-2">RSVP Not Available</h1>
-      <p class="text-gray-500">RSVP is not open for this event.</p>
-      <NuxtLink to="/events" class="text-blue-600 hover:underline mt-4 inline-block">
-        Back to Events
-      </NuxtLink>
+    <div v-else-if="!rsvpConfig" class="rsvp-closed">
+      <div class="back-link-wrapper">
+        <NuxtLink to="/events" class="back-link">
+          <font-awesome-icon :icon="['fas', 'chevron-left']" />
+          Back to All Events
+        </NuxtLink>
+      </div>
+      <h1 class="rsvp-closed-title">RSVP Closed</h1>
+      <p class="rsvp-closed-message" v-html="closedMessage"></p>
+      <div v-if="event" class="rsvp-closed-links">
+        <NuxtLink :to="`/events/${eventId}`" class="rsvp-closed-link">
+          <font-awesome-icon :icon="['fas', 'circle-info']" />
+          View Event Details
+        </NuxtLink>
+      </div>
     </div>
 
     <div v-else-if="submitted" class="confirmation" ref="confirmationRef">
@@ -147,8 +156,15 @@ const submittedData = ref<Record<string, any>>({});
 const allEvents = await getEvents();
 event.value = allEvents.find((e: any) => e.id === eventId) ?? null;
 
-if (event.value?.rsvp && isRsvpOpen(event.value.rsvp)) {
-  rsvpConfig.value = event.value.rsvp as RsvpConfig;
+const rsvpData = event.value?.rsvp as RsvpConfig | null;
+
+const closedMessage = computed(() => {
+  return rsvpData?.closed_message
+    || 'RSVP is not available for this event at this time. For inquiries, please contact <a href="mailto:fmnepalisociety@gmail.com">fmnepalisociety@gmail.com</a>.';
+});
+
+if (rsvpData && isRsvpOpen(rsvpData)) {
+  rsvpConfig.value = rsvpData;
 
   for (const field of flatFields(rsvpConfig.value.fields)) {
     if (isEditableField(field)) {
@@ -344,6 +360,89 @@ provide('fieldErrors', fieldErrors);
   color: #dc2626;
   font-size: 0.9rem;
   font-weight: 500;
+}
+
+.back-link-wrapper {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid transparent;
+  background: #eff6ff;
+  transition: all 0.15s;
+}
+
+.back-link:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.back-link:active {
+  background: #bfdbfe;
+}
+
+/* RSVP Closed styles */
+.rsvp-closed {
+  text-align: center;
+  padding: 0 1rem 1.5rem;
+}
+
+.rsvp-closed-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 0 0 0.75rem;
+}
+
+.rsvp-closed-message {
+  color: #4b5563;
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+.rsvp-closed-message :deep(a) {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.rsvp-closed-message :deep(a:hover) {
+  text-decoration: underline;
+}
+
+.rsvp-closed-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.rsvp-closed-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #2563eb;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.rsvp-closed-link:hover {
+  text-decoration: underline;
 }
 
 /* Confirmation styles */
