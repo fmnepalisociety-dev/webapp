@@ -58,18 +58,26 @@
     </div>
 
     <!-- Col 3: RSVP -->
-    <div v-if="showRsvp" class="rsvp-col">
-      <NuxtLink :to="`/events/${event.id}/rsvp`" class="btn btn-blue">
-        <font-awesome-icon :icon="['fas', 'circle-check']" />
-        RSVP
-      </NuxtLink>
-      <div class="rsvp-qr" ref="qrContainer">
-        <QrCode :value="rsvpUrl" :size="88" />
-        <span class="rsvp-qr-label">Scan to RSVP</span>
-        <button class="rsvp-qr-download" title="Download QR code" @click="downloadQr">
-          <font-awesome-icon :icon="['fas', 'download']" /> Save QR
-        </button>
-      </div>
+    <div v-if="hasRsvp" class="rsvp-col">
+      <template v-if="rsvpOpen">
+        <NuxtLink :to="`/events/${event.id}/rsvp`" class="btn btn-blue">
+          <font-awesome-icon :icon="['fas', 'circle-check']" />
+          RSVP
+        </NuxtLink>
+        <div class="rsvp-qr" ref="qrContainer">
+          <QrCode :value="rsvpUrl" :size="88" />
+          <span class="rsvp-qr-label">Scan to RSVP</span>
+          <button class="rsvp-qr-download" title="Download QR code" @click="downloadQr">
+            <font-awesome-icon :icon="['fas', 'download']" /> Save QR
+          </button>
+        </div>
+      </template>
+      <template v-else>
+        <NuxtLink :to="`/events/${event.id}/rsvp`" class="rsvp-closed-badge">
+          Sorry,<br>RSVP has ended
+          <span class="rsvp-closed-more">More Info</span>
+        </NuxtLink>
+      </template>
     </div>
 
     <!-- Lightbox overlay -->
@@ -122,7 +130,8 @@ onMounted(async () => {
   }
 });
 
-const showRsvp = computed(() => isRsvpOpen(props.event.rsvp));
+const hasRsvp = computed(() => !!props.event.rsvp);
+const rsvpOpen = computed(() => isRsvpOpen(props.event.rsvp));
 
 const imageUrl = computed(() =>
   props.event.image ? getPublicImageUrl('nsfm', props.event.image) : null
@@ -409,6 +418,39 @@ const locationUrl = computed(() => {
 }
 
 .rsvp-qr-download:hover {
+  text-decoration: underline;
+}
+
+/* ========== RSVP Closed ========== */
+.rsvp-closed-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.rsvp-closed-badge:hover {
+  background: #fee2e2;
+}
+
+.rsvp-closed-more {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #2563eb;
+}
+
+.rsvp-closed-badge:hover .rsvp-closed-more {
   text-decoration: underline;
 }
 
