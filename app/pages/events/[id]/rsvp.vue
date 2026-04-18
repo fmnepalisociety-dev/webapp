@@ -133,6 +133,7 @@ import {
   isEditableField,
   isSection,
   isRsvpOpen,
+  isBeforeStart,
   type RsvpConfig,
 } from '~/composables/useRsvp';
 import { getEvents } from '~/composables/useEvents';
@@ -163,7 +164,13 @@ const closedMessage = computed(() => {
     || 'RSVP is not available for this event at this time. For inquiries, please contact <a href="mailto:fmnepalisociety@gmail.com">fmnepalisociety@gmail.com</a>.';
 });
 
-if (rsvpData && isRsvpOpen(rsvpData)) {
+const overrideKey = route.query.key as string | undefined;
+const hasValidOverride = !!(overrideKey && rsvpData?.override_key && overrideKey === rsvpData.override_key);
+
+// Override bypasses active + close_date, but start_date is still enforced
+const rsvpAllowed = rsvpData && (isRsvpOpen(rsvpData) || (hasValidOverride && !isBeforeStart(rsvpData)));
+
+if (rsvpAllowed) {
   rsvpConfig.value = rsvpData;
 
   for (const field of flatFields(rsvpConfig.value.fields)) {

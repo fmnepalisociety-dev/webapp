@@ -30,6 +30,7 @@ export interface RsvpConfig {
   start_date?: string;
   close_date?: string;
   closed_message?: string;
+  override_key?: string;
   fields: RsvpFieldOrSection[];
   totals?: RsvpTotalField[];
   filters?: RsvpFilterField[];
@@ -61,6 +62,10 @@ export function isRsvpOpen(rsvp?: RsvpConfig | null): boolean {
   if (rsvp.start_date && new Date(rsvp.start_date) > now) return false;
   if (rsvp.close_date && new Date(rsvp.close_date) < now) return false;
   return true;
+}
+
+export function isBeforeStart(rsvp: RsvpConfig): boolean {
+  return !!(rsvp.start_date && new Date(rsvp.start_date) > new Date());
 }
 
 export async function submitRsvp(eventId: string, responses: Record<string, unknown>) {
