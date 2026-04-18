@@ -9,7 +9,7 @@
           Back to All Events
         </NuxtLink>
       </div>
-      <h1 class="rsvp-closed-title">RSVP Closed</h1>
+      <h1 class="rsvp-closed-title">Sorry, RSVP has ended!</h1>
       <p class="rsvp-closed-message" v-html="closedMessage"></p>
       <div v-if="event" class="rsvp-closed-links">
         <NuxtLink :to="`/events/${eventId}`" class="rsvp-closed-link">
