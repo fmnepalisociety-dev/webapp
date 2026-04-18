@@ -20,7 +20,7 @@
         </div>
         <div class="footer-link-row">
           <FontAwesomeIcon :icon="['fab','youtube']"/>
-          <a href="https://www.youtube.com/@NepaliSocietyFM" target="_blank">
+          <a href="https://www.youtube.com/@fmnepalisociety_1" target="_blank">
             Nepali Society FM (YouTube)
           </a>
         </div>
