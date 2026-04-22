@@ -67,28 +67,12 @@
         <div v-if="section.type === 'text' && section.content" class="section-text" v-html="section.content"></div>
       </div>
 
-      <!-- QR Code for sharing -->
-      <div class="share-section">
-        <div class="share-card">
-          <p class="share-label">
-            <font-awesome-icon :icon="['fas', 'share-nodes']" />
-            Share this page
-          </p>
-          <div class="share-qr" ref="qrContainer">
-            <QrCode :value="pageUrl" :size="160" />
-          </div>
-          <p class="share-hint">Scan with your phone camera to open</p>
-          <button class="qr-download" @click="downloadQr">
-            <font-awesome-icon :icon="['fas', 'download']" /> Download QR Code
-          </button>
-        </div>
-      </div>
     </template>
   </main>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { getEvents } from '~/composables/useEvents';
 
 const route = useRoute();
@@ -116,11 +100,6 @@ const sections = computed<InfoSection[]>(() => {
   return event.value.event_info as InfoSection[];
 });
 
-const pageUrl = computed(() => {
-  const base = typeof window !== 'undefined' ? window.location.origin : '';
-  return `${base}/events/${eventId}/info`;
-});
-
 function scrollToSection(idx: number) {
   const el = document.getElementById(`section-${idx}`);
   el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -131,35 +110,6 @@ function parseLocation(loc: string) {
   return { text: match ? match[1].trim() : loc, url: match ? match[2].trim() : null };
 }
 
-const qrContainer = ref<HTMLElement | null>(null);
-
-function downloadQr() {
-  const svg = qrContainer.value?.querySelector('svg');
-  if (!svg) return;
-
-  const clone = svg.cloneNode(true) as SVGElement;
-  clone.setAttribute('width', '1024');
-  clone.setAttribute('height', '1024');
-
-  const svgBlob = new Blob([new XMLSerializer().serializeToString(clone)], {
-    type: 'image/svg+xml;charset=utf-8',
-  });
-  const url = URL.createObjectURL(svgBlob);
-  const img = new Image();
-  img.onload = () => {
-    const canvas = Object.assign(document.createElement('canvas'), { width: 1024, height: 1024 });
-    const ctx = canvas.getContext('2d')!;
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 1024, 1024);
-    ctx.drawImage(img, 0, 0, 1024, 1024);
-    URL.revokeObjectURL(url);
-    Object.assign(document.createElement('a'), {
-      download: `event-info-qr-${eventId}.png`,
-      href: canvas.toDataURL('image/png'),
-    }).click();
-  };
-  img.src = url;
-}
 </script>
 
 <style scoped>
@@ -363,73 +313,6 @@ function downloadQr() {
 
 .section-text :deep(a:hover) {
   text-decoration: underline;
-}
-
-/* Share / QR */
-.share-section {
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
-}
-
-.share-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 1.5rem 2rem;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-}
-
-.share-label {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 1rem;
-  color: #1e3a5f;
-  margin: 0;
-  font-weight: 700;
-}
-
-.share-label svg {
-  color: #2563eb;
-}
-
-.share-qr {
-  padding: 0.75rem;
-  background: #fff;
-  border: 2px solid #e5e7eb;
-  border-radius: 0.5rem;
-}
-
-.share-hint {
-  font-size: 0.78rem;
-  color: #9ca3af;
-  margin: 0;
-}
-
-.qr-download {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #fff;
-  background: #2563eb;
-  border: none;
-  border-radius: 0.375rem;
-  padding: 0.4rem 0.85rem;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.qr-download:hover {
-  background: #1d4ed8;
 }
 
 /* Responsive */

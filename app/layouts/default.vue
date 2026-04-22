@@ -6,5 +6,6 @@
       <slot/>
     </div>
     <SiteFooter/>
+    <ShareQrTrigger/>
   </div>
 </template>
