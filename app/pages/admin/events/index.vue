@@ -21,7 +21,13 @@
             <span v-if="event.rsvp?.active" class="admin-badge admin-badge--green">Active</span>
             <span v-else class="admin-badge admin-badge--gray">Off</span>
           </td>
-          <td>
+          <td class="actions-cell">
+            <NuxtLink
+              :to="`/admin/events/${event.id}/info`"
+              class="admin-link"
+            >
+              Edit Info
+            </NuxtLink>
             <NuxtLink
               v-if="event.rsvp?.active"
               :to="`/admin/events/${event.id}/rsvps`"
@@ -117,5 +123,10 @@ onMounted(async () => {
 
 .admin-link:hover {
   text-decoration: underline;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 1rem;
 }
 </style>
