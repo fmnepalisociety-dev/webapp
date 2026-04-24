@@ -1,18 +1,7 @@
 <template>
   <section class="event-card">
-    <!-- Col 1: Image thumbnail -->
-    <div v-if="imageUrl" class="event-image-col">
-      <div class="event-thumb" @click="lightboxOpen = true">
-        <img :src="imageUrl" alt="Event Image" />
-        <div class="expand-hint">
-          <font-awesome-icon :icon="['fas', 'expand']" />
-          <span>View</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Col 2: Content -->
-    <div class="event-content">
+    <!-- Top: Heading + Meta + Actions -->
+    <div class="event-top">
       <h2 class="event-heading">
         <NuxtLink :to="`/events/${event.id}`" class="event-heading-link">
           {{ event.heading }}
@@ -41,47 +30,64 @@
         </span>
       </div>
 
-      <div v-if="event.body" class="event-body-wrap">
-        <div
-          ref="bodyEl"
-          class="event-body"
-          :class="{ collapsed: !bodyExpanded && bodyOverflows }"
-          v-html="event.body"
-        ></div>
-        <button v-if="bodyOverflows" class="expand-toggle" @click="bodyExpanded = !bodyExpanded">
-          {{ bodyExpanded ? 'Show less' : 'Read more' }}
-          <font-awesome-icon :icon="['fas', bodyExpanded ? 'chevron-up' : 'chevron-down']" />
-        </button>
+      <!-- Actions: Info + RSVP -->
+      <div v-if="hasRsvp || hasInfo" class="actions-row">
+        <NuxtLink v-if="hasInfo" :to="`/events/${event.id}/info`" class="btn btn-outline-blue">
+          <font-awesome-icon :icon="['fas', 'circle-info']" />
+          Event Info
+        </NuxtLink>
+        <template v-if="hasRsvp && rsvpOpen">
+          <NuxtLink :to="`/events/${event.id}/rsvp`" class="btn btn-blue">
+            <font-awesome-icon :icon="['fas', 'circle-check']" />
+            RSVP
+          </NuxtLink>
+        </template>
+        <template v-else-if="hasRsvp && !rsvpOpen">
+          <NuxtLink :to="`/events/${event.id}/rsvp`" class="rsvp-closed-badge">
+            Sorry, RSVP has ended
+            <span class="rsvp-closed-more">More Info</span>
+          </NuxtLink>
+        </template>
       </div>
-
-      <p v-if="event.promo" v-html="event.promo" class="event-promo"></p>
     </div>
 
-    <!-- Col 3: Actions (Info + RSVP) -->
-    <div v-if="hasRsvp || hasInfo" class="actions-col">
-      <NuxtLink v-if="hasInfo" :to="`/events/${event.id}/info`" class="btn btn-outline-blue">
-        <font-awesome-icon :icon="['fas', 'circle-info']" />
-        Event Info
-      </NuxtLink>
-      <template v-if="hasRsvp && rsvpOpen">
-        <NuxtLink :to="`/events/${event.id}/rsvp`" class="btn btn-blue">
-          <font-awesome-icon :icon="['fas', 'circle-check']" />
-          RSVP
-        </NuxtLink>
-        <div class="rsvp-qr" ref="qrContainer">
+    <!-- Bottom: Image + Body side by side -->
+    <div class="event-bottom">
+      <div v-if="imageUrl" class="event-image-col">
+        <div class="event-thumb" @click="lightboxOpen = true">
+          <img :src="imageUrl" alt="Event Image" />
+          <div class="expand-hint">
+            <font-awesome-icon :icon="['fas', 'expand']" />
+            <span>View</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-content">
+        <div v-if="event.body" class="event-body-wrap">
+          <div
+            ref="bodyEl"
+            class="event-body"
+            :class="{ collapsed: !bodyExpanded && bodyOverflows }"
+            v-html="event.body"
+          ></div>
+          <button v-if="bodyOverflows" class="expand-toggle" @click="bodyExpanded = !bodyExpanded">
+            {{ bodyExpanded ? 'Show less' : 'Read more' }}
+            <font-awesome-icon :icon="['fas', bodyExpanded ? 'chevron-up' : 'chevron-down']" />
+          </button>
+        </div>
+
+        <p v-if="event.promo" v-html="event.promo" class="event-promo"></p>
+
+        <!-- QR code alongside body on desktop -->
+        <div v-if="hasRsvp && rsvpOpen" class="rsvp-qr" ref="qrContainer">
           <QrCode :value="rsvpUrl" :size="88" />
           <span class="rsvp-qr-label">Scan to RSVP</span>
           <button class="rsvp-qr-download" title="Download QR code" @click="downloadQr">
             <font-awesome-icon :icon="['fas', 'download']" /> Save QR
           </button>
         </div>
-      </template>
-      <template v-else-if="hasRsvp && !rsvpOpen">
-        <NuxtLink :to="`/events/${event.id}/rsvp`" class="rsvp-closed-badge">
-          Sorry,<br>RSVP has ended
-          <span class="rsvp-closed-more">More Info</span>
-        </NuxtLink>
-      </template>
+      </div>
     </div>
 
     <!-- Lightbox overlay -->
@@ -192,7 +198,7 @@ const locationUrl = computed(() => {
 <style scoped>
 .event-card {
   display: flex;
-  gap: 1.25rem;
+  flex-direction: column;
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
@@ -201,7 +207,78 @@ const locationUrl = computed(() => {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-/* ========== Col 1: Image ========== */
+/* ========== Top: Heading + Meta + Actions ========== */
+.event-top {
+  margin-bottom: 1rem;
+}
+
+.event-heading {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 0 0 0.5rem;
+  line-height: 1.3;
+}
+
+.event-heading-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.event-heading-link:hover {
+  text-decoration: underline;
+}
+
+.event-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.detail-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: #4b5563;
+  background: #f3f4f6;
+  padding: 0.25rem 0.6rem;
+  border-radius: 1rem;
+}
+
+.detail-chip svg {
+  color: #2563eb;
+  font-size: 0.72rem;
+}
+
+.location-link {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.location-link:hover {
+  text-decoration: underline;
+}
+
+/* Actions row */
+.actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* ========== Bottom: Image + Body ========== */
+.event-bottom {
+  display: flex;
+  gap: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
 .event-image-col {
   flex-shrink: 0;
 }
@@ -249,68 +326,15 @@ const locationUrl = computed(() => {
   opacity: 1;
 }
 
-/* ========== Col 2: Content ========== */
+/* ========== Content ========== */
 .event-content {
   flex: 1;
   min-width: 0;
 }
 
-.event-heading {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #1e3a5f;
-  margin: 0 0 0.5rem;
-  line-height: 1.3;
-}
-
-.event-heading-link {
-  color: inherit;
-  text-decoration: none;
-}
-
-.event-heading-link:hover {
-  text-decoration: underline;
-}
-
-.event-details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 0.65rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid #e5e7eb;
-}
-
-.detail-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.8rem;
-  color: #4b5563;
-  background: #f3f4f6;
-  padding: 0.25rem 0.6rem;
-  border-radius: 1rem;
-}
-
-.detail-chip svg {
-  color: #2563eb;
-  font-size: 0.72rem;
-}
-
-.location-link {
-  color: #2563eb;
-  text-decoration: none;
-}
-
-.location-link:hover {
-  text-decoration: underline;
-}
-
 /* Body with collapse */
 .event-body-wrap {
   margin-bottom: 0.5rem;
-  padding-top: 0.65rem;
-  border-top: 1px solid #e5e7eb;
 }
 
 .event-body {
@@ -356,17 +380,6 @@ const locationUrl = computed(() => {
   font-size: 0.85rem;
   line-height: 1.5;
   margin: 0;
-}
-
-/* ========== Col 3: Actions ========== */
-.actions-col {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  padding-left: 1.25rem;
-  border-left: 1px solid #f0f0f0;
 }
 
 .btn {
@@ -442,9 +455,8 @@ const locationUrl = computed(() => {
 /* ========== RSVP Closed ========== */
 .rsvp-closed-badge {
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   font-weight: 600;
@@ -452,10 +464,10 @@ const locationUrl = computed(() => {
   color: #991b1b;
   background: #fef2f2;
   border: 1px solid #fca5a5;
-  text-align: center;
   text-decoration: none;
   cursor: pointer;
   transition: background 0.15s;
+  white-space: nowrap;
 }
 
 .rsvp-closed-badge:hover {
@@ -530,29 +542,12 @@ const locationUrl = computed(() => {
 /* ========== Responsive ========== */
 @media (max-width: 700px) {
   .event-card {
-    flex-direction: column;
-    gap: 1rem;
     padding: 1rem;
   }
 
-  .event-image-col {
-    order: 1;
-  }
-
-  .actions-col {
-    order: 2;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    border-left: none;
-    border-top: 1px solid #f0f0f0;
-    padding-left: 0;
-    padding-top: 0.75rem;
-    gap: 0.65rem;
-  }
-
-  .event-content {
-    order: 3;
+  .event-bottom {
+    flex-direction: column;
+    gap: 1rem;
   }
 
   .event-thumb {
