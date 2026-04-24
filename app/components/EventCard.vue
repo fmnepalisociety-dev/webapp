@@ -57,9 +57,13 @@
       <p v-if="event.promo" v-html="event.promo" class="event-promo"></p>
     </div>
 
-    <!-- Col 3: RSVP -->
-    <div v-if="hasRsvp" class="rsvp-col">
-      <template v-if="rsvpOpen">
+    <!-- Col 3: Actions (Info + RSVP) -->
+    <div v-if="hasRsvp || hasInfo" class="actions-col">
+      <NuxtLink v-if="hasInfo" :to="`/events/${event.id}/info`" class="btn btn-outline-blue">
+        <font-awesome-icon :icon="['fas', 'circle-info']" />
+        Event Info
+      </NuxtLink>
+      <template v-if="hasRsvp && rsvpOpen">
         <NuxtLink :to="`/events/${event.id}/rsvp`" class="btn btn-blue">
           <font-awesome-icon :icon="['fas', 'circle-check']" />
           RSVP
@@ -72,7 +76,7 @@
           </button>
         </div>
       </template>
-      <template v-else>
+      <template v-else-if="hasRsvp && !rsvpOpen">
         <NuxtLink :to="`/events/${event.id}/rsvp`" class="rsvp-closed-badge">
           Sorry,<br>RSVP has ended
           <span class="rsvp-closed-more">More Info</span>
@@ -109,6 +113,7 @@ const props = defineProps<{
     promo?: string;
     image?: string;
     rsvp?: RsvpConfig | null;
+    event_info?: any[] | null;
   };
   expanded?: boolean;
 }>();
@@ -132,6 +137,7 @@ onMounted(async () => {
 
 const hasRsvp = computed(() => !!props.event.rsvp);
 const rsvpOpen = computed(() => isRsvpOpen(props.event.rsvp));
+const hasInfo = computed(() => !!props.event.event_info?.length);
 
 const imageUrl = computed(() =>
   props.event.image ? getPublicImageUrl('nsfm', props.event.image) : null
@@ -352,8 +358,8 @@ const locationUrl = computed(() => {
   margin: 0;
 }
 
-/* ========== Col 3: RSVP ========== */
-.rsvp-col {
+/* ========== Col 3: Actions ========== */
+.actions-col {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -391,6 +397,18 @@ const locationUrl = computed(() => {
 
 .btn-blue:active {
   transform: translateY(1px);
+}
+
+.btn-outline-blue {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+.btn-outline-blue:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
 }
 
 .rsvp-qr {
@@ -517,18 +535,29 @@ const locationUrl = computed(() => {
     padding: 1rem;
   }
 
-  .event-thumb {
-    width: 100%;
-    max-width: 280px;
+  .event-image-col {
+    order: 1;
   }
 
-  .rsvp-col {
+  .actions-col {
+    order: 2;
     flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
     border-left: none;
     border-top: 1px solid #f0f0f0;
     padding-left: 0;
     padding-top: 0.75rem;
-    gap: 1rem;
+    gap: 0.65rem;
+  }
+
+  .event-content {
+    order: 3;
+  }
+
+  .event-thumb {
+    width: 100%;
+    max-width: 280px;
   }
 }
 </style>
