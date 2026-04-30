@@ -90,6 +90,22 @@
       </div>
     </div>
 
+    <!-- Videos (detail view only) -->
+    <div v-if="expanded && videos.length" class="event-videos">
+      <h3 class="videos-heading">Videos</h3>
+      <div class="videos-grid">
+        <div v-for="(video, i) in videos" :key="i" class="video-embed">
+          <iframe
+            v-if="video.type === 'youtube' && youtubeId(video.src)"
+            :src="`https://www.youtube-nocookie.com/embed/${youtubeId(video.src)}`"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </div>
+
     <!-- Lightbox overlay -->
     <Teleport to="body">
       <Transition name="lb">
@@ -120,6 +136,7 @@ const props = defineProps<{
     image?: string;
     rsvp?: RsvpConfig | null;
     event_info?: any[] | null;
+    videos?: { type: string; src: string }[] | null;
   };
   expanded?: boolean;
 }>();
@@ -199,6 +216,14 @@ const locationUrl = computed(() => {
   const match = props.event.event_location.match(/^(.*?)\s*\[(.+)]$/);
   return match ? match[2].trim() : null;
 });
+
+const videos = computed(() => props.event.videos ?? []);
+
+function youtubeId(url: string): string | null {
+  const m =
+    url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]+)/) ?? null;
+  return m ? m[1] : null;
+}
 </script>
 
 <style scoped>
@@ -498,6 +523,43 @@ const locationUrl = computed(() => {
 
 .rsvp-closed-badge:hover .rsvp-closed-more {
   text-decoration: underline;
+}
+
+/* ========== Videos ========== */
+.event-videos {
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 1rem;
+}
+
+.videos-heading {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 0 0 0.75rem;
+}
+
+.videos-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.video-embed {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: #000;
+}
+
+.video-embed iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 /* ========== Lightbox ========== */
