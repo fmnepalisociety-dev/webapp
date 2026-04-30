@@ -26,5 +26,7 @@ export async function getUpcomingEvents() {
 export async function getPastEvents() {
   const allEvents = await getEvents()
   const today = new Date()
-  return allEvents.filter((e: any) => new Date(e.event_date) < today)
+  return allEvents
+    .filter((e: any) => new Date(e.event_date) < today)
+    .sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
 }
