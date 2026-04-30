@@ -57,13 +57,17 @@
       </p>
     </div>
 
-    <div class="image-section">
+    <div v-for="fe in featuredEvents" :key="fe.id" class="image-section">
       <ZoomImage
-        src="/img/nsfm-group-2025.jpg"
+        :src="getPublicImageUrl('nsfm', fe.image)"
         img-class="event-image"
-        alt="Nepali Society Fargo-Moorhead Group 2025"
+        :alt="fe.heading"
       />
-      <p class="image-caption">Celebrating the Dhaka-Topi Diwas & New Year 2026</p>
+      <p class="image-caption">{{ fe.heading }}</p>
+      <NuxtLink :to="`/events/${fe.id}`" class="caption-link">
+        View Details
+        <font-awesome-icon :icon="['fas', 'arrow-right']" />
+      </NuxtLink>
     </div>
 
     <div class="details">
@@ -111,6 +115,12 @@ function locationText(location: string) {
   const match = location.match(/^(.*?)\s*\[(.+)]$/);
   return match ? match[1].trim() : location;
 }
+
+const featuredEvents = computed(() => {
+  return [...events.value]
+    .filter((e: any) => e.featured && e.image)
+    .sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
+});
 
 const activeFlyerId = ref<number | null>(null);
 

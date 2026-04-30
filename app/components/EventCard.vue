@@ -52,10 +52,10 @@
     </div>
 
     <!-- Bottom: Image + Body side by side -->
-    <div class="event-bottom">
+    <div class="event-bottom" :class="{ 'landscape-layout': isLandscape }">
       <div v-if="imageUrl" class="event-image-col">
         <div class="event-thumb" @click="lightboxOpen = true">
-          <img :src="imageUrl" alt="Event Image" />
+          <img :src="imageUrl" alt="Event Image" @load="onImageLoad" />
           <div class="expand-hint">
             <font-awesome-icon :icon="['fas', 'expand']" />
             <span>View</span>
@@ -131,6 +131,12 @@ const lightboxOpen = ref(false);
 const bodyEl = ref<HTMLElement | null>(null);
 const bodyExpanded = ref(props.expanded ?? false);
 const bodyOverflows = ref(false);
+const isLandscape = ref(false);
+
+function onImageLoad(e: Event) {
+  const img = e.target as HTMLImageElement;
+  isLandscape.value = img.naturalWidth > img.naturalHeight;
+}
 
 const COLLAPSED_HEIGHT = 72; // ~4.5 lines
 
@@ -324,6 +330,16 @@ const locationUrl = computed(() => {
 
 .event-thumb:hover .expand-hint {
   opacity: 1;
+}
+
+/* ========== Landscape layout (event photos) ========== */
+.event-bottom.landscape-layout {
+  flex-direction: column;
+}
+
+.landscape-layout .event-thumb {
+  width: 100%;
+  max-width: 100%;
 }
 
 /* ========== Content ========== */
