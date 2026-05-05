@@ -85,7 +85,7 @@ export function getMemberId(member: Member): string {
   }
 
   const id = String(member.id).padStart(4, '0');
-  return `NSFM-${id}`;
+  return `NeSFM-${id}`;
 }
 
 export function getMembershipType(member: Member): string {
