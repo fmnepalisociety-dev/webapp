@@ -1,6 +1,6 @@
 <template>
   <div v-if="images.length" class="carousel">
-    <div class="carousel-stage" ref="stageRef">
+    <div class="carousel-stage" ref="stageRef" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
       <div
         class="carousel-track"
         :style="{ transform: `translateX(-${current * 100}%)` }"
@@ -61,6 +61,8 @@ defineEmits<{
 
 const current = ref(0);
 const stageRef = ref<HTMLElement | null>(null);
+let autoplayTimer: ReturnType<typeof setInterval> | null = null;
+const paused = ref(false);
 
 let touchStartX = 0;
 let touchStartY = 0;
@@ -68,11 +70,30 @@ let swiping = false;
 
 function prev() {
   current.value = (current.value - 1 + props.images.length) % props.images.length;
+  resetAutoplay();
 }
 
 function next() {
   current.value = (current.value + 1) % props.images.length;
+  resetAutoplay();
 }
+
+function startAutoplay() {
+  if (props.images.length <= 1) return;
+  autoplayTimer = setInterval(() => {
+    if (!paused.value) {
+      current.value = (current.value + 1) % props.images.length;
+    }
+  }, 4000);
+}
+
+function resetAutoplay() {
+  if (autoplayTimer) clearInterval(autoplayTimer);
+  startAutoplay();
+}
+
+function onMouseEnter() { paused.value = true; }
+function onMouseLeave() { paused.value = false; }
 
 function onTouchStart(e: TouchEvent) {
   touchStartX = e.touches[0].clientX;
@@ -103,6 +124,7 @@ onMounted(() => {
   el.addEventListener('touchstart', onTouchStart, { passive: true });
   el.addEventListener('touchmove', onTouchMove, { passive: false });
   el.addEventListener('touchend', onTouchEnd, { passive: true });
+  startAutoplay();
 });
 
 onBeforeUnmount(() => {
@@ -111,6 +133,7 @@ onBeforeUnmount(() => {
   el.removeEventListener('touchstart', onTouchStart);
   el.removeEventListener('touchmove', onTouchMove);
   el.removeEventListener('touchend', onTouchEnd);
+  if (autoplayTimer) clearInterval(autoplayTimer);
 });
 </script>
 
