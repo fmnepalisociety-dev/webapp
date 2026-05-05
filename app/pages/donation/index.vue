@@ -11,7 +11,7 @@
         To make a donation, scan the QR code below using your Zelle app.
       </p>
       <div class="qr-container">
-        <img src="/img/payment/nsfm-zelle.jpeg" alt="Scan to donate via Zelle" class="qr-code" />
+        <img src="/img/payment/nesfm-zelle.jpeg" alt="Scan to donate via Zelle" class="qr-code" />
       </div>
       <p>
         Having trouble scanning? You can also send payment via Zelle to

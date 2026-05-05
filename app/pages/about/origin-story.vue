@@ -47,7 +47,7 @@
 
   <div class="image-section">
     <ZoomImage
-      src="/img/origin/nsfm-formation-day.png"
+      src="/img/origin/nesfm-formation-day.png"
       img-class="event-image"
       alt="NeSFM-Maghe-Sakranti"
     />
@@ -57,7 +57,7 @@
 
   <div class="image-section">
     <ZoomImage
-      src="/img/origin/nsfm-1st-committee.png"
+      src="/img/origin/nesfm-1st-committee.png"
       img-class="event-image"
       alt="NeSFM-Maghe-Sakranti"
     />
