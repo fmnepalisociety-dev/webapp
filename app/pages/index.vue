@@ -59,7 +59,7 @@
 
     <div v-for="fe in featuredEvents" :key="fe.id" class="image-section">
       <ZoomImage
-        :src="getPublicImageUrl(NeSFM_GENERIC_BUCKET, fe.image)"
+        :src="getPublicImageUrl(NeSFM_GENERIC_BUCKET, fe.image?.[0])"
         img-class="event-image"
         :alt="fe.heading"
       />
@@ -119,7 +119,7 @@ function locationText(location: string) {
 
 const featuredEvents = computed(() => {
   return [...events.value]
-    .filter((e: any) => e.featured && e.image)
+    .filter((e: any) => e.featured && e.image?.length)
     .sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
 });
 

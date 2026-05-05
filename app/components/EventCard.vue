@@ -52,10 +52,15 @@
     </div>
 
     <!-- Bottom: Image + Body side by side -->
-    <div class="event-bottom" :class="{ 'landscape-layout': isLandscape }">
-      <div v-if="imageUrl" class="event-image-col">
-        <div class="event-thumb" @click="lightboxOpen = true">
-          <img :src="imageUrl" alt="Event Image" @load="onImageLoad" />
+    <div class="event-bottom" :class="{ 'landscape-layout': isLandscape || allImageUrls.length > 1 }">
+      <div v-if="allImageUrls.length" class="event-image-col">
+        <ImageCarousel
+          v-if="allImageUrls.length > 1"
+          :images="allImageUrls"
+          @open="(i) => { lightboxIndex = i; lightboxOpen = true; }"
+        />
+        <div v-else class="event-thumb" @click="lightboxOpen = true">
+          <img :src="imageUrl!" alt="Event Image" @load="onImageLoad" />
           <div class="expand-hint">
             <font-awesome-icon :icon="['fas', 'expand']" />
             <span>View</span>
@@ -113,7 +118,18 @@
           <button class="lightbox-close" @click="lightboxOpen = false">
             <font-awesome-icon :icon="['fas', 'xmark']" />
           </button>
-          <img :src="imageUrl!" alt="Event Image" class="lightbox-img" @click.stop />
+
+          <template v-if="allImageUrls.length > 1">
+            <button class="lightbox-nav lightbox-nav--left" @click.stop="lightboxPrev">
+              <font-awesome-icon :icon="['fas', 'chevron-left']" />
+            </button>
+            <button class="lightbox-nav lightbox-nav--right" @click.stop="lightboxNext">
+              <font-awesome-icon :icon="['fas', 'chevron-right']" />
+            </button>
+            <span class="lightbox-counter">{{ lightboxIndex + 1 }} / {{ allImageUrls.length }}</span>
+          </template>
+
+          <img :src="allImageUrls[lightboxIndex]" alt="Event Image" class="lightbox-img" @click.stop />
         </div>
       </Transition>
     </Teleport>
@@ -133,7 +149,7 @@ const props = defineProps<{
     event_time: string;
     event_location: string;
     promo?: string;
-    image?: string;
+    image?: string[] | null;
     rsvp?: RsvpConfig | null;
     event_info?: any[] | null;
     videos?: { type: string; src: string }[] | null;
@@ -146,6 +162,7 @@ import { NeSFM_GENERIC_BUCKET } from '~/composables/useSupabaseImage';
 
 const qrContainer = ref<HTMLElement | null>(null);
 const lightboxOpen = ref(false);
+const lightboxIndex = ref(0);
 const bodyEl = ref<HTMLElement | null>(null);
 const bodyExpanded = ref(props.expanded ?? false);
 const bodyOverflows = ref(false);
@@ -169,9 +186,22 @@ const hasRsvp = computed(() => !!props.event.rsvp);
 const rsvpOpen = computed(() => isRsvpOpen(props.event.rsvp));
 const hasInfo = computed(() => !!props.event.event_info?.length);
 
-const imageUrl = computed(() =>
-  props.event.image ? getPublicImageUrl(NeSFM_GENERIC_BUCKET, props.event.image) : null
-);
+const allImageUrls = computed(() => {
+  if (!props.event.image?.length) return [];
+  return props.event.image
+    .map((path) => getPublicImageUrl(NeSFM_GENERIC_BUCKET, path))
+    .filter((url): url is string => !!url);
+});
+
+const imageUrl = computed(() => allImageUrls.value[0] ?? null);
+
+function lightboxPrev() {
+  lightboxIndex.value = (lightboxIndex.value - 1 + allImageUrls.value.length) % allImageUrls.value.length;
+}
+
+function lightboxNext() {
+  lightboxIndex.value = (lightboxIndex.value + 1) % allImageUrls.value.length;
+}
 
 const rsvpUrl = computed(() => {
   const base = typeof window !== 'undefined' ? window.location.origin : '';
@@ -313,11 +343,12 @@ function youtubeId(url: string): string | null {
 
 .event-image-col {
   flex-shrink: 0;
+  width: 180px;
 }
 
 .event-thumb {
   position: relative;
-  width: 180px;
+  width: 100%;
   border-radius: 0.5rem;
   overflow: hidden;
   cursor: pointer;
@@ -361,6 +392,10 @@ function youtubeId(url: string): string | null {
 /* ========== Landscape layout (event photos) ========== */
 .event-bottom.landscape-layout {
   flex-direction: column;
+}
+
+.landscape-layout .event-image-col {
+  width: 100%;
 }
 
 .landscape-layout .event-thumb {
@@ -607,6 +642,51 @@ function youtubeId(url: string): string | null {
   background: rgba(255, 255, 255, 0.3);
 }
 
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #fff;
+  font-size: 1.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  z-index: 10000;
+}
+
+.lightbox-nav:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.lightbox-nav--left {
+  left: 1rem;
+}
+
+.lightbox-nav--right {
+  right: 1rem;
+}
+
+.lightbox-counter {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  z-index: 10000;
+}
+
 /* Lightbox transition */
 .lb-enter-active,
 .lb-leave-active {
@@ -629,9 +709,13 @@ function youtubeId(url: string): string | null {
     gap: 1rem;
   }
 
-  .event-thumb {
+  .event-image-col {
     width: 100%;
     max-width: 280px;
+  }
+
+  .event-thumb {
+    width: 100%;
   }
 }
 </style>
