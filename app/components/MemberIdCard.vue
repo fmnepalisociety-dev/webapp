@@ -32,7 +32,7 @@ const expired = computed(() => isExpired(props.member.expiry_date));
     <div class="id-card__header">
       <img
         src="/logo.png"
-        alt="NSFM Logo"
+        alt="NeSFM Logo"
         class="id-card__logo"
       />
       <div class="id-card__org">

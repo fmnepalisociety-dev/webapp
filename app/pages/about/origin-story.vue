@@ -38,30 +38,30 @@
     <ZoomImage
       src="/img/origin/deusi-bhailo-group.png"
       img-class="event-image"
-      alt="NSFM-Maghe-Sakranti"
+      alt="NeSFM-Maghe-Sakranti"
     />
     <p class="image-caption">The Deusi-Bhailo group celebrated Tihar in 2025 with music and laughter, as friends and
       families came together to sing and dance. The initiation of a community gathering that led to the formation of the
-      Nepali Society of Fargo–Moorhead (NSFM).</p>
+      Nepali Society of Fargo–Moorhead (NeSFM).</p>
   </div>
 
   <div class="image-section">
     <ZoomImage
       src="/img/origin/nsfm-formation-day.png"
       img-class="event-image"
-      alt="NSFM-Maghe-Sakranti"
+      alt="NeSFM-Maghe-Sakranti"
     />
     <p class="image-caption">Nepali community members present on the day of establishment of the Nepali Society of
-      Fargo–Moorhead (NSFM), December 7, 2025.</p>
+      Fargo–Moorhead (NeSFM), December 7, 2025.</p>
   </div>
 
   <div class="image-section">
     <ZoomImage
       src="/img/origin/nsfm-1st-committee.png"
       img-class="event-image"
-      alt="NSFM-Maghe-Sakranti"
+      alt="NeSFM-Maghe-Sakranti"
     />
-    <p class="image-caption">NSFM’s first Executive Committee, December 7, 2025: Dr. Shyam Kandel (President), Dr.
+    <p class="image-caption">NeSFM’s first Executive Committee, December 7, 2025: Dr. Shyam Kandel (President), Dr.
       Bishnu Adhikari & Shyam Shrestha (Vice Presidents), Dr. Krishna Acharya (General Secretary), Kabita Shrestha
       (Secretary), Puspa Shrestha (Treasurer), Keshab Raj Kharel (Joint Treasurer), Anuj Shrestha (IT Officer), Srijana
       Khanal (Event Coordinator), Sabina Dahal, Abhishek Giri, Sujan Khanal, Bhagawati Rijal Sapkota (Executive

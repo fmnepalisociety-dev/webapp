@@ -15,7 +15,7 @@
         <div class="footer-link-row">
           <FontAwesomeIcon :icon="['fab','facebook']"/>
           <a href="https://www.facebook.com/profile.php?id=61585646061770" target="_blank">
-            NSFM - Nepali Society (Facebook)
+            NeSFM - Nepali Society (Facebook)
           </a>
         </div>
         <div class="footer-link-row">
@@ -27,7 +27,7 @@
       </section>
 
       <div class="footer-right">
-        <img class="footer-logo" src="/logo.png" alt="NSFM"/>
+        <img class="footer-logo" src="/logo.png" alt="NeSFM"/>
         <div class="footer-link-row footer-bottom-links">
           <NuxtLink to="/about" class="footer-links">About</NuxtLink>
           <NuxtLink to="/contacts" class="footer-links">Contact</NuxtLink>

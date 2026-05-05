@@ -1,7 +1,7 @@
 <template>
   <div class="login-wrapper">
     <form class="login-card" @submit.prevent="handleLogin">
-      <h1 class="login-title">NSFM Admin</h1>
+      <h1 class="login-title">NeSFM Admin</h1>
 
       <div class="login-field">
         <label for="email">Email</label>

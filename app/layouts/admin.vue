@@ -2,7 +2,7 @@
   <div class="admin-shell">
     <aside class="admin-sidebar">
       <div class="admin-brand">
-        <NuxtLink to="/admin">NSFM Admin</NuxtLink>
+        <NuxtLink to="/admin">NeSFM Admin</NuxtLink>
       </div>
       <nav class="admin-nav">
         <NuxtLink to="/admin/events" class="admin-nav-link">

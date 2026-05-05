@@ -5,7 +5,7 @@
         <!-- Column 1: Main Logo -->
         <div class="logo-column">
           <NuxtLink to="/">
-            <img class="main-logo-img" src="/logo.png" alt="NSFM Logo"/>
+            <img class="main-logo-img" src="/logo.png" alt="NeSFM Logo"/>
           </NuxtLink>
         </div>
 
