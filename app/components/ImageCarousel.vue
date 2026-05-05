@@ -1,11 +1,13 @@
 <template>
   <div v-if="images.length" class="carousel">
     <div class="carousel-stage" ref="stageRef" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
-      <div
-        class="carousel-track"
-        :style="{ transform: `translateX(-${current * 100}%)` }"
-      >
-        <div v-for="(src, i) in images" :key="i" class="carousel-slide">
+      <div class="carousel-track">
+        <div
+          v-for="(src, i) in images"
+          :key="i"
+          class="carousel-slide"
+          :class="{ active: i === current }"
+        >
           <img
             :src="src"
             :alt="`Image ${i + 1}`"
@@ -16,32 +18,27 @@
       </div>
 
       <template v-if="images.length > 1">
-        <!-- Full-height nav zones -->
         <button class="carousel-nav carousel-nav--left" @click="prev" aria-label="Previous">
-          <span class="carousel-nav-icon">
-            <font-awesome-icon :icon="['fas', 'chevron-left']" />
-          </span>
+          <font-awesome-icon :icon="['fas', 'chevron-left']" />
         </button>
         <button class="carousel-nav carousel-nav--right" @click="next" aria-label="Next">
-          <span class="carousel-nav-icon">
-            <font-awesome-icon :icon="['fas', 'chevron-right']" />
-          </span>
+          <font-awesome-icon :icon="['fas', 'chevron-right']" />
         </button>
-
       </template>
     </div>
 
-    <!-- Dots + counter below image -->
+    <!-- Progress bar + counter below image -->
     <div v-if="images.length > 1" class="carousel-footer">
-      <div class="carousel-dots">
-        <button
+      <div class="carousel-progress">
+        <div
           v-for="(_, i) in images"
           :key="i"
-          class="carousel-dot"
-          :class="{ active: i === current }"
-          @click="current = i"
-          :aria-label="`Go to image ${i + 1}`"
-        />
+          class="carousel-progress-seg"
+          :class="{ active: i === current, past: i < current }"
+          @click="current = i; resetAutoplay()"
+        >
+          <div class="carousel-progress-fill"></div>
+        </div>
       </div>
       <span class="carousel-counter">{{ current + 1 }} / {{ images.length }}</span>
     </div>
@@ -151,18 +148,20 @@ onBeforeUnmount(() => {
 }
 
 .carousel-track {
-  display: flex;
+  position: relative;
   height: 100%;
-  transition: transform 0.35s ease;
 }
 
 .carousel-slide {
-  flex: 0 0 100%;
-  min-width: 0;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 2.4s ease;
+}
+
+.carousel-slide.active {
+  opacity: 1;
+  z-index: 1;
 }
 
 .carousel-image {
@@ -179,106 +178,110 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Full-height Facebook-style nav zones */
+/* Nav zones */
 .carousel-nav {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 3rem;
   border: none;
-  background: transparent;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.15), transparent);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.1rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2;
-  transition: background 0.2s;
+  opacity: 0;
+  transition: opacity 0.3s, color 0.2s;
+}
+
+.carousel-stage:hover .carousel-nav {
+  opacity: 1;
 }
 
 .carousel-nav:hover {
-  background: rgba(0, 0, 0, 0.08);
+  color: #fff;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.35), transparent);
 }
 
 .carousel-nav--left {
   left: 0;
-  border-radius: 0.5rem 0 0 0.5rem;
+  border-radius: 0.75rem 0 0 0.75rem;
 }
 
 .carousel-nav--right {
   right: 0;
-  border-radius: 0 0.5rem 0.5rem 0;
+  border-radius: 0 0.75rem 0.75rem 0;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.15), transparent);
 }
 
-.carousel-nav-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
-  font-size: 0.9rem;
-  transition: background 0.15s, transform 0.15s;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+.carousel-nav--right:hover {
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.35), transparent);
 }
 
-.carousel-nav:hover .carousel-nav-icon {
-  background: rgba(0, 0, 0, 0.8);
-  transform: scale(1.15);
-}
-
-/* Footer: dots + counter below image */
+/* Progress bar below image */
 .carousel-footer {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.75rem;
-  padding: 0.5rem 0 0.25rem;
+  padding: 0.2rem 0 0.25rem;
 }
 
-.carousel-dots {
+.carousel-progress {
+  flex: 1;
   display: flex;
-  gap: 0.4rem;
+  gap: 3px;
+  height: 5px;
 }
 
-.carousel-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  border: 1.5px solid #9ca3af;
-  background: transparent;
+.carousel-progress-seg {
+  flex: 1;
+  background: #e5e7eb;
   cursor: pointer;
-  padding: 0;
-  transition: all 0.15s;
+  overflow: hidden;
+  border-radius: 2px;
+  transition: background 0.2s;
 }
 
-.carousel-dot:hover {
-  border-color: #2563eb;
-  background: #dbeafe;
+.carousel-progress-seg:hover {
+  background: #d1d5db;
 }
 
-.carousel-dot.active {
+.carousel-progress-seg.past {
+  background: #93c5fd;
+}
+
+.carousel-progress-seg .carousel-progress-fill {
+  height: 100%;
+  width: 0;
   background: #2563eb;
-  border-color: #2563eb;
-  transform: scale(1.2);
+  border-radius: 2px;
+}
+
+.carousel-progress-seg.active .carousel-progress-fill {
+  width: 100%;
+  animation: carousel-fill 4s linear;
+}
+
+@keyframes carousel-fill {
+  from { width: 0; }
+  to { width: 100%; }
 }
 
 .carousel-counter {
   font-size: 0.7rem;
   font-weight: 600;
   color: #6b7280;
+  white-space: nowrap;
 }
 
 @media (max-width: 700px) {
   .carousel-nav {
     width: 2.25rem;
-  }
-
-  .carousel-nav-icon {
-    width: 2rem;
-    height: 2rem;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
+    opacity: 1;
   }
 }
 </style>
