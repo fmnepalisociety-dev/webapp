@@ -11,35 +11,39 @@
             :alt="`Image ${i + 1}`"
             class="carousel-image"
             @click="$emit('open', i)"
-            @load="i === 0 ? $emit('firstLoad', $event) : undefined"
           />
         </div>
       </div>
 
-      <!-- Arrows -->
       <template v-if="images.length > 1">
-        <button class="carousel-arrow carousel-arrow--left" @click="prev" aria-label="Previous">
-          <font-awesome-icon :icon="['fas', 'chevron-left']" />
+        <!-- Full-height nav zones -->
+        <button class="carousel-nav carousel-nav--left" @click="prev" aria-label="Previous">
+          <span class="carousel-nav-icon">
+            <font-awesome-icon :icon="['fas', 'chevron-left']" />
+          </span>
         </button>
-        <button class="carousel-arrow carousel-arrow--right" @click="next" aria-label="Next">
-          <font-awesome-icon :icon="['fas', 'chevron-right']" />
+        <button class="carousel-nav carousel-nav--right" @click="next" aria-label="Next">
+          <span class="carousel-nav-icon">
+            <font-awesome-icon :icon="['fas', 'chevron-right']" />
+          </span>
         </button>
 
-        <!-- Counter -->
-        <span class="carousel-counter">{{ current + 1 }} / {{ images.length }}</span>
       </template>
     </div>
 
-    <!-- Dots -->
-    <div v-if="images.length > 1" class="carousel-dots">
-      <button
-        v-for="(_, i) in images"
-        :key="i"
-        class="carousel-dot"
-        :class="{ active: i === current }"
-        @click="current = i"
-        :aria-label="`Go to image ${i + 1}`"
-      />
+    <!-- Dots + counter below image -->
+    <div v-if="images.length > 1" class="carousel-footer">
+      <div class="carousel-dots">
+        <button
+          v-for="(_, i) in images"
+          :key="i"
+          class="carousel-dot"
+          :class="{ active: i === current }"
+          @click="current = i"
+          :aria-label="`Go to image ${i + 1}`"
+        />
+      </div>
+      <span class="carousel-counter">{{ current + 1 }} / {{ images.length }}</span>
     </div>
   </div>
 </template>
@@ -53,7 +57,6 @@ const props = defineProps<{
 
 defineEmits<{
   open: [index: number];
-  firstLoad: [event: Event];
 }>();
 
 const current = ref(0);
@@ -119,92 +122,140 @@ onBeforeUnmount(() => {
 .carousel-stage {
   position: relative;
   overflow: hidden;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
+  height: 360px;
+  background: #1a1a1a;
 }
 
 .carousel-track {
   display: flex;
+  height: 100%;
   transition: transform 0.35s ease;
 }
 
 .carousel-slide {
   flex: 0 0 100%;
   min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .carousel-image {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: contain;
   cursor: pointer;
 }
 
-/* Arrows */
-.carousel-arrow {
+@media (max-width: 700px) {
+  .carousel-stage {
+    height: 260px;
+  }
+}
+
+/* Full-height Facebook-style nav zones */
+.carousel-nav {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.45);
-  color: #fff;
+  top: 0;
+  bottom: 0;
+  width: 3rem;
   border: none;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-size: 0.75rem;
-  transition: background 0.15s;
   z-index: 2;
+  transition: background 0.2s;
 }
 
-.carousel-arrow:hover {
-  background: rgba(0, 0, 0, 0.7);
+.carousel-nav:hover {
+  background: rgba(0, 0, 0, 0.08);
 }
 
-.carousel-arrow--left {
-  left: 0.4rem;
+.carousel-nav--left {
+  left: 0;
+  border-radius: 0.5rem 0 0 0.5rem;
 }
 
-.carousel-arrow--right {
-  right: 0.4rem;
+.carousel-nav--right {
+  right: 0;
+  border-radius: 0 0.5rem 0.5rem 0;
 }
 
-/* Counter */
-.carousel-counter {
-  position: absolute;
-  top: 0.4rem;
-  right: 0.5rem;
-  background: rgba(0, 0, 0, 0.5);
+.carousel-nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
   color: #fff;
-  font-size: 0.65rem;
-  font-weight: 600;
-  padding: 0.15rem 0.45rem;
-  border-radius: 0.75rem;
-  z-index: 2;
+  font-size: 0.9rem;
+  transition: background 0.15s, transform 0.15s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-/* Dots */
+.carousel-nav:hover .carousel-nav-icon {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.15);
+}
+
+/* Footer: dots + counter below image */
+.carousel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0 0.25rem;
+}
+
 .carousel-dots {
   display: flex;
-  justify-content: center;
-  gap: 0.35rem;
-  margin-top: 0.5rem;
+  gap: 0.4rem;
 }
 
 .carousel-dot {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  border: none;
-  background: #d1d5db;
+  border: 1.5px solid #9ca3af;
+  background: transparent;
   cursor: pointer;
   padding: 0;
-  transition: background 0.15s;
+  transition: all 0.15s;
+}
+
+.carousel-dot:hover {
+  border-color: #2563eb;
+  background: #dbeafe;
 }
 
 .carousel-dot.active {
   background: #2563eb;
+  border-color: #2563eb;
+  transform: scale(1.2);
+}
+
+.carousel-counter {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+@media (max-width: 700px) {
+  .carousel-nav {
+    width: 2.25rem;
+  }
+
+  .carousel-nav-icon {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.75rem;
+  }
 }
 </style>
