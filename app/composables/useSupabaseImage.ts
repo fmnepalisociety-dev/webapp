@@ -1,3 +1,5 @@
+export const NeSFM_GENERIC_BUCKET = 'nsfm'
+
 type GetImageUrlOptions = {
   bucket: string
   path: string

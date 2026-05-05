@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Member } from '~/types/member';
+import { NeSFM_GENERIC_BUCKET } from '~/composables/useSupabaseImage';
 import {
   generateQrData,
   formatMemberName,
@@ -52,7 +53,7 @@ const expired = computed(() => isExpired(props.member.expiry_date));
         <!-- Photo -->
         <div class="id-card__photo">
           <SupabaseImage
-            bucket="nsfm"
+            :bucket="NeSFM_GENERIC_BUCKET"
             :path="member.image_path"
             is-public
             :alt="member.display_name"

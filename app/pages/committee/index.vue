@@ -23,7 +23,7 @@
         <!-- Member Image -->
         <ZoomImage class="person-section flex justify-center">
           <SupabaseImage
-            bucket="nsfm"
+            :bucket="NeSFM_GENERIC_BUCKET"
             :path="member.image_path"
             is-public
             :alt="member.display_name"
@@ -54,6 +54,7 @@
 
 <script lang="ts" setup>
 import {ref, computed} from 'vue'
+import {NeSFM_GENERIC_BUCKET} from '~/composables/useSupabaseImage'
 import {getCommittee} from '~/composables/useCommittee'
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {faUser} from '@fortawesome/free-solid-svg-icons'

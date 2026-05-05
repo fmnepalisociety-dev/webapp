@@ -59,7 +59,7 @@
 
     <div v-for="fe in featuredEvents" :key="fe.id" class="image-section">
       <ZoomImage
-        :src="getPublicImageUrl('nsfm', fe.image)"
+        :src="getPublicImageUrl(NeSFM_GENERIC_BUCKET, fe.image)"
         img-class="event-image"
         :alt="fe.heading"
       />
@@ -87,6 +87,7 @@ import {getEvents} from '~/composables/useEvents';
 import type {Flyer, TimeboundMeta} from '~/types/flyer';
 
 const {getPublicImageUrl} = useSupabaseImage();
+import {NeSFM_GENERIC_BUCKET} from '~/composables/useSupabaseImage';
 
 const flyers = ref<Flyer[]>([]);
 const flyerImages = ref<Record<number, string | null>>({});
@@ -100,7 +101,7 @@ onMounted(async () => {
   flyers.value = fetchedFlyers;
   events.value = fetchedEvents;
   for (const flyer of flyers.value) {
-    flyerImages.value[flyer.id] = getPublicImageUrl('nsfm', flyer.image_path);
+    flyerImages.value[flyer.id] = getPublicImageUrl(NeSFM_GENERIC_BUCKET, flyer.image_path);
   }
 });
 

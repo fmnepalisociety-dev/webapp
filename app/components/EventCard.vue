@@ -142,6 +142,7 @@ const props = defineProps<{
 }>();
 
 const { getPublicImageUrl } = useSupabaseImage();
+import { NeSFM_GENERIC_BUCKET } from '~/composables/useSupabaseImage';
 
 const qrContainer = ref<HTMLElement | null>(null);
 const lightboxOpen = ref(false);
@@ -169,7 +170,7 @@ const rsvpOpen = computed(() => isRsvpOpen(props.event.rsvp));
 const hasInfo = computed(() => !!props.event.event_info?.length);
 
 const imageUrl = computed(() =>
-  props.event.image ? getPublicImageUrl('nsfm', props.event.image) : null
+  props.event.image ? getPublicImageUrl(NeSFM_GENERIC_BUCKET, props.event.image) : null
 );
 
 const rsvpUrl = computed(() => {
