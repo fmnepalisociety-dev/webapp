@@ -11,8 +11,26 @@
 
         <!-- Column 2: Text -->
         <div class="text-column">
-          <h1 class="text-header">Nepali Society of Fargo Moorhead</h1>
-          <h2 class="text-header devnagari">| नेपाली समाज फार्गो मूरहेड |</h2>
+          <h1 class="text-header">Nepali Society of Fargo-Moorhead</h1>
+          <h2 class="text-header devnagari">| नेपाली समाज फार्गो-मूरहेड |</h2>
+          <div class="nonprofit-tags">
+            <a class="nonprofit-tag" href="#" @click.prevent="irsModal?.open()">
+              501(c)(3) Nonprofit Organization
+            </a>
+            <a class="nonprofit-tag" href="#" @click.prevent="certModal?.open()">
+              Incorporated in the State of North Dakota
+            </a>
+          </div>
+          <PdfModal
+            ref="irsModal"
+            src="/docs/irs-501c3.pdf"
+            title="IRS 501(c)(3) Determination Letter"
+          />
+          <PdfModal
+            ref="certModal"
+            src="/docs/certificate-of-incorporation.pdf"
+            title="Certificate of Incorporation — State of North Dakota"
+          />
         </div>
 
         <!-- Column 3: Flags -->
@@ -56,6 +74,29 @@
 /* Text */
 .text-column {
   text-align: center;
+}
+
+.nonprofit-tags {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 6px 0 0;
+}
+
+.nonprofit-tag {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.04em;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.nonprofit-tag:hover {
+  color: #fff;
+  text-decoration: underline;
 }
 
 /* Flags */
@@ -104,4 +145,6 @@
 }
 </style>
 <script setup lang="ts">
+const irsModal = ref<InstanceType<typeof PdfModal> | null>(null);
+const certModal = ref<InstanceType<typeof PdfModal> | null>(null);
 </script>

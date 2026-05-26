@@ -33,8 +33,12 @@
           <NuxtLink to="/contacts" class="footer-links">Contact</NuxtLink>
           <NuxtLink to="/events" class="footer-links">Events</NuxtLink>
         </div>
+        <div class="footer-org-info">
+          <p>3273 Evergreen Rd N, Fargo, ND 58102</p>
+          <p>EIN: 41-3684284 | 501(c)(3) Public Charity</p>
+        </div>
         <div class="footer-copy">
-          © {{ new Date().getFullYear() }} Nepali Society of Fargo Moorhead
+          © {{ new Date().getFullYear() }} Nepali Society of Fargo-Moorhead
         </div>
       </div>
     </div>
@@ -110,6 +114,17 @@ footer a:hover {
 
 .footer-logo {
   height: 90px;
+}
+
+.footer-org-info {
+  text-align: center;
+  font-size: 0.8em;
+  opacity: 0.85;
+  line-height: 1.6;
+}
+
+.footer-org-info p {
+  margin: 0;
 }
 
 .footer-copy {

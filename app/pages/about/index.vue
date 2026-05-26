@@ -1,5 +1,36 @@
 <template>
   <div class="about-us">
+    <div class="org-details">
+      <div class="org-row">
+        <span class="org-label">Legal Name</span>
+        <span class="org-value">Nepali Society of Fargo-Moorhead</span>
+      </div>
+      <div class="org-row">
+        <span class="org-label">Type</span>
+        <span class="org-value">
+          <a href="#" class="doc-link" @click.prevent="irsModal?.open()">501(c)(3) Public Charity</a>
+        </span>
+      </div>
+      <div class="org-row">
+        <span class="org-label">EIN</span>
+        <span class="org-value">41-3684284</span>
+      </div>
+      <div class="org-row">
+        <span class="org-label">Incorporated</span>
+        <span class="org-value">
+          <a href="#" class="doc-link" @click.prevent="certModal?.open()">State of North Dakota (SOS Control ID: 0007360209)</a>
+        </span>
+      </div>
+      <div class="org-row">
+        <span class="org-label">Address</span>
+        <span class="org-value">3273 Evergreen Rd N, Fargo, ND 58102</span>
+      </div>
+      <div class="org-row">
+        <span class="org-label">Email</span>
+        <span class="org-value"><a href="mailto:fmnepalisociety@gmail.com">fmnepalisociety@gmail.com</a></span>
+      </div>
+    </div>
+
     <div class="body">
       <p>
         We are a community-based, non-profit organization dedicated to bringing together the Nepali community in the
@@ -29,12 +60,15 @@
         journey together.</p>
     </div>
 
+    <PdfModal ref="irsModal" src="/docs/irs-501c3.pdf" title="IRS 501(c)(3) Determination Letter" />
+    <PdfModal ref="certModal" src="/docs/certificate-of-incorporation.pdf" title="Certificate of Incorporation — State of North Dakota" />
   </div>
   <OfficialBanner />
 </template>
 
 <script lang="ts" setup>
-// Static content for now, can later be replaced with dynamic content from a database
+const irsModal = ref<InstanceType<typeof PdfModal> | null>(null);
+const certModal = ref<InstanceType<typeof PdfModal> | null>(null);
 </script>
 
 <style scoped>
@@ -67,5 +101,67 @@
   margin-top: 2rem;
   font-weight: bold;
   color: #2c3e50;
+}
+
+.org-details {
+  margin: 0 0 2rem;
+  padding: 1.25rem 1.5rem;
+  background-color: #eef6fc;
+  border-radius: 8px;
+  border: 1px solid #d4e6f1;
+}
+
+.org-row {
+  display: flex;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.org-row:last-child {
+  border-bottom: none;
+}
+
+.org-label {
+  flex: 0 0 130px;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.9rem;
+}
+
+.org-label::after {
+  content: ':';
+  margin-right: 0.75rem;
+}
+
+.org-value {
+  color: #444;
+  font-size: 0.9rem;
+}
+
+.org-details a {
+  color: #3498db;
+}
+
+@media (max-width: 512px) {
+  .org-row {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .org-label {
+    flex: none;
+    font-size: 0.8rem;
+  }
+}
+
+.doc-link {
+  text-decoration: none;
+  border-bottom: 1px dashed #3498db;
+  cursor: pointer;
+}
+
+.doc-link:hover {
+  color: #2c3e50;
+  border-bottom-style: solid;
 }
 </style>
