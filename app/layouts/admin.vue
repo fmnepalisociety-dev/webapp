@@ -9,6 +9,10 @@
           <font-awesome-icon :icon="['fas', 'calendar-days']" />
           Events
         </NuxtLink>
+        <NuxtLink to="/admin/flyers" class="admin-nav-link">
+          <font-awesome-icon :icon="['fas', 'image']" />
+          Flyers
+        </NuxtLink>
         <!-- TODO: enable when admin CRUD is built
         <NuxtLink to="/admin/members" class="admin-nav-link">
           <font-awesome-icon :icon="['fas', 'users']" />

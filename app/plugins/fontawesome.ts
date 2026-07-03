@@ -30,6 +30,9 @@ import {
   faMagnifyingGlass,
   faPrint,
   faCamera,
+  faImage,
+  faUpload,
+  faPlus,
 } from '@fortawesome/free-solid-svg-icons'
 import {faFacebook, faYoutube} from '@fortawesome/free-brands-svg-icons'
 
@@ -62,6 +65,9 @@ library.add(
   faMagnifyingGlass,
   faPrint,
   faCamera,
+  faImage,
+  faUpload,
+  faPlus,
 )
 
 export default defineNuxtPlugin((nuxtApp) => {

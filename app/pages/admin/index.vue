@@ -7,6 +7,11 @@
         <span class="admin-card-label">Events</span>
         <span class="admin-card-desc">View events &amp; RSVPs</span>
       </NuxtLink>
+      <NuxtLink to="/admin/flyers" class="admin-card">
+        <font-awesome-icon :icon="['fas', 'image']" class="admin-card-icon" />
+        <span class="admin-card-label">Flyers</span>
+        <span class="admin-card-desc">Manage homepage flyers</span>
+      </NuxtLink>
       <!-- TODO: enable when admin CRUD is built
       <NuxtLink to="/admin/members" class="admin-card">
         <font-awesome-icon :icon="['fas', 'users']" class="admin-card-icon" />
