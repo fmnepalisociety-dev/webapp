@@ -36,6 +36,7 @@ import {
   faTrash,
   faArrowUp,
   faArrowDown,
+  faUser,
 } from '@fortawesome/free-solid-svg-icons'
 import {faFacebook, faYoutube} from '@fortawesome/free-brands-svg-icons'
 
@@ -74,6 +75,7 @@ library.add(
   faTrash,
   faArrowUp,
   faArrowDown,
+  faUser,
 )
 
 export default defineNuxtPlugin((nuxtApp) => {

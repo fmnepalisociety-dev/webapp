@@ -12,12 +12,12 @@
         <span class="admin-card-label">Flyers</span>
         <span class="admin-card-desc">Manage homepage flyers</span>
       </NuxtLink>
-      <!-- TODO: enable when admin CRUD is built
       <NuxtLink to="/admin/members" class="admin-card">
         <font-awesome-icon :icon="['fas', 'users']" class="admin-card-icon" />
         <span class="admin-card-label">Members</span>
-        <span class="admin-card-desc">Manage members</span>
+        <span class="admin-card-desc">Add &amp; edit members</span>
       </NuxtLink>
+      <!-- TODO: enable when admin CRUD is built
       <NuxtLink to="/admin/committee" class="admin-card">
         <font-awesome-icon :icon="['fas', 'user-tie']" class="admin-card-icon" />
         <span class="admin-card-label">Committee</span>

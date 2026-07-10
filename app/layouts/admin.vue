@@ -13,11 +13,11 @@
           <font-awesome-icon :icon="['fas', 'image']" />
           Flyers
         </NuxtLink>
-        <!-- TODO: enable when admin CRUD is built
         <NuxtLink to="/admin/members" class="admin-nav-link">
           <font-awesome-icon :icon="['fas', 'users']" />
           Members
         </NuxtLink>
+        <!-- TODO: enable when admin CRUD is built
         <NuxtLink to="/admin/committee" class="admin-nav-link">
           <font-awesome-icon :icon="['fas', 'user-tie']" />
           Committee
