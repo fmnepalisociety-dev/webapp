@@ -120,7 +120,7 @@
                         </button>
                       </div>
                     </div>
-                    <AdminRsvpFieldEditor :field="f" />
+                    <AdminRsvpFieldEditor :field="f" :upload-folder="uploadFolder" />
                   </div>
                   <button class="add-btn add-btn--sm" @click="addFieldToSection(block)">
                     <font-awesome-icon :icon="['fas', 'plus']" /> Add Field to Section
@@ -130,7 +130,7 @@
 
               <!-- Standalone field -->
               <template v-else>
-                <AdminRsvpFieldEditor :field="block" />
+                <AdminRsvpFieldEditor :field="block" :upload-folder="uploadFolder" />
               </template>
             </div>
           </div>
@@ -197,6 +197,8 @@ definePageMeta({layout: 'admin', middleware: 'auth'});
 
 const route = useRoute();
 const eventId = route.params.id as string;
+// RSVP image uploads live alongside the event, in the shared nsfm bucket
+const uploadFolder = `events/${eventId}/rsvp`;
 
 const loading = ref(true);
 const saving = ref(false);
@@ -364,7 +366,8 @@ function serializeField(f: FieldModel): RsvpField {
     const opts = f.optionsText.split('\n').map((o) => o.trim()).filter(Boolean);
     if (opts.length) out.options = opts;
   }
-  if ((f.type === 'readonly' || f.type === 'template') && f.value.trim()) out.value = f.value;
+  if ((f.type === 'readonly' || f.type === 'template' || f.type === 'image') && f.value.trim())
+    out.value = f.value;
   return out;
 }
 

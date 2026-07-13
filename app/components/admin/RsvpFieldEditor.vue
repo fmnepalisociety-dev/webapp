@@ -32,6 +32,24 @@
       <input v-model="field.value" class="field-input" placeholder="Static / template value" />
     </div>
 
+    <div v-if="field.type === 'image'" class="field-row">
+      <label class="field-label">Image URL</label>
+      <input v-model="field.value" class="field-input" placeholder="https://... (or pick / upload below)" />
+      <div class="img-row">
+        <select class="preset-select" :value="''" @change="applyPreset">
+          <option value="" disabled>Use a saved image…</option>
+          <option v-for="p in PAYMENT_IMAGES" :key="p.url" :value="p.url">{{ p.label }}</option>
+        </select>
+        <button type="button" class="mini-btn" :disabled="uploading" @click="fileInput?.click()">
+          <font-awesome-icon :icon="['fas', uploading ? 'spinner' : 'upload']" :spin="uploading" />
+          {{ uploading ? 'Uploading...' : 'Upload' }}
+        </button>
+        <img v-if="field.value" :src="field.value" class="img-preview" alt="preview" />
+      </div>
+      <p v-if="uploadError" class="upload-error">{{ uploadError }}</p>
+      <input ref="fileInput" type="file" accept="image/*" class="hidden-file" @change="onUpload" />
+    </div>
+
     <div class="field-inline-row">
       <label class="switch switch--sm">
         <input type="checkbox" v-model="field.required" />
@@ -62,7 +80,37 @@ export interface RsvpFieldModel {
 
 // The field object is a reactive row owned by the parent; mutating its
 // properties here updates the parent's state directly.
-defineProps<{field: RsvpFieldModel}>();
+const props = defineProps<{field: RsvpFieldModel; uploadFolder?: string}>();
+
+import {ref} from 'vue';
+import {uploadPublicImage} from '~/composables/useSupabaseImage';
+import {PAYMENT_IMAGES} from '~/constants/payment';
+
+const fileInput = ref<HTMLInputElement | null>(null);
+const uploading = ref(false);
+const uploadError = ref('');
+
+function applyPreset(e: Event) {
+  const url = (e.target as HTMLSelectElement).value;
+  if (url) props.field.value = url;
+  (e.target as HTMLSelectElement).value = '';
+}
+
+async function onUpload(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+  uploading.value = true;
+  uploadError.value = '';
+  const {url, error} = await uploadPublicImage(file, props.uploadFolder || 'rsvp');
+  uploading.value = false;
+  input.value = '';
+  if (error || !url) {
+    uploadError.value = 'Upload failed. Check the nsfm storage policy and try again.';
+    return;
+  }
+  props.field.value = url;
+}
 
 const FIELD_TYPES = [
   'text',
@@ -179,6 +227,65 @@ const FIELD_TYPES = [
 
 .reqif-eq {
   color: #94a3b8;
+}
+
+.img-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.preset-select {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.35rem;
+  font-size: 0.8rem;
+  color: #334155;
+  background: white;
+  cursor: pointer;
+}
+
+.mini-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.7rem;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px dashed #93c5fd;
+  border-radius: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mini-btn:hover:not(:disabled) {
+  background: #dbeafe;
+}
+
+.mini-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.img-preview {
+  height: 48px;
+  width: 48px;
+  object-fit: cover;
+  border-radius: 0.3rem;
+  border: 1px solid #e2e8f0;
+}
+
+.upload-error {
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin: 0.25rem 0 0;
+}
+
+.hidden-file {
+  display: none;
 }
 
 @media (max-width: 640px) {
