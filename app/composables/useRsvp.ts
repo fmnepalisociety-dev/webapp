@@ -1,11 +1,43 @@
+// A sub-field of a repeatable line-items field (one column per row).
+export interface LineItemField {
+  key: string;
+  label: string;
+  type: 'text' | 'number' | 'select';
+  options?: string[];
+}
+
 export interface RsvpField {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox' | 'readonly' | 'image' | 'template';
+  type: 'text' | 'number' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox' | 'readonly' | 'image' | 'template' | 'lineitems';
   required?: boolean;
   required_if?: { field: string; value: string };
   options?: string[];
   value?: string;
+  // For type === 'lineitems': the columns of each row, and an optional unit
+  // price used to show a running total.
+  item_fields?: LineItemField[];
+  unit_price?: number;
+}
+
+// A blank row for a line-items field (every column empty).
+export function emptyLineItemRow(field: RsvpField): Record<string, any> {
+  const row: Record<string, any> = {};
+  for (const f of field.item_fields ?? []) row[f.key] = '';
+  return row;
+}
+
+// Human-readable one-line summary of a line-items value, e.g.
+// "White / M / 2; Black / L / 1". Skips fully-empty rows.
+export function formatLineItems(rows: unknown, itemFields?: { key: string }[]): string {
+  if (!Array.isArray(rows)) return '';
+  return rows
+    .filter((r) => r && typeof r === 'object' && Object.values(r).some((v) => v !== '' && v != null))
+    .map((r) => {
+      const keys = itemFields?.map((f) => f.key) ?? Object.keys(r);
+      return keys.map((k) => (r as any)[k]).filter((v) => v !== '' && v != null).join(' / ');
+    })
+    .join('; ');
 }
 
 export interface RsvpSection {

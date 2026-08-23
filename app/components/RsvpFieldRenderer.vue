@@ -19,6 +19,58 @@
       <div v-html="renderedTemplate"></div>
     </template>
 
+    <!-- Repeatable line items (e.g. color / size / qty rows) -->
+    <template v-else-if="field.type === 'lineitems'">
+      <label class="field-label lineitems-label">
+        {{ field.label }}
+        <span v-if="isRequired" class="required-star">*</span>
+      </label>
+
+      <div class="lineitems">
+        <div v-for="(row, idx) in rows" :key="idx" class="lineitem-row">
+          <template v-for="sf in field.item_fields" :key="sf.key">
+            <select
+              v-if="sf.type === 'select'"
+              v-model="row[sf.key]"
+              class="rsvp-input lineitem-input"
+            >
+              <option value="" disabled>{{ sf.label }}</option>
+              <option v-for="opt in sf.options" :key="opt" :value="opt">{{ opt }}</option>
+            </select>
+            <input
+              v-else
+              :type="sf.type === 'number' ? 'number' : 'text'"
+              :min="sf.type === 'number' ? 1 : undefined"
+              :placeholder="sf.label"
+              v-model="row[sf.key]"
+              class="rsvp-input lineitem-input"
+              :class="{ 'lineitem-input--num': sf.type === 'number' }"
+            />
+          </template>
+          <button
+            type="button"
+            class="lineitem-remove"
+            title="Remove item"
+            :disabled="rows.length <= 1"
+            @click="removeRow(idx)"
+          >
+            <font-awesome-icon :icon="['fas', 'xmark']" />
+          </button>
+        </div>
+
+        <button type="button" class="lineitem-add" @click="addRow">
+          <font-awesome-icon :icon="['fas', 'plus']" /> Add item
+        </button>
+
+        <div v-if="field.unit_price" class="lineitem-total">
+          <span>Total ({{ totalQty }} item{{ totalQty === 1 ? '' : 's' }})</span>
+          <strong>${{ totalQty * field.unit_price }}</strong>
+        </div>
+
+        <span v-if="errorMsg" class="field-error">{{ errorMsg }}</span>
+      </div>
+    </template>
+
     <!-- Checkbox (inline by nature) -->
     <template v-else-if="field.type === 'checkbox'">
       <div class="checkbox-row">
@@ -83,7 +135,7 @@
 
 <script setup lang="ts">
 import { computed, inject } from 'vue';
-import type { RsvpField } from '~/composables/useRsvp';
+import { emptyLineItemRow, type RsvpField } from '~/composables/useRsvp';
 
 const props = defineProps<{
   field: RsvpField;
@@ -95,8 +147,32 @@ const fieldErrors = inject<Record<string, string>>('fieldErrors', {});
 const errorMsg = computed(() => fieldErrors[props.field.key] || '');
 
 const isInline = computed(() => {
-  return !['readonly', 'image', 'checkbox', 'textarea', 'template'].includes(props.field.type);
+  return !['readonly', 'image', 'checkbox', 'textarea', 'template', 'lineitems'].includes(props.field.type);
 });
+
+/* ---- Line items ---- */
+const rows = computed<Record<string, any>[]>(() => {
+  const v = props.formData[props.field.key];
+  return Array.isArray(v) ? v : [];
+});
+
+const quantityKey = computed(() => props.field.item_fields?.find((f) => f.type === 'number')?.key);
+
+const totalQty = computed(() => {
+  const key = quantityKey.value;
+  if (!key) return 0;
+  return rows.value.reduce((sum, r) => sum + (Math.max(0, parseFloat(r[key]) || 0)), 0);
+});
+
+function addRow() {
+  if (!Array.isArray(props.formData[props.field.key])) props.formData[props.field.key] = [];
+  props.formData[props.field.key].push(emptyLineItemRow(props.field));
+}
+
+function removeRow(idx: number) {
+  const arr = props.formData[props.field.key];
+  if (Array.isArray(arr) && arr.length > 1) arr.splice(idx, 1);
+}
 
 const isVisible = computed(() => {
   if (!props.field.required_if) return true;
@@ -140,6 +216,89 @@ const renderedTemplate = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+/* Line items */
+.lineitems-label {
+  min-width: 0;
+  margin-bottom: 0.4rem;
+}
+
+.lineitems {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lineitem-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.lineitem-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.lineitem-input--num {
+  flex: 0 0 5rem;
+}
+
+.lineitem-remove {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #ef4444;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lineitem-remove:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.lineitem-remove:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.lineitem-add {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px dashed #93c5fd;
+  border-radius: 0.375rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lineitem-add:hover {
+  background: #dbeafe;
+}
+
+.lineitem-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.85rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  color: #15803d;
+  font-weight: 600;
 }
 
 .rsvp-field--inline {
