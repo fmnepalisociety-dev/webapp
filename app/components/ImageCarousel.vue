@@ -1,6 +1,12 @@
 <template>
-  <div v-if="images.length" class="carousel">
-    <div class="carousel-stage" ref="stageRef" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
+  <div v-if="images.length" class="carousel" :class="{ 'carousel--manual': !autoplay }">
+    <div
+      class="carousel-stage"
+      ref="stageRef"
+      :style="stageStyle"
+      @mouseenter="onMouseEnter"
+      @mouseleave="onMouseLeave"
+    >
       <div class="carousel-track">
         <div
           v-for="(src, i) in images"
@@ -28,7 +34,7 @@
     </div>
 
     <!-- Progress bar + counter below image -->
-    <div v-if="images.length > 1" class="carousel-footer">
+    <div v-if="showFooter && images.length > 1" class="carousel-footer">
       <div class="carousel-progress">
         <div
           v-for="(_, i) in images"
@@ -46,11 +52,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 
-const props = defineProps<{
-  images: string[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    images: string[];
+    autoplay?: boolean;
+    background?: string;
+    height?: string;
+    showFooter?: boolean;
+    square?: boolean;
+  }>(),
+  {
+    autoplay: true,
+    background: '#1a1a1a',
+    height: '',
+    showFooter: true,
+    square: false,
+  }
+);
+
+const stageStyle = computed(() => {
+  const s: Record<string, string> = { background: props.background };
+  if (props.square) {
+    s.aspectRatio = '1 / 1';
+    s.height = 'auto';
+  } else if (props.height) {
+    s.height = props.height;
+  }
+  return s;
+});
 
 defineEmits<{
   open: [index: number];
@@ -76,7 +107,7 @@ function next() {
 }
 
 function startAutoplay() {
-  if (props.images.length <= 1) return;
+  if (!props.autoplay || props.images.length <= 1) return;
   autoplayTimer = setInterval(() => {
     if (!paused.value) {
       current.value = (current.value + 1) % props.images.length;
@@ -137,6 +168,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .carousel {
   user-select: none;
+  width: 100%;
 }
 
 .carousel-stage {
@@ -268,6 +300,17 @@ onBeforeUnmount(() => {
 @keyframes carousel-fill {
   from { width: 0; }
   to { width: 100%; }
+}
+
+/* Manual mode (no autoplay): snappier fades and a static (filled) progress
+   segment instead of the 4s timer animation. */
+.carousel--manual .carousel-slide {
+  transition: opacity 0.35s ease;
+}
+
+.carousel--manual .carousel-progress-seg.active .carousel-progress-fill {
+  width: 100%;
+  animation: none;
 }
 
 .carousel-counter {
