@@ -51,6 +51,10 @@
           <NuxtLink to="/donation" @click="closeMenu">Donation</NuxtLink>
         </li>
 
+        <li>
+          <NuxtLink to="/shop" @click="closeMenu">Shop</NuxtLink>
+        </li>
+
         <li class="has-dropdown">
           <span class="nav-parent">About Us</span>
           <ul class="dropdown">
