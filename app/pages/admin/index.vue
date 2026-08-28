@@ -17,6 +17,16 @@
         <span class="admin-card-label">Members</span>
         <span class="admin-card-desc">Add &amp; edit members</span>
       </NuxtLink>
+      <NuxtLink to="/admin/products" class="admin-card">
+        <font-awesome-icon :icon="['fas', 'bag-shopping']" class="admin-card-icon" />
+        <span class="admin-card-label">Shop</span>
+        <span class="admin-card-desc">Manage merchandise</span>
+      </NuxtLink>
+      <NuxtLink to="/admin/banners" class="admin-card">
+        <font-awesome-icon :icon="['fas', 'bullhorn']" class="admin-card-icon" />
+        <span class="admin-card-label">Banners</span>
+        <span class="admin-card-desc">Site notification banners</span>
+      </NuxtLink>
       <!-- TODO: enable when admin CRUD is built
       <NuxtLink to="/admin/committee" class="admin-card">
         <font-awesome-icon :icon="['fas', 'user-tie']" class="admin-card-icon" />
