@@ -21,6 +21,10 @@
           <font-awesome-icon :icon="['fas', 'bag-shopping']" />
           Shop
         </NuxtLink>
+        <NuxtLink to="/admin/banners" class="admin-nav-link">
+          <font-awesome-icon :icon="['fas', 'bullhorn']" />
+          Banners
+        </NuxtLink>
         <!-- TODO: enable when admin CRUD is built
         <NuxtLink to="/admin/committee" class="admin-nav-link">
           <font-awesome-icon :icon="['fas', 'user-tie']" />

@@ -160,6 +160,45 @@ When a buyer places an order, a confirmation email is sent using the same
 3. **Create Database Webhook** `order-email-trigger` on table `product_orders`, event
    **Insert**, type **Supabase Edge Function**, function `send-order-email`.
 
+## Notification Banners
+
+Admin-controlled announcement banners (e.g. a fundraiser call-to-action) shown on the
+public site. Managed under **Admin → Banners**. Each banner supports HTML text and
+caption, an optional image and CTA link, a position (top of page / above nav / below
+nav), a page scope (all pages or home only), a scheduled display window, an active
+toggle, and an optional per-banner dismiss button.
+
+Create the table in Supabase (dashboard → SQL editor):
+
+```sql
+create table banners (
+  id uuid primary key default gen_random_uuid(),
+  title text,               -- internal admin label
+  text text,                -- headline / body HTML (rendered as HTML)
+  caption text,             -- secondary caption HTML
+  image text,               -- public image URL (nsfm bucket, banners/ folder)
+  image_size int,           -- optional max image size in px (blank = scale with height)
+  link_url text,            -- optional CTA link (e.g. donation page)
+  link_label text,          -- optional CTA button label, e.g. "Donate"
+  position text default 'below_nav',  -- 'page_top' | 'above_nav' | 'below_nav'
+  scope text default 'all',           -- 'all' | 'home'
+  size text default 'medium',         -- height preset: xsmall | small | small-medium | medium | medium-large | large | large-xlarge | xlarge
+  height_px int,            -- optional exact height in px (overrides the preset)
+  bg_color text,            -- optional background hex
+  dismissible boolean default true,
+  active boolean default true,
+  start_at timestamptz,     -- optional: show only after this time
+  end_at timestamptz,       -- optional: hide after this time
+  sort_order int default 0,
+  created_at timestamptz default now()
+);
+```
+
+Set Row Level Security to match the events policies: public **read** on `banners`,
+authenticated **write** (insert/update/delete) for admins. Time-window filtering
+(`start_at`/`end_at`) is applied client-side, and dismissed banners are remembered per
+browser via `localStorage`.
+
 ## Docs
 
 Reference docs and scripts are organized by module in `docs/`:
