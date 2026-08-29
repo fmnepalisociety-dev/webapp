@@ -1,7 +1,7 @@
 <template>
   <main class="members-page">
     <div class="members-header">
-      <h1 class="members-title">Members</h1>
+      <h1 class="members-title" @click="bumpSecret">Members</h1>
       <span class="members-count">{{ filteredMembers.length }} paid members</span>
     </div>
 
@@ -41,6 +41,42 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Hidden list: revealed after clicking the "Members" title 10 times -->
+    <div v-if="showExpired" class="expired-section">
+      <div class="members-header">
+        <h2 class="members-title expired-title">Expired / Unpaid</h2>
+        <span class="members-count">{{ expiredMembers.length }} members</span>
+        <button class="expired-close" aria-label="Close" @click="closeExpired">
+          <font-awesome-icon :icon="['fas', 'xmark']" />
+        </button>
+      </div>
+      <div class="members-table-wrap">
+        <table class="members-table">
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th class="col-id">Membership ID</th>
+              <th class="col-name">Name</th>
+              <th class="col-exp">Expired</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(m, index) in expiredMembers" :key="m.id">
+              <td class="col-num">{{ index + 1 }}</td>
+              <td class="col-id">
+                <span class="id-badge">{{ m.membership_id || 'N/A' }}</span>
+              </td>
+              <td class="col-name">{{ formatName(m.firstname) }} {{ formatName(m.lastname) }}</td>
+              <td class="col-exp">{{ m.expiry_date || '—' }}</td>
+            </tr>
+            <tr v-if="expiredMembers.length === 0">
+              <td colspan="4" class="no-results">None</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </main>
 </template>
 
@@ -56,7 +92,20 @@ const search = ref('');
 const cutoff = new Date();
 cutoff.setMonth(cutoff.getMonth() - 6);
 const cutoffStr = cutoff.toISOString().slice(0, 10);
-const members = allMembers.filter((m) => m.expiry_date && m.expiry_date >= cutoffStr);
+const isPaid = (m) => m.expiry_date && m.expiry_date >= cutoffStr;
+const members = allMembers.filter(isPaid);
+
+// Expired / unpaid members — hidden behind a 10-click reveal on the title.
+const expiredMembers = allMembers.filter((m) => !isPaid(m));
+const showExpired = ref(false);
+let secretClicks = 0;
+const bumpSecret = () => {
+  if (++secretClicks >= 10) showExpired.value = true;
+};
+const closeExpired = () => {
+  showExpired.value = false;
+  secretClicks = 0;
+};
 
 const filteredMembers = computed(() => {
   if (!search.value.trim()) return members;
@@ -106,6 +155,37 @@ const formatName = (value) => {
   font-weight: 700;
   color: #1e3a5f;
   margin: 0;
+  user-select: none;
+}
+
+.expired-section {
+  margin-top: 2.5rem;
+}
+
+.expired-title {
+  color: #b91c1c;
+}
+
+.expired-close {
+  margin-left: auto;
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.4rem;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.expired-close:hover {
+  background: #f3f4f6;
+  color: #b91c1c;
+}
+
+.col-exp {
+  color: #6b7280;
+  white-space: nowrap;
 }
 
 .members-count {
