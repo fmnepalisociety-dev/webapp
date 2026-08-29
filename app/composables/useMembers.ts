@@ -5,7 +5,7 @@ export async function getMembers() {
 
   const {data, error} = await $supabase
   .from('members')
-  .select('id, firstname, lastname, membership_id')
+  .select('id, firstname, lastname, membership_id, expiry_date')
   .order('id', { ascending: true })
 
   if (error) {

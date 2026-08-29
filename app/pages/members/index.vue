@@ -2,7 +2,7 @@
   <main class="members-page">
     <div class="members-header">
       <h1 class="members-title">Members</h1>
-      <span class="members-count">{{ filteredMembers.length }} members</span>
+      <span class="members-count">{{ filteredMembers.length }} paid members</span>
     </div>
 
     <div class="members-search">
@@ -48,8 +48,15 @@
 import { ref, computed } from 'vue';
 import { getMembers } from '~/composables/useMembers.js';
 
-const members = await getMembers();
+const allMembers = await getMembers();
 const search = ref('');
+
+// Show only paid members, with a 6-month grace period after expiry — a member
+// stays listed until 6 months past their expiry_date. Older/unset = hidden.
+const cutoff = new Date();
+cutoff.setMonth(cutoff.getMonth() - 6);
+const cutoffStr = cutoff.toISOString().slice(0, 10);
+const members = allMembers.filter((m) => m.expiry_date && m.expiry_date >= cutoffStr);
 
 const filteredMembers = computed(() => {
   if (!search.value.trim()) return members;
