@@ -6,7 +6,7 @@
     <div v-else-if="!product" class="text-center py-12">
       <h1 class="text-2xl font-bold text-gray-700 mb-2">Product Not Found</h1>
       <NuxtLink to="/shop" class="text-blue-600 hover:underline mt-4 inline-block">
-        Back to Shop
+        Back to Wear
       </NuxtLink>
     </div>
 
@@ -14,7 +14,7 @@
       <div class="back-link-wrapper">
         <NuxtLink to="/shop" class="back-link">
           <font-awesome-icon :icon="['fas', 'chevron-left']" />
-          Back to Shop
+          Back to Wear
         </NuxtLink>
       </div>
 

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="products-header">
-      <h1 class="admin-page-title">Shop</h1>
+      <h1 class="admin-page-title">Wear</h1>
       <NuxtLink to="/admin/products/new" class="admin-btn">
         <font-awesome-icon :icon="['fas', 'plus']" />
         New Product
@@ -22,7 +22,7 @@
           <th>Product</th>
           <th>Price</th>
           <th>Status</th>
-          <th>Order Form</th>
+          <th>Request Form</th>
           <th></th>
         </tr>
       </thead>
@@ -44,8 +44,8 @@
           </td>
           <td class="actions-cell">
             <NuxtLink :to="`/admin/products/${product.id}/edit`" class="admin-link">Edit</NuxtLink>
-            <NuxtLink :to="`/admin/products/${product.id}/order-config`" class="admin-link">Order Form</NuxtLink>
-            <NuxtLink v-if="product.order_form" :to="`/admin/products/${product.id}/orders`" class="admin-link">Orders</NuxtLink>
+            <NuxtLink :to="`/admin/products/${product.id}/order-config`" class="admin-link">Request Form</NuxtLink>
+            <NuxtLink v-if="product.order_form" :to="`/admin/products/${product.id}/orders`" class="admin-link">Requests</NuxtLink>
             <button class="admin-link admin-link--danger" @click="remove(product)">Delete</button>
           </td>
         </tr>
@@ -87,7 +87,7 @@ async function remove(product: any) {
   if (!confirm(`Delete product "${product.name}"? This cannot be undone.`)) return;
   const {error} = await deleteProduct(product.id);
   if (error) {
-    alert('Failed to delete product. It may have orders that must be removed first.');
+    alert('Failed to delete product. It may have requests that must be removed first.');
     return;
   }
   await load();

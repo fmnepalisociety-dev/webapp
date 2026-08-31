@@ -6,10 +6,10 @@
       <div class="back-link-wrapper">
         <NuxtLink to="/shop" class="back-link">
           <font-awesome-icon :icon="['fas', 'chevron-left']" />
-          Back to Shop
+          Back to Wear
         </NuxtLink>
       </div>
-      <h1 class="order-closed-title">Sorry, ordering is not available!</h1>
+      <h1 class="order-closed-title">Sorry, requests are not available!</h1>
       <p class="order-closed-message" v-html="closedMessage"></p>
       <div v-if="product" class="order-closed-links">
         <NuxtLink :to="`/shop/${productId}`" class="order-closed-link">
@@ -21,15 +21,15 @@
 
     <div v-else-if="submitted" class="confirmation" ref="confirmationRef">
       <div class="confirmation-header">
-        <h1 class="confirmation-title">Thank You for Your Order!</h1>
+        <h1 class="confirmation-title">Thank You for Your Request!</h1>
         <p class="confirmation-subtitle">
-          Your order for <strong>{{ product?.name ?? 'this item' }}</strong> has been received.
+          Your request for <strong>{{ product?.name ?? 'this item' }}</strong> has been received.
         </p>
       </div>
 
       <!-- Order Details -->
       <div class="confirmation-details">
-        <h3 class="confirmation-details-title">Your Order Details</h3>
+        <h3 class="confirmation-details-title">Your Request Details</h3>
         <table class="details-table">
           <tr v-for="field in submittedFields" :key="field.key">
             <td class="details-label">{{ field.label }}</td>
@@ -63,7 +63,7 @@
           Print Confirmation
         </button>
         <NuxtLink to="/shop" class="back-link">
-          Back to Shop
+          Back to Wear
         </NuxtLink>
       </div>
     </div>
@@ -72,7 +72,7 @@
       <!-- Header -->
       <div class="order-header">
         <h1 class="text-2xl font-bold text-blue-800">
-          {{ product?.name ?? 'Order' }}
+          {{ product?.name ?? 'Request' }}
         </h1>
         <p v-if="priceText" class="text-gray-500 text-sm mt-1">{{ priceText }}</p>
 
@@ -127,7 +127,7 @@
 
         <button type="submit" :disabled="submitting" class="order-submit">
           <font-awesome-icon v-if="submitting" :icon="['fas', 'spinner']" spin />
-          {{ submitting ? 'Submitting...' : 'Place Order' }}
+          {{ submitting ? 'Submitting...' : 'Place Request' }}
         </button>
       </form>
     </div>
@@ -197,7 +197,7 @@ const closedMessage = computed(() => {
   const orderData = product.value?.order_form as OrderFormConfig | null;
   return (
     orderData?.closed_message ||
-    'Ordering is not available for this item at this time. For inquiries, please contact <a href="mailto:fmnepalisociety@gmail.com">fmnepalisociety@gmail.com</a>.'
+    'Requests are not available for this item at this time. For inquiries, please contact <a href="mailto:fmnepalisociety@gmail.com">fmnepalisociety@gmail.com</a>.'
   );
 });
 

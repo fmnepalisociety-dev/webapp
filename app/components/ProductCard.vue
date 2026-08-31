@@ -40,7 +40,7 @@
           class="btn btn-blue product-order-top"
         >
           <font-awesome-icon :icon="['fas', 'bag-shopping']" />
-          Order Now
+          Request Now
         </NuxtLink>
 
         <p v-if="product.promo" v-html="product.promo" class="product-promo"></p>
@@ -51,18 +51,18 @@
           <template v-if="orderOpen">
             <NuxtLink :to="`${path}/order`" class="btn btn-blue">
               <font-awesome-icon :icon="['fas', 'bag-shopping']" />
-              Order Now
+              Request Now
             </NuxtLink>
             <div class="order-qr" ref="qrContainer">
               <QrCode :value="orderUrl" :size="88" />
-              <span class="order-qr-label">Scan to order</span>
+              <span class="order-qr-label">Scan to request</span>
               <button class="order-qr-download" title="Download QR code" @click="downloadQr">
                 <font-awesome-icon :icon="['fas', 'download']" /> Save QR
               </button>
             </div>
           </template>
           <NuxtLink v-else :to="`${path}/order`" class="order-closed-badge">
-            Sorry, ordering has closed
+            Sorry, requests have closed
             <span class="order-closed-more">More Info</span>
           </NuxtLink>
         </div>

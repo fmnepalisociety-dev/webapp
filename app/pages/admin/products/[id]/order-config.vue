@@ -2,7 +2,7 @@
   <div>
     <NuxtLink to="/admin/products" class="admin-back-link">
       <font-awesome-icon :icon="['fas', 'chevron-left']" />
-      Back to Shop
+      Back to Wear
     </NuxtLink>
 
     <div v-if="loading" class="admin-loading">Loading...</div>
@@ -10,7 +10,7 @@
     <template v-else-if="product">
       <div class="form-header">
         <div>
-          <h1 class="admin-page-title">Order Form</h1>
+          <h1 class="admin-page-title">Request Form</h1>
           <p class="editor-meta">{{ product.name }}</p>
         </div>
         <div class="header-actions">
@@ -20,7 +20,7 @@
           </a>
           <button class="admin-btn" :disabled="saving" @click="save">
             <font-awesome-icon v-if="saving" :icon="['fas', 'spinner']" spin />
-            {{ saving ? 'Saving...' : 'Save Order Form' }}
+            {{ saving ? 'Saving...' : 'Save Request Form' }}
           </button>
         </div>
       </div>
@@ -31,9 +31,9 @@
 
       <!-- No order form yet -->
       <div v-if="!enabled" class="empty-card">
-        <p>This product has no order form.</p>
+        <p>This product has no request form.</p>
         <button class="admin-btn" @click="enableForm">
-          <font-awesome-icon :icon="['fas', 'plus']" /> Add Order Form
+          <font-awesome-icon :icon="['fas', 'plus']" /> Add Request Form
         </button>
       </div>
 
@@ -45,9 +45,9 @@
           <div class="field-row field-row--inline">
             <label class="switch">
               <input type="checkbox" v-model="settings.active" />
-              <span>Accepting orders</span>
+              <span>Accepting requests</span>
             </label>
-            <span class="field-hint field-hint--inline">Uncheck to close ordering while keeping the fields.</span>
+            <span class="field-hint field-hint--inline">Uncheck to close requests while keeping the fields.</span>
           </div>
 
           <div class="field-two-col">
@@ -59,13 +59,13 @@
             <div class="field-row">
               <label class="field-label">Closes</label>
               <input v-model="settings.close_date" type="datetime-local" class="field-input" />
-              <p class="field-hint">Optional. After this, ordering is closed.</p>
+              <p class="field-hint">Optional. After this, requests are closed.</p>
             </div>
           </div>
 
           <div class="field-row">
             <label class="field-label">Closed message <span class="html-hint">(optional)</span></label>
-            <textarea v-model="settings.closed_message" class="field-input" rows="2" placeholder="Shown when ordering is closed"></textarea>
+            <textarea v-model="settings.closed_message" class="field-input" rows="2" placeholder="Shown when requests are closed"></textarea>
           </div>
 
           <div class="field-row">
@@ -74,7 +74,7 @@
           </div>
 
           <button class="remove-rsvp-btn" @click="removeForm">
-            <font-awesome-icon :icon="['fas', 'trash']" /> Remove order form entirely
+            <font-awesome-icon :icon="['fas', 'trash']" /> Remove request form entirely
           </button>
         </div>
 
@@ -177,7 +177,7 @@
         <div class="form-footer">
           <button class="admin-btn" :disabled="saving" @click="save">
             <font-awesome-icon v-if="saving" :icon="['fas', 'spinner']" spin />
-            {{ saving ? 'Saving...' : 'Save Order Form' }}
+            {{ saving ? 'Saving...' : 'Save Request Form' }}
           </button>
         </div>
       </template>

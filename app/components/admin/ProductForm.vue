@@ -2,7 +2,7 @@
   <div>
     <NuxtLink to="/admin/products" class="admin-back-link">
       <font-awesome-icon :icon="['fas', 'chevron-left']" />
-      Back to Shop
+      Back to Wear
     </NuxtLink>
 
     <div v-if="loading" class="admin-loading">Loading...</div>

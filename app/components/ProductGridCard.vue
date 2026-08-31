@@ -57,7 +57,7 @@
           :to="`${path}/order`"
           class="card-link card-link--order"
         >
-          <font-awesome-icon :icon="['fas', 'bag-shopping']" /> Order
+          <font-awesome-icon :icon="['fas', 'bag-shopping']" /> Request
         </NuxtLink>
       </div>
     </div>

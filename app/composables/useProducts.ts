@@ -172,6 +172,6 @@ export async function submitOrder(productId: string, responses: Record<string, u
 
   if (error) {
     console.error('[submitOrder]', error)
-    throw new Error('Failed to submit your order. Please try again.')
+    throw new Error('Failed to submit your request. Please try again.')
   }
 }

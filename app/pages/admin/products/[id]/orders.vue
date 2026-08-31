@@ -2,16 +2,16 @@
   <div>
     <NuxtLink to="/admin/products" class="admin-back-link">
       <font-awesome-icon :icon="['fas', 'chevron-left']" />
-      Back to Shop
+      Back to Wear
     </NuxtLink>
 
-    <div v-if="loading" class="admin-loading">Loading orders...</div>
+    <div v-if="loading" class="admin-loading">Loading requests...</div>
 
     <template v-else-if="product">
       <div class="orders-header">
         <div>
           <h1 class="admin-page-title">{{ product.name }}</h1>
-          <p class="orders-meta">{{ orders.length }} orders</p>
+          <p class="orders-meta">{{ orders.length }} requests</p>
         </div>
         <button v-if="orders.length" class="admin-btn" @click="downloadCsv">
           <font-awesome-icon :icon="['fas', 'download']" />
@@ -19,12 +19,12 @@
         </button>
       </div>
 
-      <div v-if="!orders.length" class="admin-empty">No orders yet for this product.</div>
+      <div v-if="!orders.length" class="admin-empty">No requests yet for this product.</div>
 
       <!-- Totals summary -->
       <div v-if="orders.length" class="totals-bar">
         <div class="total-card">
-          <span class="total-label">Orders</span>
+          <span class="total-label">Requests</span>
           <span class="total-value">
             {{ filteredOrders.length }}
             <span v-if="isFiltered" class="total-of">/ {{ orders.length }}</span>
@@ -58,7 +58,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search orders..."
+            placeholder="Search requests..."
             class="search-input"
           />
         </div>
@@ -69,7 +69,7 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>Order ID</th>
+              <th>Request ID</th>
               <th v-for="col in columns" :key="col">
                 {{ formatHeader(col) }}
                 <div v-if="filterMap[col]" class="th-filter-row">
@@ -122,7 +122,7 @@
         <div v-if="editingOrder" class="modal-overlay" @click.self="closeEdit">
           <div class="modal">
             <div class="modal-header">
-              <h2 class="modal-title">Edit Order</h2>
+              <h2 class="modal-title">Edit Request</h2>
               <button class="modal-close" @click="closeEdit">
                 <font-awesome-icon :icon="['fas', 'xmark']" />
               </button>
@@ -454,7 +454,7 @@ function formatDate(iso: string): string {
 }
 
 function downloadCsv() {
-  const headers = ['#', 'Order ID', ...columns.value, 'Status', 'Notes', 'Submitted'];
+  const headers = ['#', 'Request ID', ...columns.value, 'Status', 'Notes', 'Submitted'];
   const rows = orders.value.map((r, idx) => [
     idx + 1,
     r.id,
@@ -480,7 +480,7 @@ function downloadCsv() {
   const link = document.createElement('a');
   link.href = url;
   const productName = (product.value?.name ?? 'orders').replace(/[^a-zA-Z0-9]/g, '_');
-  link.download = `${productName}_orders.csv`;
+  link.download = `${productName}_requests.csv`;
   link.click();
   URL.revokeObjectURL(url);
 }

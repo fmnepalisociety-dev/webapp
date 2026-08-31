@@ -52,7 +52,7 @@
         </li>
 
         <li>
-          <NuxtLink to="/shop" @click="closeMenu">Shop</NuxtLink>
+          <NuxtLink to="/shop" @click="closeMenu">NeSFM-Wear</NuxtLink>
         </li>
 
         <li class="has-dropdown">

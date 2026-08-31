@@ -1,8 +1,8 @@
 <template>
   <main class="p-6 max-w-6xl mx-auto space-y-6">
     <div class="shop-header">
-      <h1 class="shop-title">Shop</h1>
-      <p class="shop-subtitle">Support the community — shop our merchandise below.</p>
+      <h1 class="shop-title">Wear</h1>
+      <p class="shop-subtitle">Support the community - browse our collection below.</p>
     </div>
 
     <div v-if="loading" class="text-center text-gray-500 py-12">Loading...</div>

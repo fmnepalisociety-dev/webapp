@@ -19,7 +19,7 @@
       </NuxtLink>
       <NuxtLink to="/admin/products" class="admin-card">
         <font-awesome-icon :icon="['fas', 'bag-shopping']" class="admin-card-icon" />
-        <span class="admin-card-label">Shop</span>
+        <span class="admin-card-label">Wear</span>
         <span class="admin-card-desc">Manage merchandise</span>
       </NuxtLink>
       <NuxtLink to="/admin/banners" class="admin-card">

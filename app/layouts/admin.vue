@@ -19,7 +19,7 @@
         </NuxtLink>
         <NuxtLink to="/admin/products" class="admin-nav-link">
           <font-awesome-icon :icon="['fas', 'bag-shopping']" />
-          Shop
+          Wear
         </NuxtLink>
         <NuxtLink to="/admin/banners" class="admin-nav-link">
           <font-awesome-icon :icon="['fas', 'bullhorn']" />
