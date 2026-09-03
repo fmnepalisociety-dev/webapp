@@ -3,7 +3,7 @@
     <div
       ref="viewport"
       class="cropper-viewport"
-      :style="{ aspectRatio: String(aspect) }"
+      :style="{ aspectRatio: String(frameAspect) }"
       @pointerdown="onDown"
       @pointermove="onMove"
       @pointerup="onUp"
@@ -44,12 +44,15 @@
 </template>
 
 <script setup lang="ts">
-import {ref, computed, watch, onMounted, onBeforeUnmount} from 'vue';
+import {ref, computed, watch, nextTick, onMounted, onBeforeUnmount} from 'vue';
 
 const props = withDefaults(
   defineProps<{
     file: File | null;
-    aspect?: number; // width / height of the crop frame (default 4:5)
+    // Crop frame ratio (width / height). Pass a number to force a ratio
+    // (e.g. 0.8 for 4:5); pass null for "natural" — the frame matches the
+    // image so nothing is cropped unless the admin zooms/pans.
+    aspect?: number | null;
     outputWidth?: number; // exported image width in px
     quality?: number; // JPEG quality 0..1
   }>(),
@@ -57,6 +60,9 @@ const props = withDefaults(
 );
 
 const MAX_ZOOM = 4;
+
+// Effective frame ratio; for natural mode it's set from the image on load.
+const frameAspect = ref<number>(typeof props.aspect === 'number' ? props.aspect : 1);
 
 const viewport = ref<HTMLDivElement | null>(null);
 const imgEl = ref<HTMLImageElement | null>(null);
@@ -90,16 +96,31 @@ watch(
   {immediate: true}
 );
 
-function onImgLoad() {
+async function onImgLoad() {
   if (!imgEl.value) return;
   natW.value = imgEl.value.naturalWidth;
   natH.value = imgEl.value.naturalHeight;
+  // Natural mode: make the frame match the image so it's shown fully, uncropped.
+  if (props.aspect == null && natH.value) {
+    frameAspect.value = natW.value / natH.value;
+    await nextTick(); // let the viewport resize to the new aspect first
+  }
   measure();
   // Start zoomed to "cover" and centered.
   s.value = sMin.value;
   tx.value = (Vw.value - natW.value * s.value) / 2;
   ty.value = (Vh.value - natH.value * s.value) / 2;
   clamp();
+}
+
+// True when the admin hasn't zoomed or panned (frame still shows the whole
+// image). Used to upload the original file untouched in natural mode.
+function isPristine(): boolean {
+  const zoomed = Math.abs(s.value - sMin.value) > 0.001 * sMin.value;
+  const cx = (Vw.value - natW.value * s.value) / 2;
+  const cy = (Vh.value - natH.value * s.value) / 2;
+  const moved = Math.abs(tx.value - cx) > 1 || Math.abs(ty.value - cy) > 1;
+  return !zoomed && !moved;
 }
 
 function measure() {
@@ -205,8 +226,13 @@ function onUp(e: PointerEvent) {
 /* ---------- export ---------- */
 async function getResult(): Promise<File | null> {
   if (!imgEl.value || !props.file || !s.value) return null;
+
+  // Natural mode, untouched → upload the original file as-is (no re-encode,
+  // safe for QR codes, logos, transparent PNGs, etc.).
+  if (props.aspect == null && isPristine()) return props.file;
+
   const outW = props.outputWidth;
-  const outH = Math.round(outW / props.aspect);
+  const outH = Math.round(outW / frameAspect.value);
 
   // Region of the natural image currently framed by the viewport.
   const sx = -tx.value / s.value;

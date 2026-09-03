@@ -79,25 +79,15 @@
 
           <!-- Right: image -->
           <div class="image-col">
-            <label class="field-label">Image</label>
-            <div class="image-drop">
-              <img v-if="previewUrl" :src="previewUrl" class="image-preview" :alt="form.title" />
-              <div v-else class="image-placeholder">
-                <font-awesome-icon :icon="['fas', 'image']" />
-                <span>No image</span>
-              </div>
-            </div>
-            <input
-              ref="fileInput"
-              type="file"
-              accept="image/*"
-              class="file-input"
-              @change="onFileChange"
+            <ImageUploadField
+              ref="uploader"
+              v-model="pendingFile"
+              :current-url="previewUrl"
+              :aspect="null"
+              label="Image"
+              contain
+              @clear="onImageCleared"
             />
-            <button class="add-btn add-btn--sm" @click="fileInput?.click()">
-              <font-awesome-icon :icon="['fas', 'upload']" />
-              {{ previewUrl ? 'Replace Image' : 'Choose Image' }}
-            </button>
           </div>
         </div>
 
@@ -186,7 +176,7 @@ const events = ref<any[]>([]);
 const thumbs = ref<Record<number, string | null>>({});
 
 const editing = ref(false);
-const fileInput = ref<HTMLInputElement | null>(null);
+const uploader = ref<{getResult: () => Promise<File | null>} | null>(null);
 const pendingFile = ref<File | null>(null);
 const previewUrl = ref<string | null>(null);
 
@@ -327,12 +317,9 @@ function cancelEdit() {
   previewUrl.value = null;
 }
 
-function onFileChange(e: Event) {
-  const input = e.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) return;
-  pendingFile.value = file;
-  previewUrl.value = URL.createObjectURL(file);
+function onImageCleared() {
+  previewUrl.value = null;
+  form.image_path = '';
 }
 
 function flash(msg: string, isError = false) {
@@ -343,7 +330,7 @@ function flash(msg: string, isError = false) {
 
 function validate(): string | null {
   if (!form.title.trim()) return 'Title is required.';
-  if (!form.id && !pendingFile.value) return 'Please choose an image.';
+  if (!pendingFile.value && !form.image_path) return 'Please choose an image.';
   if (form.type === 'timebound') {
     if (!form.start_date || !form.end_date) return 'Start and end dates are required for time-bound flyers.';
     if (new Date(form.end_date) <= new Date(form.start_date)) return 'End date must be after start date.';
@@ -369,7 +356,8 @@ async function save() {
       form.type === 'timebound' && form.start_date
         ? new Date(form.start_date).getFullYear()
         : new Date().getFullYear();
-    const {path, error} = await uploadFlyerImage(pendingFile.value, year);
+    const cropped = (await uploader.value?.getResult()) ?? pendingFile.value;
+    const {path, error} = await uploadFlyerImage(cropped, year);
     if (error || !path) {
       saving.value = false;
       const dup = (error as any)?.statusCode === '409' ||

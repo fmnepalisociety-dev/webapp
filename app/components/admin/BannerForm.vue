@@ -52,17 +52,18 @@
 
       <!-- Image -->
       <div class="form-card">
-        <div class="card-title-row">
-          <h2 class="card-title">Image</h2>
-          <button class="add-btn add-btn--sm" @click="fileInput?.click()">
-            <font-awesome-icon :icon="['fas', 'upload']" /> {{ imageUrl ? 'Replace' : 'Add Image' }}
-          </button>
-          <input ref="fileInput" type="file" accept="image/*" class="file-input" @change="onFileChange" />
-        </div>
+        <h2 class="card-title">Image <span class="html-hint">(optional — shown beside the banner text)</span></h2>
+        <ImageUploadField
+          ref="uploader"
+          v-model="pendingFile"
+          :current-url="imageUrl || null"
+          :aspect="null"
+          contain
+          placeholder="Drag & drop or click (optional)"
+          @clear="imageUrl = ''"
+        />
 
-        <p v-if="!imageUrl" class="items-empty">No image. Optional — shown beside the banner text.</p>
-
-        <div v-if="imageUrl" class="field-row" style="max-width: 260px">
+        <div v-if="pendingFile || imageUrl" class="field-row" style="max-width: 260px; margin-top: 0.85rem">
           <label class="field-label">Image size (px) <span class="html-hint">(optional)</span></label>
           <input
             v-model.number="form.image_size"
@@ -72,15 +73,6 @@
             placeholder="Auto (scales with height)"
           />
           <p class="field-hint">Max width/height of the image. Leave blank to scale with the banner height.</p>
-        </div>
-
-        <div v-if="imageUrl" class="image-tile">
-          <img :src="imageUrl" class="image-thumb" alt="Banner image" />
-          <div class="image-tile-actions">
-            <button class="icon-btn icon-btn--sm icon-btn--danger" title="Remove" @click="removeImage">
-              <font-awesome-icon :icon="['fas', 'trash']" />
-            </button>
-          </div>
         </div>
       </div>
 
@@ -204,7 +196,7 @@ const saving = ref(false);
 const saveMsg = ref('');
 const saveError = ref(false);
 
-const fileInput = ref<HTMLInputElement | null>(null);
+const uploader = ref<{getResult: () => Promise<File | null>} | null>(null);
 
 const form = reactive({
   title: '',
@@ -275,20 +267,6 @@ function fromLocalInput(val: string): string | null {
   return isNaN(d.getTime()) ? null : d.toISOString();
 }
 
-function onFileChange(e: Event) {
-  const input = e.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) return;
-  pendingFile.value = file;
-  imageUrl.value = URL.createObjectURL(file);
-  input.value = '';
-}
-
-function removeImage() {
-  pendingFile.value = null;
-  imageUrl.value = '';
-}
-
 function flash(msg: string, isError = false) {
   saveMsg.value = msg;
   saveError.value = isError;
@@ -297,7 +275,8 @@ function flash(msg: string, isError = false) {
 
 function validate(): string | null {
   if (!form.title.trim()) return 'Title is required.';
-  if (!form.text.trim() && !imageUrl.value) return 'Add some text or an image.';
+  if (!form.text.trim() && !imageUrl.value && !pendingFile.value)
+    return 'Add some text or an image.';
   return null;
 }
 
@@ -311,7 +290,8 @@ async function save() {
   // Upload a new image if one was chosen.
   let finalImage = savedImageUrl.value;
   if (pendingFile.value) {
-    const {url, error} = await uploadPublicImage(pendingFile.value, 'banners');
+    const cropped = (await uploader.value?.getResult()) ?? pendingFile.value;
+    const {url, error} = await uploadPublicImage(cropped, 'banners');
     if (error || !url) {
       saving.value = false;
       return flash('Image upload failed. Please try again.', true);

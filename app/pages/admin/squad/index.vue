@@ -52,39 +52,14 @@
 
           <!-- Photo -->
           <div class="image-col">
-            <label class="field-label">Photo</label>
-
-            <!-- New file chosen: pan/zoom to frame before saving -->
-            <ImageCropper v-if="pendingFile" ref="cropper" :file="pendingFile" :aspect="0.8" />
-
-            <!-- Otherwise a drop zone showing the current photo or a placeholder -->
-            <div
-              v-else
-              :class="['image-drop', dragOver ? 'image-drop--drag' : '']"
-              role="button"
-              tabindex="0"
-              @click="fileInput?.click()"
-              @keydown.enter.prevent="fileInput?.click()"
-              @dragenter.prevent="dragOver = true"
-              @dragover.prevent="dragOver = true"
-              @dragleave.prevent="dragOver = false"
-              @drop.prevent="onDrop"
-            >
-              <img v-if="previewUrl" :src="previewUrl" class="image-preview" :alt="form.name" />
-              <div v-else class="image-placeholder">
-                <font-awesome-icon :icon="['fas', dragOver ? 'arrow-down' : 'image']" />
-                <span>{{ dragOver ? 'Drop image' : 'Drag & drop or click' }}</span>
-              </div>
-            </div>
-
-            <input ref="fileInput" type="file" accept="image/*" class="file-input" @change="onFileChange" />
-            <button class="add-btn add-btn--sm" @click="fileInput?.click()">
-              <font-awesome-icon :icon="['fas', 'upload']" />
-              {{ previewUrl || pendingFile ? 'Replace Photo' : 'Choose Photo' }}
-            </button>
-            <button v-if="previewUrl || pendingFile" class="clear-photo-btn" @click="clearPhoto">
-              Remove photo
-            </button>
+            <ImageUploadField
+              ref="uploader"
+              v-model="pendingFile"
+              :current-url="previewUrl"
+              :aspect="0.8"
+              label="Photo"
+              @clear="onPhotoCleared"
+            />
           </div>
         </div>
 
@@ -203,12 +178,10 @@ const players = ref<SquadPlayer[]>([]);
 const thumbs = ref<Record<string, string | null>>({});
 
 const editing = ref(false);
-const fileInput = ref<HTMLInputElement | null>(null);
-const cropper = ref<{getResult: () => Promise<File | null>} | null>(null);
+const uploader = ref<{getResult: () => Promise<File | null>} | null>(null);
 const pendingFile = ref<File | null>(null);
 const previewUrl = ref<string | null>(null);
 const photoCleared = ref(false);
-const dragOver = ref(false);
 
 interface FormState {
   id: string | null;
@@ -272,33 +245,9 @@ function cancelEdit() {
   previewUrl.value = null;
 }
 
-function onFileChange(e: Event) {
-  const input = e.target as HTMLInputElement;
-  acceptFile(input.files?.[0]);
-}
-
-function onDrop(e: DragEvent) {
-  dragOver.value = false;
-  acceptFile(e.dataTransfer?.files?.[0]);
-}
-
-// Shared by the file picker and the drop zone. Hands the raw file to the
-// cropper, which owns the preview + pan/zoom framing.
-function acceptFile(file: File | null | undefined) {
-  if (!file) return;
-  if (!file.type.startsWith('image/')) {
-    return flash('Please choose an image file.', true);
-  }
-  pendingFile.value = file;
-  previewUrl.value = null;
-  photoCleared.value = false;
-}
-
-function clearPhoto() {
-  pendingFile.value = null;
+function onPhotoCleared() {
   previewUrl.value = null;
   photoCleared.value = true;
-  if (fileInput.value) fileInput.value.value = '';
 }
 
 function flash(msg: string, isError = false) {
@@ -322,7 +271,7 @@ async function save() {
 
   if (pendingFile.value) {
     // Export the framed (pan/zoom) crop; fall back to the raw file if needed.
-    const cropped = (await cropper.value?.getResult()) ?? pendingFile.value;
+    const cropped = (await uploader.value?.getResult()) ?? pendingFile.value;
     const prefix = `${form.squad_number || ''}-${form.name}`;
     const {path, error} = await uploadPlayerImage(cropped, prefix);
     if (error || !path) {

@@ -73,20 +73,15 @@
 
           <!-- Photo -->
           <div class="image-col">
-            <label class="field-label">Photo</label>
-            <div class="image-drop">
-              <img v-if="previewUrl" :src="previewUrl" class="image-preview" :alt="fullName" />
-              <div v-else class="image-placeholder">
-                <font-awesome-icon :icon="['fas', 'user']" />
-                <span>No photo</span>
-              </div>
-            </div>
-            <input ref="fileInput" type="file" accept="image/*" class="file-input" @change="onFileChange" />
-            <button class="add-btn add-btn--sm" @click="fileInput?.click()">
-              <font-awesome-icon :icon="['fas', 'upload']" />
-              {{ previewUrl ? 'Replace Photo' : 'Choose Photo' }}
-            </button>
-            <button v-if="previewUrl" class="clear-photo-btn" @click="clearPhoto">Remove photo</button>
+            <ImageUploadField
+              ref="uploader"
+              v-model="pendingFile"
+              :current-url="previewUrl"
+              :aspect="1"
+              label="Photo"
+              placeholder="Drag & drop or click"
+              @clear="onPhotoCleared"
+            />
           </div>
         </div>
 
@@ -221,7 +216,7 @@ const members = ref<AdminMember[]>([]);
 const thumbs = ref<Record<number, string | null>>({});
 
 const editing = ref(false);
-const fileInput = ref<HTMLInputElement | null>(null);
+const uploader = ref<{getResult: () => Promise<File | null>} | null>(null);
 const pendingFile = ref<File | null>(null);
 const previewUrl = ref<string | null>(null);
 const photoCleared = ref(false);
@@ -312,20 +307,9 @@ function cancelEdit() {
   previewUrl.value = null;
 }
 
-function onFileChange(e: Event) {
-  const input = e.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) return;
-  pendingFile.value = file;
-  photoCleared.value = false;
-  previewUrl.value = URL.createObjectURL(file);
-}
-
-function clearPhoto() {
-  pendingFile.value = null;
+function onPhotoCleared() {
   previewUrl.value = null;
   photoCleared.value = true;
-  if (fileInput.value) fileInput.value.value = '';
 }
 
 function flash(msg: string, isError = false) {
@@ -357,7 +341,8 @@ async function save() {
   }
 
   if (pendingFile.value) {
-    const {path, error} = await uploadMemberImage(pendingFile.value, form.membership_id.trim());
+    const cropped = (await uploader.value?.getResult()) ?? pendingFile.value;
+    const {path, error} = await uploadMemberImage(cropped, form.membership_id.trim());
     if (error || !path) {
       saving.value = false;
       const dup = (error as any)?.statusCode === '409' || /exists|duplicate/i.test((error as any)?.message ?? '');
