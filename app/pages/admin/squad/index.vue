@@ -57,12 +57,23 @@
             <!-- New file chosen: pan/zoom to frame before saving -->
             <ImageCropper v-if="pendingFile" ref="cropper" :file="pendingFile" :aspect="0.8" />
 
-            <!-- Otherwise show the current photo or a placeholder -->
-            <div v-else class="image-drop">
+            <!-- Otherwise a drop zone showing the current photo or a placeholder -->
+            <div
+              v-else
+              :class="['image-drop', dragOver ? 'image-drop--drag' : '']"
+              role="button"
+              tabindex="0"
+              @click="fileInput?.click()"
+              @keydown.enter.prevent="fileInput?.click()"
+              @dragenter.prevent="dragOver = true"
+              @dragover.prevent="dragOver = true"
+              @dragleave.prevent="dragOver = false"
+              @drop.prevent="onDrop"
+            >
               <img v-if="previewUrl" :src="previewUrl" class="image-preview" :alt="form.name" />
               <div v-else class="image-placeholder">
-                <font-awesome-icon :icon="['fas', 'user']" />
-                <span>No photo</span>
+                <font-awesome-icon :icon="['fas', dragOver ? 'arrow-down' : 'image']" />
+                <span>{{ dragOver ? 'Drop image' : 'Drag & drop or click' }}</span>
               </div>
             </div>
 
@@ -197,6 +208,7 @@ const cropper = ref<{getResult: () => Promise<File | null>} | null>(null);
 const pendingFile = ref<File | null>(null);
 const previewUrl = ref<string | null>(null);
 const photoCleared = ref(false);
+const dragOver = ref(false);
 
 interface FormState {
   id: string | null;
@@ -262,9 +274,21 @@ function cancelEdit() {
 
 function onFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
-  const file = input.files?.[0];
+  acceptFile(input.files?.[0]);
+}
+
+function onDrop(e: DragEvent) {
+  dragOver.value = false;
+  acceptFile(e.dataTransfer?.files?.[0]);
+}
+
+// Shared by the file picker and the drop zone. Hands the raw file to the
+// cropper, which owns the preview + pan/zoom framing.
+function acceptFile(file: File | null | undefined) {
   if (!file) return;
-  // Hand the raw file to the cropper; it owns the preview + pan/zoom framing.
+  if (!file.type.startsWith('image/')) {
+    return flash('Please choose an image file.', true);
+  }
   pendingFile.value = file;
   previewUrl.value = null;
   photoCleared.value = false;
@@ -626,7 +650,7 @@ function roleLabel(role: string | null): string {
 }
 
 .image-drop {
-  border: 1px solid #e2e8f0;
+  border: 1px dashed #cbd5e1;
   border-radius: 0.4rem;
   background: #f8fafc;
   aspect-ratio: 4 / 5;
@@ -634,6 +658,19 @@ function roleLabel(role: string | null): string {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.image-drop:hover {
+  border-color: #93c5fd;
+  background: #f1f5f9;
+}
+
+.image-drop--drag {
+  border-color: #2563eb;
+  border-style: solid;
+  background: #eff6ff;
 }
 
 .image-preview {
