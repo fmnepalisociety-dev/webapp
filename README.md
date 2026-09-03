@@ -209,43 +209,66 @@ uploadable photo. Players with no photo show a placeholder avatar on the public 
 Create the table in Supabase (dashboard → SQL editor):
 
 ```sql
-create table squad_players (
+create table players (
   id uuid primary key default gen_random_uuid(),
   name text not null,
+  sport text not null default 'football',  -- discipline: football | cricket | volleyball | ...
   squad_number int,          -- jersey / list number
   role text,                 -- 'captain' | 'vice-captain' | null (player)
-  team text not null default 'Everest Cup 2026',
+  team text not null default 'Everest Cup 2026',  -- tournament / season
   image_path text,           -- nsfm storage path, squad/ folder
   sort_order int not null default 0,
   created_at timestamptz default now()
 );
 ```
 
-Set Row Level Security to match the members policies: public **read** on `squad_players`,
-authenticated **write** (insert/update/delete) for admins. Photos go in the public `nsfm`
-bucket under the `squad/` folder.
+The `sport` column lets the same table hold multiple squads (football now, cricket /
+volleyball later); the public page filters by `sport` + `team`. `squad_number` is optional —
+leave it blank until real jersey numbers are assigned (the public page doesn't show it yet).
 
-Seed the Everest Cup 2026 squad (photos are uploaded later via the admin panel):
+Enable Row Level Security — public **read**, authenticated **write** (admin panel):
 
 ```sql
-insert into squad_players (name, squad_number, role, team, sort_order) values
-  ('Bishal Rai',        1,  'captain',      'Everest Cup 2026', 1),
-  ('Anuj Shrestha',     2,  'vice-captain', 'Everest Cup 2026', 2),
-  ('Krishna Acharya',   3,  null,           'Everest Cup 2026', 3),
-  ('Arjun Upadhyay',    4,  null,           'Everest Cup 2026', 4),
-  ('Dipesh Basnet',     5,  null,           'Everest Cup 2026', 5),
-  ('Pratik Raj Pandey', 6,  null,           'Everest Cup 2026', 6),
-  ('Ram Bahadur Basnet',7,  null,           'Everest Cup 2026', 7),
-  ('Rukma Raj Kafle',   8,  null,           'Everest Cup 2026', 8),
-  ('Sandip Van Poudel', 9,  null,           'Everest Cup 2026', 9),
-  ('Sunil Bhandari',    10, null,           'Everest Cup 2026', 10),
-  ('Rijesh Shrestha',   11, null,           'Everest Cup 2026', 11),
-  ('Sunil Bhandari',    12, null,           'Everest Cup 2026', 12),
-  ('Prabhat Paudyal',   13, null,           'Everest Cup 2026', 13),
-  ('Sanjay',            14, null,           'Everest Cup 2026', 14),
-  ('Subin Adhikari',    15, null,           'Everest Cup 2026', 15),
-  ('Bishnu Adhikari',   16, null,           'Everest Cup 2026', 16),
-  ('Arjun Shrestha',    17, null,           'Everest Cup 2026', 17);
+alter table players enable row level security;
+
+create policy "players public read"
+  on players for select to anon, authenticated using (true);
+
+create policy "players admin insert"
+  on players for insert to authenticated with check (true);
+
+create policy "players admin update"
+  on players for update to authenticated using (true) with check (true);
+
+create policy "players admin delete"
+  on players for delete to authenticated using (true);
+```
+
+Player photos go in the public `nsfm` bucket under the `squad/` folder. The bucket already
+has authenticated-upload + public-read policies (shared with members/products), so no extra
+storage setup is needed.
+
+Seed the Everest Cup 2026 football squad (numbers omitted; photos are uploaded later via the
+admin panel):
+
+```sql
+insert into players (name, sport, role, team, sort_order) values
+  ('Bishal Rai',        'football', 'captain',      'Everest Cup 2026', 1),
+  ('Anuj Shrestha',     'football', 'vice-captain', 'Everest Cup 2026', 2),
+  ('Krishna Acharya',   'football', null,           'Everest Cup 2026', 3),
+  ('Arjun Upadhyay',    'football', null,           'Everest Cup 2026', 4),
+  ('Dipesh Basnet',     'football', null,           'Everest Cup 2026', 5),
+  ('Pratik Raj Pandey', 'football', null,           'Everest Cup 2026', 6),
+  ('Ram Bahadur Basnet','football', null,           'Everest Cup 2026', 7),
+  ('Rukma Raj Kafle',   'football', null,           'Everest Cup 2026', 8),
+  ('Sandip Van Poudel', 'football', null,           'Everest Cup 2026', 9),
+  ('Sunil Bhandari',    'football', null,           'Everest Cup 2026', 10),
+  ('Rijesh Shrestha',   'football', null,           'Everest Cup 2026', 11),
+  ('Prabhat Paudyal',   'football', null,           'Everest Cup 2026', 12),
+  ('Sanjay',            'football', null,           'Everest Cup 2026', 13),
+  ('Subin Adhikari',    'football', null,           'Everest Cup 2026', 14),
+  ('Bishnu Adhikari',   'football', null,           'Everest Cup 2026', 15),
+  ('Arjun Shrestha',    'football', null,           'Everest Cup 2026', 16);
 ```
 
 ## Docs

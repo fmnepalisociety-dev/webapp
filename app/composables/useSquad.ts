@@ -1,11 +1,13 @@
 import {NeSFM_GENERIC_BUCKET} from '~/composables/useSupabaseImage'
 
-// A squad player for a sports team/tournament (e.g. Everest Cup 2026).
+// A player in a sports squad. `sport` groups by discipline (e.g. football,
+// cricket, volleyball); `team` is the tournament/season (e.g. Everest Cup 2026).
 // `role` is 'captain' | 'vice-captain' | null. `squad_number` is the jersey /
 // list number. `image_path` points into the public `nsfm` storage bucket.
 export interface SquadPlayer {
   id: string
   name: string
+  sport: string
   squad_number: number | null
   role: string | null
   team: string
@@ -15,15 +17,20 @@ export interface SquadPlayer {
 
 export type SquadPlayerInput = Omit<SquadPlayer, 'id'>
 
-const SQUAD_COLUMNS = 'id, name, squad_number, role, team, image_path, sort_order'
+const SQUAD_COLUMNS = 'id, name, sport, squad_number, role, team, image_path, sort_order'
 
+export const FOOTBALL = 'football'
 export const EVEREST_CUP_2026 = 'Everest Cup 2026'
 
-export async function getSquad(team = EVEREST_CUP_2026): Promise<SquadPlayer[]> {
+export async function getSquad(
+  sport = FOOTBALL,
+  team = EVEREST_CUP_2026
+): Promise<SquadPlayer[]> {
   const {$supabase} = useNuxtApp()
   const {data, error} = await $supabase
-    .from('squad_players')
+    .from('players')
     .select(SQUAD_COLUMNS)
+    .eq('sport', sport)
     .eq('team', team)
     .order('sort_order', {ascending: true})
   if (error) {
@@ -35,7 +42,7 @@ export async function getSquad(team = EVEREST_CUP_2026): Promise<SquadPlayer[]> 
 
 export async function createPlayer(input: SquadPlayerInput): Promise<{error: unknown}> {
   const {$supabase} = useNuxtApp()
-  const {error} = await $supabase.from('squad_players').insert(input)
+  const {error} = await $supabase.from('players').insert(input)
   if (error) console.error('[squad:create]', error)
   return {error}
 }
@@ -45,14 +52,14 @@ export async function updatePlayer(
   input: Partial<SquadPlayerInput>
 ): Promise<{error: unknown}> {
   const {$supabase} = useNuxtApp()
-  const {error} = await $supabase.from('squad_players').update(input).eq('id', id)
+  const {error} = await $supabase.from('players').update(input).eq('id', id)
   if (error) console.error('[squad:update]', error)
   return {error}
 }
 
 export async function deletePlayer(id: string): Promise<{error: unknown}> {
   const {$supabase} = useNuxtApp()
-  const {error} = await $supabase.from('squad_players').delete().eq('id', id)
+  const {error} = await $supabase.from('players').delete().eq('id', id)
   if (error) console.error('[squad:delete]', error)
   return {error}
 }
