@@ -22,6 +22,50 @@ const SQUAD_COLUMNS = 'id, name, sport, squad_number, role, team, image_path, so
 export const FOOTBALL = 'football'
 export const EVEREST_CUP_2026 = 'Everest Cup 2026'
 
+// ---------------------------------------------------------------------------
+// TEMPORARY DATA SOURCE
+// The Supabase `players` table isn't provisioned yet (DB access is out). This
+// hardcoded squad lets us build & review the page design against real names.
+// `getSquad()` falls back to it only when the table is missing or empty, so it
+// self-retires the moment the real table is seeded.
+// TODO(remove): delete TEMP_SQUAD and the fallback in getSquad() once the
+// `players` table is live. Tracked by the "temporary data source" PR.
+// ---------------------------------------------------------------------------
+const t = (
+  name: string,
+  squad_number: number,
+  sort_order: number,
+  role: string | null = null
+): SquadPlayer => ({
+  id: `temp-${sort_order}`,
+  name,
+  sport: FOOTBALL,
+  squad_number,
+  role,
+  team: EVEREST_CUP_2026,
+  image_path: null,
+  sort_order,
+})
+
+export const TEMP_SQUAD: SquadPlayer[] = [
+  t('Bishal Rai', 1, 1, 'captain'),
+  t('Anuj Shrestha', 2, 2, 'vice-captain'),
+  t('Krishna Acharya', 3, 3),
+  t('Arjun Upadhyay', 4, 4),
+  t('Dipesh Basnet', 5, 5),
+  t('Pratik Raj Pandey', 6, 6),
+  t('Ram Bahadur Basnet', 7, 7),
+  t('Rukma Raj Kafle', 8, 8),
+  t('Sandip Van Poudel', 9, 9),
+  t('Sunil Bhandari', 10, 10),
+  t('Rijesh Shrestha', 11, 11),
+  t('Prabhat Paudyal', 12, 12),
+  t('Sanjay', 13, 13),
+  t('Subin Adhikari', 14, 14),
+  t('Bishnu Adhikari', 15, 15),
+  t('Arjun Shrestha', 16, 16),
+]
+
 export async function getSquad(
   sport = FOOTBALL,
   team = EVEREST_CUP_2026
@@ -33,11 +77,14 @@ export async function getSquad(
     .eq('sport', sport)
     .eq('team', team)
     .order('sort_order', {ascending: true})
-  if (error) {
-    console.error('[squad:getAll]', error)
-    return []
+
+  // TEMP fallback: while the `players` table is unavailable (query errors) or
+  // has no rows yet, serve the hardcoded squad so the page still renders.
+  if (error || !data?.length) {
+    if (error) console.warn('[squad:getAll] using TEMP_SQUAD fallback —', error.message)
+    return TEMP_SQUAD.filter((p) => p.sport === sport && p.team === team)
   }
-  return (data as SquadPlayer[]) ?? []
+  return data as SquadPlayer[]
 }
 
 export async function createPlayer(input: SquadPlayerInput): Promise<{error: unknown}> {
