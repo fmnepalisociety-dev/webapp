@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 import {ref} from 'vue';
-import {getSquad, EVEREST_CUP_2026, type SquadPlayer} from '~/composables/useSquad';
+import {getSquad, FOOTBALL, EVEREST_CUP_2026, type SquadPlayer} from '~/composables/useSquad';
 import {NeSFM_GENERIC_BUCKET} from '~/composables/useSupabaseImage';
 
 useHead({title: 'Football — Everest Cup 2026 Squad'});
@@ -55,7 +55,7 @@ const players = ref<SquadPlayer[]>([]);
 const thumbs = ref<Record<string, string | null>>({});
 
 onMounted(async () => {
-  players.value = await getSquad(EVEREST_CUP_2026);
+  players.value = await getSquad(FOOTBALL, EVEREST_CUP_2026);
   for (const p of players.value) {
     thumbs.value[p.id] = p.image_path
       ? getPublicImageUrl(NeSFM_GENERIC_BUCKET, p.image_path)

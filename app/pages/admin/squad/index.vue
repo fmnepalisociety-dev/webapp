@@ -164,6 +164,7 @@ import {
   deletePlayer,
   uploadPlayerImage,
   deletePlayerImage,
+  FOOTBALL,
   EVEREST_CUP_2026,
   type SquadPlayer,
   type SquadPlayerInput,
@@ -298,6 +299,7 @@ async function save() {
 
   const payload: SquadPlayerInput = {
     name: form.name.trim(),
+    sport: FOOTBALL,
     squad_number: form.squad_number === '' ? null : Number(form.squad_number),
     role: form.role || null,
     team: EVEREST_CUP_2026,
@@ -355,7 +357,7 @@ async function confirmDelete() {
 }
 
 async function refresh() {
-  players.value = await getSquad(EVEREST_CUP_2026);
+  players.value = await getSquad(FOOTBALL, EVEREST_CUP_2026);
   buildThumbs();
 }
 
