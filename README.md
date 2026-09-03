@@ -199,6 +199,55 @@ authenticated **write** (insert/update/delete) for admins. Time-window filtering
 (`start_at`/`end_at`) is applied client-side, and dismissed banners are remembered per
 browser via `localStorage`.
 
+## Sports — Squad
+
+The **Sports → Football** page (`/sports/football`) lists the official football squad for a
+tournament (currently **Everest Cup 2026**). Players are managed under **Admin → Squad**,
+where each player has a name, squad number, role (captain / vice-captain / player) and an
+uploadable photo. Players with no photo show a placeholder avatar on the public page.
+
+Create the table in Supabase (dashboard → SQL editor):
+
+```sql
+create table squad_players (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  squad_number int,          -- jersey / list number
+  role text,                 -- 'captain' | 'vice-captain' | null (player)
+  team text not null default 'Everest Cup 2026',
+  image_path text,           -- nsfm storage path, squad/ folder
+  sort_order int not null default 0,
+  created_at timestamptz default now()
+);
+```
+
+Set Row Level Security to match the members policies: public **read** on `squad_players`,
+authenticated **write** (insert/update/delete) for admins. Photos go in the public `nsfm`
+bucket under the `squad/` folder.
+
+Seed the Everest Cup 2026 squad (photos are uploaded later via the admin panel):
+
+```sql
+insert into squad_players (name, squad_number, role, team, sort_order) values
+  ('Bishal Rai',        1,  'captain',      'Everest Cup 2026', 1),
+  ('Anuj Shrestha',     2,  'vice-captain', 'Everest Cup 2026', 2),
+  ('Krishna Acharya',   3,  null,           'Everest Cup 2026', 3),
+  ('Arjun Upadhyay',    4,  null,           'Everest Cup 2026', 4),
+  ('Dipesh Basnet',     5,  null,           'Everest Cup 2026', 5),
+  ('Pratik Raj Pandey', 6,  null,           'Everest Cup 2026', 6),
+  ('Ram Bahadur Basnet',7,  null,           'Everest Cup 2026', 7),
+  ('Rukma Raj Kafle',   8,  null,           'Everest Cup 2026', 8),
+  ('Sandip Van Poudel', 9,  null,           'Everest Cup 2026', 9),
+  ('Sunil Bhandari',    10, null,           'Everest Cup 2026', 10),
+  ('Rijesh Shrestha',   11, null,           'Everest Cup 2026', 11),
+  ('Sunil Bhandari',    12, null,           'Everest Cup 2026', 12),
+  ('Prabhat Paudyal',   13, null,           'Everest Cup 2026', 13),
+  ('Sanjay',            14, null,           'Everest Cup 2026', 14),
+  ('Subin Adhikari',    15, null,           'Everest Cup 2026', 15),
+  ('Bishnu Adhikari',   16, null,           'Everest Cup 2026', 16),
+  ('Arjun Shrestha',    17, null,           'Everest Cup 2026', 17);
+```
+
 ## Docs
 
 Reference docs and scripts are organized by module in `docs/`:

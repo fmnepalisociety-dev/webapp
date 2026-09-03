@@ -47,6 +47,15 @@
           </ul>
         </li>
 
+        <li class="has-dropdown">
+          <span class="nav-parent">Sports</span>
+          <ul class="dropdown">
+            <li>
+              <NuxtLink to="/sports/football" @click="closeMenu">Football</NuxtLink>
+            </li>
+          </ul>
+        </li>
+
         <li>
           <NuxtLink to="/donation" @click="closeMenu">Donation</NuxtLink>
         </li>
