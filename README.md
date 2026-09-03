@@ -244,9 +244,25 @@ create policy "players admin delete"
   on players for delete to authenticated using (true);
 ```
 
-Player photos go in the public `nsfm` bucket under the `squad/` folder. The bucket already
-has authenticated-upload + public-read policies (shared with members/products), so no extra
-storage setup is needed.
+Player photos go in the public `nsfm` bucket under the `squad/` folder. Storage RLS is
+per-folder, so the `squad/` prefix needs its own write policies (add via SQL Editor):
+
+```sql
+create policy "squad images admin insert"
+  on storage.objects for insert to authenticated
+  with check (bucket_id = 'nsfm' and (storage.foldername(name))[1] = 'squad');
+create policy "squad images admin update"
+  on storage.objects for update to authenticated
+  using (bucket_id = 'nsfm' and (storage.foldername(name))[1] = 'squad')
+  with check (bucket_id = 'nsfm' and (storage.foldername(name))[1] = 'squad');
+create policy "squad images admin delete"
+  on storage.objects for delete to authenticated
+  using (bucket_id = 'nsfm' and (storage.foldername(name))[1] = 'squad');
+```
+
+Public read is assumed already granted bucket-wide; add a matching `select` policy for the
+`squad` prefix if not. Alternatively, a single bucket-wide `for all to authenticated using
+(bucket_id = 'nsfm')` policy covers every folder and avoids repeating this per feature.
 
 Seed the Everest Cup 2026 football squad (numbers omitted; photos are uploaded later via the
 admin panel):
