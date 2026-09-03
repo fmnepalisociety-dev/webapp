@@ -35,7 +35,13 @@
     <div v-if="field.type === 'image'" class="field-row">
       <label class="field-label">Image URL</label>
       <input v-model="field.value" class="field-input" placeholder="https://... (or pick / upload below)" />
-      <div class="img-row">
+      <div
+        :class="['img-row', imgDrag ? 'img-row--drag' : '']"
+        @dragenter.prevent="imgDrag = true"
+        @dragover.prevent="imgDrag = true"
+        @dragleave.prevent="imgDrag = false"
+        @drop.prevent="onDrop"
+      >
         <select class="preset-select" :value="''" @change="applyPreset">
           <option value="" disabled>Use a saved image…</option>
           <option v-for="p in PAYMENT_IMAGES" :key="p.url" :value="p.url">{{ p.label }}</option>
@@ -44,6 +50,7 @@
           <font-awesome-icon :icon="['fas', uploading ? 'spinner' : 'upload']" :spin="uploading" />
           {{ uploading ? 'Uploading...' : 'Upload' }}
         </button>
+        <span class="img-drop-hint">{{ imgDrag ? 'Drop image' : 'or drag & drop' }}</span>
         <img v-if="field.value" :src="field.value" class="img-preview" alt="preview" />
       </div>
       <p v-if="uploadError" class="upload-error">{{ uploadError }}</p>
@@ -89,6 +96,7 @@ import {PAYMENT_IMAGES} from '~/constants/payment';
 const fileInput = ref<HTMLInputElement | null>(null);
 const uploading = ref(false);
 const uploadError = ref('');
+const imgDrag = ref(false);
 
 function applyPreset(e: Event) {
   const url = (e.target as HTMLSelectElement).value;
@@ -98,13 +106,26 @@ function applyPreset(e: Event) {
 
 async function onUpload(e: Event) {
   const input = e.target as HTMLInputElement;
-  const file = input.files?.[0];
+  await uploadFile(input.files?.[0]);
+  input.value = '';
+}
+
+function onDrop(e: DragEvent) {
+  imgDrag.value = false;
+  uploadFile(e.dataTransfer?.files?.[0]);
+}
+
+// A payment QR is uploaded as-is (no crop) so it stays scannable.
+async function uploadFile(file: File | null | undefined) {
   if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    uploadError.value = 'Please choose an image file.';
+    return;
+  }
   uploading.value = true;
   uploadError.value = '';
   const {url, error} = await uploadPublicImage(file, props.uploadFolder || 'rsvp');
   uploading.value = false;
-  input.value = '';
   if (error || !url) {
     uploadError.value = 'Upload failed. Check the nsfm storage policy and try again.';
     return;
@@ -235,6 +256,20 @@ const FIELD_TYPES = [
   gap: 0.6rem;
   margin-top: 0.35rem;
   flex-wrap: wrap;
+  border: 1px dashed transparent;
+  border-radius: 0.4rem;
+  padding: 0.35rem;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.img-row--drag {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.img-drop-hint {
+  font-size: 0.75rem;
+  color: #94a3b8;
 }
 
 .preset-select {

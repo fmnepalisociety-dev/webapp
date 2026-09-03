@@ -79,7 +79,13 @@
       </div>
 
       <!-- Images -->
-      <div class="form-card">
+      <div
+        :class="['form-card', imgDrag ? 'form-card--drag' : '']"
+        @dragenter.prevent="imgDrag = true"
+        @dragover.prevent="imgDrag = true"
+        @dragleave.prevent="imgDrag = false"
+        @drop.prevent="onDrop"
+      >
         <div class="card-title-row">
           <h2 class="card-title">Images</h2>
           <button class="add-btn add-btn--sm" @click="fileInput?.click()">
@@ -88,7 +94,9 @@
           <input ref="fileInput" type="file" accept="image/*" multiple class="file-input" @change="onFilesChange" />
         </div>
 
-        <p v-if="!images.length" class="items-empty">No images yet. The first image is used as the thumbnail.</p>
+        <p v-if="!images.length" class="items-empty">
+          {{ imgDrag ? 'Drop images to add them' : 'No images yet. Drag & drop images here, or click “Add Images”. The first image is the thumbnail.' }}
+        </p>
 
         <div v-else class="image-grid">
           <div v-for="(img, idx) in images" :key="img.key" class="image-tile">
@@ -163,6 +171,7 @@ const saveMsg = ref('');
 const saveError = ref(false);
 
 const fileInput = ref<HTMLInputElement | null>(null);
+const imgDrag = ref(false);
 
 const form = reactive({
   name: '',
@@ -229,12 +238,22 @@ onMounted(async () => {
 
 function onFilesChange(e: Event) {
   const input = e.target as HTMLInputElement;
-  const files = input.files;
+  acceptFiles(input.files);
+  input.value = ''; // allow re-selecting the same file
+}
+
+function onDrop(e: DragEvent) {
+  imgDrag.value = false;
+  acceptFiles(e.dataTransfer?.files);
+}
+
+// Shared by the file picker and drag-and-drop. Only image files are added.
+function acceptFiles(files: FileList | null | undefined) {
   if (!files) return;
   for (const file of Array.from(files)) {
+    if (!file.type.startsWith('image/')) continue;
     images.push({key: genKey(), file, url: URL.createObjectURL(file)});
   }
-  input.value = ''; // allow re-selecting the same file
 }
 
 function moveImage(idx: number, dir: number) {
@@ -542,6 +561,12 @@ function errMsg(error: unknown): string {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+}
+
+.form-card--drag {
+  border-color: #2563eb;
+  border-style: dashed;
+  background: #eff6ff;
 }
 
 .card-title-row {
