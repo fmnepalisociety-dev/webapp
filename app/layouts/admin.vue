@@ -25,6 +25,10 @@
           <font-awesome-icon :icon="['fas', 'bullhorn']" />
           Banners
         </NuxtLink>
+        <NuxtLink to="/admin/squad" class="admin-nav-link">
+          <font-awesome-icon :icon="['fas', 'futbol']" />
+          Squad
+        </NuxtLink>
         <!-- TODO: enable when admin CRUD is built
         <NuxtLink to="/admin/committee" class="admin-nav-link">
           <font-awesome-icon :icon="['fas', 'user-tie']" />

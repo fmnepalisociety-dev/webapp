@@ -27,6 +27,11 @@
         <span class="admin-card-label">Banners</span>
         <span class="admin-card-desc">Site notification banners</span>
       </NuxtLink>
+      <NuxtLink to="/admin/squad" class="admin-card">
+        <font-awesome-icon :icon="['fas', 'futbol']" class="admin-card-icon" />
+        <span class="admin-card-label">Squad</span>
+        <span class="admin-card-desc">Manage football squad &amp; photos</span>
+      </NuxtLink>
       <!-- TODO: enable when admin CRUD is built
       <NuxtLink to="/admin/committee" class="admin-card">
         <font-awesome-icon :icon="['fas', 'user-tie']" class="admin-card-icon" />
