@@ -12,7 +12,8 @@
         <!-- Column 2: Text -->
         <div class="text-column">
           <h1 class="text-header">Nepali Society of Fargo-Moorhead</h1>
-          <h2 class="text-header devnagari">| नेपाली समाज फार्गो-मूरहेड |</h2>
+          <div class="acronym">(NeSFM)</div>
+          <h2 class="text-header devnagari">नेपाली समाज फार्गो-मूरहेड</h2>
           <div class="nonprofit-tags">
             <a class="nonprofit-tag" href="#" @click.prevent="irsModal?.open()">
               501(c)(3) Nonprofit Organization
@@ -76,6 +77,20 @@
   text-align: center;
 }
 
+.text-header {
+  margin: 6px 0;
+  line-height: 1.2;
+}
+
+.acronym {
+  font-weight: 700;
+  font-size: 1.6rem;
+  letter-spacing: 0.15em;
+  text-indent: 0.15em; /* balance the trailing letter-spacing */
+  color: #fff;
+  margin: 4px 0;
+}
+
 .nonprofit-tags {
   display: flex;
   flex-direction: column;
@@ -135,7 +150,7 @@
   }
 
   .text-header {
-    margin: 12px 0;
+    margin: 6px 0;
   }
 
   /* Hide flags on small devices */
