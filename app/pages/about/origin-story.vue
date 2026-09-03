@@ -83,7 +83,7 @@
   background-color: #fdfdfd;
   border-left: 6px solid #e74c3c;
   border-radius: 8px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--app-font);
   color: #333;
 }
 

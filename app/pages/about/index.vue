@@ -79,7 +79,7 @@ const certModal = ref<InstanceType<typeof PdfModal> | null>(null);
   background-color: #f9f9f9;
   border-left: 6px solid #3498db;
   border-radius: 8px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--app-font);
   color: #333;
 }
 
