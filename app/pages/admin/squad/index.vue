@@ -53,19 +53,27 @@
           <!-- Photo -->
           <div class="image-col">
             <label class="field-label">Photo</label>
-            <div class="image-drop">
+
+            <!-- New file chosen: pan/zoom to frame before saving -->
+            <ImageCropper v-if="pendingFile" ref="cropper" :file="pendingFile" :aspect="0.8" />
+
+            <!-- Otherwise show the current photo or a placeholder -->
+            <div v-else class="image-drop">
               <img v-if="previewUrl" :src="previewUrl" class="image-preview" :alt="form.name" />
               <div v-else class="image-placeholder">
                 <font-awesome-icon :icon="['fas', 'user']" />
                 <span>No photo</span>
               </div>
             </div>
+
             <input ref="fileInput" type="file" accept="image/*" class="file-input" @change="onFileChange" />
             <button class="add-btn add-btn--sm" @click="fileInput?.click()">
               <font-awesome-icon :icon="['fas', 'upload']" />
-              {{ previewUrl ? 'Replace Photo' : 'Choose Photo' }}
+              {{ previewUrl || pendingFile ? 'Replace Photo' : 'Choose Photo' }}
             </button>
-            <button v-if="previewUrl" class="clear-photo-btn" @click="clearPhoto">Remove photo</button>
+            <button v-if="previewUrl || pendingFile" class="clear-photo-btn" @click="clearPhoto">
+              Remove photo
+            </button>
           </div>
         </div>
 
@@ -185,6 +193,7 @@ const thumbs = ref<Record<string, string | null>>({});
 
 const editing = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
+const cropper = ref<{getResult: () => Promise<File | null>} | null>(null);
 const pendingFile = ref<File | null>(null);
 const previewUrl = ref<string | null>(null);
 const photoCleared = ref(false);
@@ -255,9 +264,10 @@ function onFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input.files?.[0];
   if (!file) return;
+  // Hand the raw file to the cropper; it owns the preview + pan/zoom framing.
   pendingFile.value = file;
+  previewUrl.value = null;
   photoCleared.value = false;
-  previewUrl.value = URL.createObjectURL(file);
 }
 
 function clearPhoto() {
@@ -287,8 +297,10 @@ async function save() {
   }
 
   if (pendingFile.value) {
+    // Export the framed (pan/zoom) crop; fall back to the raw file if needed.
+    const cropped = (await cropper.value?.getResult()) ?? pendingFile.value;
     const prefix = `${form.squad_number || ''}-${form.name}`;
-    const {path, error} = await uploadPlayerImage(pendingFile.value, prefix);
+    const {path, error} = await uploadPlayerImage(cropped, prefix);
     if (error || !path) {
       saving.value = false;
       return flash('Photo upload failed. Please try again.', true);
@@ -617,7 +629,7 @@ function roleLabel(role: string | null): string {
   border: 1px solid #e2e8f0;
   border-radius: 0.4rem;
   background: #f8fafc;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 5;
   display: flex;
   align-items: center;
   justify-content: center;
