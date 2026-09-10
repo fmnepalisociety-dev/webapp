@@ -199,12 +199,28 @@ authenticated **write** (insert/update/delete) for admins. Time-window filtering
 (`start_at`/`end_at`) is applied client-side, and dismissed banners are remembered per
 browser via `localStorage`.
 
-## Sports — Squad
+## Sports — Squads & Tournaments
 
-The **Sports → Football** page (`/sports/football`) lists the official football squad for a
-tournament (currently **Everest Cup 2026**). Players are managed under **Admin → Squad**,
-where each player has a name, squad number, role (captain / vice-captain / player) and an
-uploadable photo. Players with no photo show a placeholder avatar on the public page.
+Squads are organised by **tournament**. Each tournament has two teams — **NeSFM** (our own
+organisation, `kind: home`) and an **opponent** (`kind: opponent`, scoped to that tournament
+only). Public pages:
+
+- **`/sports/football`** — the official NeSFM football squad.
+- **`/sports/everest-cup`** — both teams shown side-by-side (NeSFM vs NSA), rendered by the
+  generic `TournamentSquads` component.
+
+Each player has a name, squad number, role (captain / vice-captain / player) and an
+uploadable photo; players with no photo show a placeholder avatar.
+
+**Tournaments are defined in code**, not the DB — see `TOURNAMENTS` in
+`app/composables/useSquad.ts` (each entry: `key`, `name`, `sport`, `teams[]`). Adding a
+future tournament is one entry there; it then appears in the admin list, gets its own
+management screen, and becomes selectable on events. Each team maps to a distinct
+`players.team` string value (e.g. NeSFM → `'Everest Cup 2026'`, NSA →
+`'Everest Cup 2026 (NSA)'`).
+
+Players are managed under **Admin → Squad**, which lists tournaments; clicking one opens
+`/admin/squad/[tournament]` with a per-team toggle (our team / opponent).
 
 Create the table in Supabase (dashboard → SQL editor):
 
@@ -215,7 +231,7 @@ create table players (
   sport text not null default 'football',  -- discipline: football | cricket | volleyball | ...
   squad_number int,          -- jersey / list number
   role text,                 -- 'captain' | 'vice-captain' | null (player)
-  team text not null default 'Everest Cup 2026',  -- tournament / season
+  team text not null default 'Everest Cup 2026',  -- team-within-tournament key (see TOURNAMENTS)
   image_path text,           -- nsfm storage path, squad/ folder
   sort_order int not null default 0,
   created_at timestamptz default now()
@@ -286,6 +302,20 @@ insert into players (name, sport, role, team, sort_order) values
   ('Bishnu Adhikari',   'football', null,           'Everest Cup 2026', 15),
   ('Arjun Shrestha',    'football', null,           'Everest Cup 2026', 16);
 ```
+
+### Linking an event to a tournament
+
+An event can render both teams' squads inline on its detail page. This is driven by a
+`tournament_key` column on the `events` table (set from a dropdown in the event editor);
+its value matches a tournament `key` from `TOURNAMENTS`. Multiple events (e.g. a two-leg
+tie) can share the same key.
+
+```sql
+alter table events add column tournament_key text;
+```
+
+Leave it `null` for events with no squads. On the event page, `getTournament(tournament_key)`
+resolves the config and `TournamentSquads` renders the teams.
 
 ## Docs
 
