@@ -1,16 +1,27 @@
 <template>
-  <div class="ts-versus" :style="{gridTemplateColumns}">
+  <div class="ts-stack">
+    <nav class="ts-jump" aria-label="Jump to team">
+      <button
+        v-for="t in tournament.teams"
+        :key="t.key"
+        type="button"
+        :class="['ts-jump-btn', `ts-jump-btn--${t.kind}`]"
+        @click="scrollToTeam(t.key)"
+      >
+        {{ t.label }}
+      </button>
+    </nav>
+
     <template v-for="(t, i) in tournament.teams" :key="t.key">
-      <div v-if="i > 0" class="ts-vs" aria-hidden="true">VS</div>
-      <section class="ts-side">
-        <header :class="['ts-side-head', `ts-side-head--${t.kind}`]">
-          <span class="ts-side-name">{{ t.label }}</span>
-          <span class="ts-side-count">{{ counts[t.key] ?? 0 }}</span>
+      <div v-if="i > 0" class="ts-vs" aria-hidden="true"><span>VS</span></div>
+      <section :id="`team-${t.key}`" class="ts-team">
+        <header :class="['ts-team-head', `ts-team-head--${t.kind}`]">
+          <span class="ts-team-name">{{ t.label }}</span>
+          <span class="ts-team-count">{{ counts[t.key] ?? 0 }} players</span>
         </header>
         <SquadDisplay
           :sport="tournament.sport"
           :team="t.team"
-          compact
           @loaded="counts[t.key] = $event"
         />
       </section>
@@ -19,87 +30,117 @@
 </template>
 
 <script setup lang="ts">
-import {reactive, computed} from 'vue';
+import {reactive} from 'vue';
 import type {Tournament} from '~/composables/useSquad';
 
-const props = defineProps<{tournament: Tournament}>();
+defineProps<{tournament: Tournament}>();
 
 const counts = reactive<Record<string, number>>({});
 
-// Columns: one `1fr` per team side, with an `auto` VS divider between each.
-const gridTemplateColumns = computed(() =>
-  props.tournament.teams.map((_, i) => (i === 0 ? '1fr' : 'auto 1fr')).join(' ')
-);
+function scrollToTeam(key: string) {
+  document.getElementById(`team-${key}`)?.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
 </script>
 
 <style scoped>
-/* Side-by-side on all screen sizes, with a central VS divider between teams. */
-.ts-versus {
-  display: grid;
-  gap: 0.75rem;
-  align-items: start;
+/* Row-based: each team is a full-width block stacked vertically, with a VS
+   divider between them. */
+.ts-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.ts-side {
-  min-width: 0;
+/* Quick links that scroll to each team block. */
+.ts-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
 }
 
-.ts-side-head {
+.ts-jump-btn {
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: filter 0.15s;
+}
+
+.ts-jump-btn:hover {
+  filter: brightness(0.95);
+}
+
+.ts-jump-btn--home {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.ts-jump-btn--opponent {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Offset so the sticky site header doesn't cover the team heading on scroll. */
+.ts-team {
+  scroll-margin-top: 6rem;
+}
+
+.ts-team-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.55rem 0.9rem;
+  padding: 0.65rem 1rem;
   border-radius: 0.6rem;
   color: #fff;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
-.ts-side-head--home {
+.ts-team-head--home {
   background: linear-gradient(120deg, #1c3382, #2749b8);
 }
 
-.ts-side-head--opponent {
+.ts-team-head--opponent {
   background: linear-gradient(120deg, #a31432, #d21f45);
 }
 
-.ts-side-name {
-  font-size: 1.05rem;
+.ts-team-name {
+  font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: 0.02em;
 }
 
-.ts-side-count {
+.ts-team-count {
   font-size: 0.72rem;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 999px;
-  padding: 0.15rem 0.55rem;
+  padding: 0.2rem 0.65rem;
 }
 
+/* Centered VS with a rule on each side. */
 .ts-vs {
-  align-self: center;
-  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+}
+
+.ts-vs::before,
+.ts-vs::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.ts-vs span {
+  padding: 0 1rem;
+  font-size: 0.9rem;
   font-weight: 900;
   color: #94a3b8;
-  padding: 0 0.25rem;
-}
-
-@media (max-width: 520px) {
-  .ts-versus {
-    gap: 0.4rem;
-  }
-  .ts-side-head {
-    padding: 0.45rem 0.55rem;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
-  }
-  .ts-side-name {
-    font-size: 0.9rem;
-  }
-  .ts-vs {
-    font-size: 0.8rem;
-  }
 }
 </style>
