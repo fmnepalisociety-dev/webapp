@@ -1,7 +1,25 @@
 <template>
   <div>
     <div class="members-header">
-      <h1 class="admin-page-title">Squad — {{ EVEREST_CUP_2026 }}</h1>
+      <div>
+        <p class="admin-page-kicker">Everest Cup 2026</p>
+        <h1 class="admin-page-title">Squads</h1>
+        <div class="club-toggle" role="tablist" aria-label="Select team">
+          <button
+            v-for="c in EVEREST_CUP_CLUBS"
+            :key="c.key"
+            type="button"
+            role="tab"
+            :aria-selected="c.key === selectedClub.key"
+            :class="['club-toggle-btn', c.key === selectedClub.key && 'club-toggle-btn--active']"
+            @click="selectClub(c)"
+          >
+            {{ c.label }}
+            <span class="club-toggle-kind">{{ c.kind === 'home' ? 'our team' : 'opponent' }}</span>
+          </button>
+        </div>
+        <p class="club-note">{{ selectedClub.note }}</p>
+      </div>
       <button v-if="!editing" class="admin-btn" @click="startCreate">
         <font-awesome-icon :icon="['fas', 'plus']" />
         New Player
@@ -159,13 +177,18 @@ import {
   uploadPlayerImage,
   deletePlayerImage,
   FOOTBALL,
-  EVEREST_CUP_2026,
+  EVEREST_CUP_CLUBS,
+  type SquadClub,
   type SquadPlayer,
   type SquadPlayerInput,
 } from '~/composables/useSquad';
 import {NeSFM_GENERIC_BUCKET} from '~/composables/useSupabaseImage';
 
 definePageMeta({layout: 'admin', middleware: 'auth'});
+
+// Which club's roster is being managed. Each club maps to its own `players.team`
+// value; NeSFM (first entry) is the default and reuses the existing rows.
+const selectedClub = ref<SquadClub>(EVEREST_CUP_CLUBS[0]!);
 
 const {getPublicImageUrl} = useSupabaseImage();
 
@@ -272,7 +295,8 @@ async function save() {
   if (pendingFile.value) {
     // Export the framed (pan/zoom) crop; fall back to the raw file if needed.
     const cropped = (await uploader.value?.getResult()) ?? pendingFile.value;
-    const prefix = `${form.squad_number || ''}-${form.name}`;
+    // Namespace the image path by club so NeSFM/NSA photos never collide.
+    const prefix = `${selectedClub.value.key}-${form.squad_number || ''}-${form.name}`;
     const {path, error} = await uploadPlayerImage(cropped, prefix);
     if (error || !path) {
       saving.value = false;
@@ -287,7 +311,7 @@ async function save() {
     sport: FOOTBALL,
     squad_number: form.squad_number === '' ? null : Number(form.squad_number),
     role: form.role || null,
-    team: EVEREST_CUP_2026,
+    team: selectedClub.value.team,
     sort_order: form.sort_order === '' ? 0 : Number(form.sort_order),
     image_path: imagePath || null,
   };
@@ -342,8 +366,19 @@ async function confirmDelete() {
 }
 
 async function refresh() {
-  players.value = await getSquad(FOOTBALL, EVEREST_CUP_2026);
+  players.value = await getSquad(FOOTBALL, selectedClub.value.team);
   buildThumbs();
+}
+
+// Switch the managed club: close any open editor and reload that roster.
+async function selectClub(c: SquadClub) {
+  if (c.key === selectedClub.value.key) return;
+  selectedClub.value = c;
+  editing.value = false;
+  deleteTarget.value = null;
+  loading.value = true;
+  await refresh();
+  loading.value = false;
 }
 
 function roleLabel(role: string | null): string {
@@ -354,10 +389,25 @@ function roleLabel(role: string | null): string {
 </script>
 
 <style scoped>
+.admin-page-kicker {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  margin: 0 0 0.15rem;
+}
+
 .admin-page-title {
   font-size: 1.5rem;
   color: #1e293b;
   margin: 0;
+}
+
+.club-note {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0.5rem 0 0;
 }
 
 .members-header {
@@ -365,6 +415,48 @@ function roleLabel(role: string | null): string {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.5rem;
+}
+
+.club-toggle {
+  display: inline-flex;
+  margin-top: 0.6rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.4rem;
+  overflow: hidden;
+}
+
+.club-toggle-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.05rem;
+  padding: 0.4rem 0.9rem;
+  background: #fff;
+  border: none;
+  border-right: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+
+.club-toggle-kind {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+}
+
+.club-toggle-btn:last-child {
+  border-right: none;
+}
+
+.club-toggle-btn--active {
+  background: #0033a0;
+  color: #fff;
 }
 
 .admin-loading {

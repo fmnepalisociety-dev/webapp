@@ -1,37 +1,32 @@
 <template>
-  <main class="squad-page">
-    <header class="squad-hero">
-      <div class="squad-hero-icon">
+  <main class="ec-page">
+    <header class="ec-hero">
+      <div class="ec-hero-icon">
         <font-awesome-icon :icon="['fas', 'futbol']" />
       </div>
       <div>
-        <p class="squad-kicker">NeSFM Football</p>
-        <h1 class="squad-title">Everest Cup 2026</h1>
-        <p class="squad-sub">Official Squad — {{ count }} players</p>
+        <p class="ec-kicker">Football</p>
+        <h1 class="ec-title">Everest Cup 2026</h1>
+        <p class="ec-sub">NeSFM vs NSA — meet both squads</p>
       </div>
     </header>
 
-    <SquadDisplay :sport="FOOTBALL" :team="EVEREST_CUP_2026" @loaded="count = $event" />
+    <EverestCupSquads />
   </main>
 </template>
 
 <script setup lang="ts">
-import {ref} from 'vue';
-import {FOOTBALL, EVEREST_CUP_2026} from '~/composables/useSquad';
-
-useHead({title: 'Football — Everest Cup 2026 Squad'});
-
-const count = ref(0);
+useHead({title: 'Everest Cup 2026 — NeSFM vs NSA'});
 </script>
 
 <style scoped>
-.squad-page {
+.ec-page {
   max-width: 74rem;
   margin: 0 auto;
   padding: 1.5rem;
 }
 
-.squad-hero {
+.ec-hero {
   display: flex;
   align-items: center;
   gap: 1.1rem;
@@ -42,7 +37,7 @@ const count = ref(0);
   margin-bottom: 1.75rem;
 }
 
-.squad-hero-icon {
+.ec-hero-icon {
   font-size: 2.4rem;
   width: 3.6rem;
   height: 3.6rem;
@@ -54,7 +49,7 @@ const count = ref(0);
   flex-shrink: 0;
 }
 
-.squad-kicker {
+.ec-kicker {
   margin: 0;
   font-size: 0.78rem;
   text-transform: uppercase;
@@ -62,23 +57,23 @@ const count = ref(0);
   opacity: 0.85;
 }
 
-.squad-title {
+.ec-title {
   margin: 0.1rem 0;
   font-size: 1.8rem;
   font-weight: 800;
 }
 
-.squad-sub {
+.ec-sub {
   margin: 0;
   font-size: 0.9rem;
   opacity: 0.9;
 }
 
 @media (max-width: 520px) {
-  .squad-page {
+  .ec-page {
     padding: 1rem;
   }
-  .squad-title {
+  .ec-title {
     font-size: 1.4rem;
   }
 }

@@ -20,7 +20,40 @@ export type SquadPlayerInput = Omit<SquadPlayer, 'id'>
 const SQUAD_COLUMNS = 'id, name, sport, squad_number, role, team, image_path, sort_order'
 
 export const FOOTBALL = 'football'
+// The Everest Cup is contested by two clubs. Each club's roster is stored under
+// its own `players.team` value (no dedicated `club` column). NeSFM keeps the
+// original 'Everest Cup 2026' value so its existing rows are reused as-is.
 export const EVEREST_CUP_2026 = 'Everest Cup 2026'
+export const EVEREST_CUP_2026_NSA = 'Everest Cup 2026 (NSA)'
+
+// A club contesting the Everest Cup. `key` is a stable id (admin toggle / image
+// prefix), `team` is the `players.team` value this club's rows live under.
+// `kind` distinguishes NeSFM — our own organisation, which may also enter other
+// tournaments — from an `opponent`, who is scoped to this tournament only.
+export interface SquadClub {
+  key: string
+  label: string
+  team: string
+  kind: 'home' | 'opponent'
+  note: string
+}
+
+export const EVEREST_CUP_CLUBS: SquadClub[] = [
+  {
+    key: 'nesfm',
+    label: 'NeSFM',
+    team: EVEREST_CUP_2026,
+    kind: 'home',
+    note: 'Our organisation’s squad for this tournament.',
+  },
+  {
+    key: 'nsa',
+    label: 'NSA',
+    team: EVEREST_CUP_2026_NSA,
+    kind: 'opponent',
+    note: 'Opponent — used only for the Everest Cup 2026.',
+  },
+]
 
 export async function getSquad(
   sport = FOOTBALL,

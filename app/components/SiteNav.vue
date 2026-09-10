@@ -53,6 +53,9 @@
             <li>
               <NuxtLink to="/sports/football" @click="closeMenu">Football</NuxtLink>
             </li>
+            <li>
+              <NuxtLink to="/sports/everest-cup" @click="closeMenu">Everest Cup</NuxtLink>
+            </li>
           </ul>
         </li>
 
