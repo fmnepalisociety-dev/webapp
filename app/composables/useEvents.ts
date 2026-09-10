@@ -64,6 +64,9 @@ export interface EventInput {
   image: string[] | null
   featured: boolean
   videos: EventVideo[] | null
+  // Optional link to a tournament (by its key) whose squads render on the event
+  // page. Requires the `tournament_key` column on the `events` table.
+  tournament_key: string | null
 }
 
 // Create an event; the DB auto-generates the id. Returns the new id (or null on failure).

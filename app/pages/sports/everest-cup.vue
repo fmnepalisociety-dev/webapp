@@ -6,16 +6,20 @@
       </div>
       <div>
         <p class="ec-kicker">Football</p>
-        <h1 class="ec-title">Everest Cup 2026</h1>
+        <h1 class="ec-title">{{ tournament?.name ?? 'Everest Cup 2026' }}</h1>
         <p class="ec-sub">NeSFM vs NSA — meet both squads</p>
       </div>
     </header>
 
-    <EverestCupSquads />
+    <TournamentSquads v-if="tournament" :tournament="tournament" />
   </main>
 </template>
 
 <script setup lang="ts">
+import {getTournament} from '~/composables/useSquad';
+
+const tournament = getTournament('everest-cup-2026');
+
 useHead({title: 'Everest Cup 2026 — NeSFM vs NSA'});
 </script>
 

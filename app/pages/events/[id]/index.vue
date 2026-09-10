@@ -18,13 +18,13 @@
 
       <EventCard :event="event" expanded />
 
-      <!-- Everest Cup events show both squads inline, side by side. -->
-      <section v-if="showSquads" class="event-squads">
+      <!-- Events linked to a tournament show both teams' squads inline. -->
+      <section v-if="tournament" class="event-squads">
         <h2 class="event-squads-title">
           <font-awesome-icon :icon="['fas', 'futbol']" />
-          Squads
+          {{ tournament.name }} — Squads
         </h2>
-        <EverestCupSquads />
+        <TournamentSquads :tournament="tournament" />
       </section>
     </template>
 
@@ -34,6 +34,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { getEvents } from '~/composables/useEvents';
+import { getTournament } from '~/composables/useSquad';
 
 const route = useRoute();
 const eventId = route.params.id as string;
@@ -41,11 +42,9 @@ const eventId = route.params.id as string;
 const allEvents = await getEvents();
 const event = ref(allEvents.find((e: any) => e.id === eventId) ?? null);
 
-// Render the squads block when this event is the Everest Cup (matched by title,
-// since squads aren't linked to events by id).
-const showSquads = computed(() =>
-  (event.value?.title ?? '').toLowerCase().includes('everest cup')
-);
+// Show the squads block when the event is linked to a tournament (via the
+// `tournament_key` column). Both legs link to the same tournament.
+const tournament = computed(() => getTournament(event.value?.tournament_key));
 </script>
 
 <style scoped>

@@ -26,34 +26,57 @@ export const FOOTBALL = 'football'
 export const EVEREST_CUP_2026 = 'Everest Cup 2026'
 export const EVEREST_CUP_2026_NSA = 'Everest Cup 2026 (NSA)'
 
-// A club contesting the Everest Cup. `key` is a stable id (admin toggle / image
-// prefix), `team` is the `players.team` value this club's rows live under.
+// One team within a tournament. `key` is a stable id (admin toggle / image
+// prefix), `team` is the `players.team` value this team's rows live under.
 // `kind` distinguishes NeSFM — our own organisation, which may also enter other
 // tournaments — from an `opponent`, who is scoped to this tournament only.
-export interface SquadClub {
+export interface TournamentTeam {
   key: string
   label: string
-  team: string
   kind: 'home' | 'opponent'
+  team: string
   note: string
 }
 
-export const EVEREST_CUP_CLUBS: SquadClub[] = [
+// A tournament NeSFM competes in. Tournaments are defined here (not in the DB)
+// so adding a future one is a single entry: it then shows up in the admin list,
+// gets its own squad management screen, and can be linked from an event.
+// `key` doubles as the URL slug and the `events.tournament_key` value.
+export interface Tournament {
+  key: string
+  name: string
+  sport: string
+  teams: TournamentTeam[]
+}
+
+export const TOURNAMENTS: Tournament[] = [
   {
-    key: 'nesfm',
-    label: 'NeSFM',
-    team: EVEREST_CUP_2026,
-    kind: 'home',
-    note: 'Our organisation’s squad for this tournament.',
-  },
-  {
-    key: 'nsa',
-    label: 'NSA',
-    team: EVEREST_CUP_2026_NSA,
-    kind: 'opponent',
-    note: 'Opponent — used only for the Everest Cup 2026.',
+    key: 'everest-cup-2026',
+    name: 'Everest Cup 2026',
+    sport: FOOTBALL,
+    teams: [
+      {
+        key: 'nesfm',
+        label: 'NeSFM',
+        kind: 'home',
+        team: EVEREST_CUP_2026,
+        note: 'Our organisation’s squad for this tournament.',
+      },
+      {
+        key: 'nsa',
+        label: 'NSA',
+        kind: 'opponent',
+        team: EVEREST_CUP_2026_NSA,
+        note: 'Opponent — used only for the Everest Cup 2026.',
+      },
+    ],
   },
 ]
+
+export function getTournament(key?: string | null): Tournament | undefined {
+  if (!key) return undefined
+  return TOURNAMENTS.find((t) => t.key === key)
+}
 
 export async function getSquad(
   sport = FOOTBALL,

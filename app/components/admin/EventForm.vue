@@ -60,6 +60,15 @@
         </div>
 
         <div class="field-row">
+          <label class="field-label">Tournament squads <span class="html-hint">(optional)</span></label>
+          <select v-model="form.tournament_key" class="field-input">
+            <option :value="null">None</option>
+            <option v-for="t in TOURNAMENTS" :key="t.key" :value="t.key">{{ t.name }}</option>
+          </select>
+          <p class="field-hint">If set, both teams' squads show on this event's page. Link both legs to the same tournament.</p>
+        </div>
+
+        <div class="field-row">
           <label class="field-label">Body <span class="html-hint">(HTML ok)</span></label>
           <textarea v-model="form.body" class="field-input field-textarea" rows="5" placeholder="Main event description"></textarea>
         </div>
@@ -149,6 +158,7 @@ import {
   deleteEventImage,
   type EventInput,
 } from '~/composables/useEvents';
+import {TOURNAMENTS} from '~/composables/useSquad';
 import {NeSFM_GENERIC_BUCKET} from '~/composables/useSupabaseImage';
 
 const props = defineProps<{eventId?: string | null}>();
@@ -172,6 +182,7 @@ const form = reactive({
   featured: false,
   body: '',
   promo: '',
+  tournament_key: null as string | null,
 });
 
 interface ImageSlot {
@@ -205,6 +216,7 @@ onMounted(async () => {
       form.featured = !!ev.featured;
       form.body = ev.body ?? '';
       form.promo = ev.promo ?? '';
+      form.tournament_key = ev.tournament_key ?? null;
       for (const path of (ev.image as string[] | null) ?? []) {
         images.push({key: genKey(), path, url: getPublicImageUrl(NeSFM_GENERIC_BUCKET, path) ?? ''});
       }
@@ -322,6 +334,7 @@ async function save() {
     image: paths.length ? paths : null,
     featured: form.featured,
     videos: videos.filter((v) => v.src.trim()).map((v) => ({type: 'youtube', src: v.src.trim()})),
+    tournament_key: form.tournament_key || null,
   };
   if (!payload.videos?.length) payload.videos = null;
 
