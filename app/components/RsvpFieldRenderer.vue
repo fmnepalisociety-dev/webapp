@@ -6,12 +6,27 @@
       <p class="readonly-text">{{ field.value }}</p>
     </template>
 
-    <!-- Image -->
+    <!-- Image: a modest thumbnail that opens full size on click -->
     <template v-else-if="field.type === 'image'">
       <div class="readonly-image-wrapper">
         <label v-if="field.label" class="field-label">{{ field.label }}</label>
-        <img :src="field.value" :alt="field.label || 'Image'" class="readonly-image" />
+        <button type="button" class="readonly-image-btn" @click="imageOpen = true">
+          <img :src="field.value" :alt="field.label || 'Image'" class="readonly-image" />
+          <span class="readonly-image-hint">
+            <font-awesome-icon :icon="['fas', 'expand']" />
+            Tap to enlarge
+          </span>
+        </button>
       </div>
+
+      <Teleport to="body">
+        <div v-if="imageOpen" class="image-overlay" @click="imageOpen = false">
+          <button type="button" class="image-overlay-close" @click="imageOpen = false" aria-label="Close image">
+            <font-awesome-icon :icon="['fas', 'xmark']" />
+          </button>
+          <img :src="field.value" :alt="field.label || 'Image'" class="image-overlay-img" @click.stop />
+        </div>
+      </Teleport>
     </template>
 
     <!-- Dynamic HTML template -->
@@ -134,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue';
+import { computed, inject, ref, watch, onBeforeUnmount } from 'vue';
 import { emptyLineItemRow, type RsvpField } from '~/composables/useRsvp';
 
 const props = defineProps<{
@@ -143,6 +158,25 @@ const props = defineProps<{
 }>();
 
 const fieldErrors = inject<Record<string, string>>('fieldErrors', {});
+
+/* ---- Image field: shrinkable thumbnail + full-size overlay ---- */
+const imageOpen = ref(false);
+
+function onOverlayKey(e: KeyboardEvent) {
+  if (e.key === 'Escape') imageOpen.value = false;
+}
+
+watch(imageOpen, (open) => {
+  if (typeof document === 'undefined') return;
+  document.body.style.overflow = open ? 'hidden' : '';
+  if (open) document.addEventListener('keydown', onOverlayKey);
+  else document.removeEventListener('keydown', onOverlayKey);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onOverlayKey);
+  if (imageOpen.value) document.body.style.overflow = '';
+});
 
 const errorMsg = computed(() => fieldErrors[props.field.key] || '');
 
@@ -232,6 +266,7 @@ const renderedTemplate = computed(() => {
 
 .lineitem-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
 }
@@ -379,10 +414,46 @@ const renderedTemplate = computed(() => {
   gap: 0.35rem;
 }
 
+.readonly-image-btn {
+  position: relative;
+  align-self: flex-start;
+  display: block;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: zoom-in;
+  line-height: 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* Roomy by default — a payment QR has to be scannable straight off the page —
+   but capped so it shrinks with the viewport rather than anchoring the layout
+   at its natural size. The overlay covers anything needing a closer look. */
 .readonly-image {
+  display: block;
   max-width: 100%;
+  max-height: min(28rem, 60vh);
+  width: auto;
+  height: auto;
   border-radius: 0.5rem;
   border: 1px solid #e5e7eb;
+}
+
+.readonly-image-hint {
+  position: absolute;
+  bottom: 0.4rem;
+  right: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .rsvp-input--error {
@@ -402,14 +473,77 @@ const renderedTemplate = computed(() => {
 
 /* Stack on small screens */
 @media (max-width: 480px) {
+  .readonly-image {
+    max-height: min(20rem, 55vh);
+  }
+
   .rsvp-field--inline {
     flex-direction: column;
     align-items: stretch;
     gap: 0.25rem;
   }
 
+  /* Labels are free to wrap here — nowrap pushed the longer ones, and the page
+     with them, past the viewport. */
   .field-label {
     min-width: unset;
+    white-space: normal;
   }
+
+  /* Three inputs plus a remove button leave nothing usable on one line, so give
+     the text fields a row each and pair the number with the remove button. */
+  .lineitem-input {
+    flex: 1 1 100%;
+  }
+
+  .lineitem-input--num {
+    flex: 1 1 auto;
+  }
+}
+</style>
+
+<style>
+/* Teleported to body, so these have to be unscoped. */
+/* Full-size overlay */
+.image-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  cursor: zoom-out;
+}
+
+.image-overlay-img {
+  max-width: 92vw;
+  max-height: 92vh;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  cursor: default;
+}
+
+.image-overlay-close {
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.image-overlay-close:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 </style>
