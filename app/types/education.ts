@@ -8,6 +8,7 @@ export interface EducationItem {
   event_date: string | null; // anchor / start date, YYYY-MM-DD
   event_time: string | null;
   location: string | null;
+  map_url: string | null; // optional Google Maps (or any) link for the location
   recurrence_freq: RecurrenceFreq | null; // null = single (one-off) session
   cancelled_dates: string[]; // YYYY-MM-DD dates with no session
   active: boolean;

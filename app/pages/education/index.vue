@@ -54,7 +54,17 @@
             </li>
             <li v-if="item.location">
               <font-awesome-icon :icon="['fas', 'location-dot']" class="edu-detail-icon" />
-              <span>{{ item.location }}</span>
+              <a
+                v-if="item.map_url"
+                :href="item.map_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="edu-map-link"
+              >
+                {{ item.location }}
+                <font-awesome-icon :icon="['fas', 'arrow-up-right-from-square']" class="edu-map-icon" />
+              </a>
+              <span v-else>{{ item.location }}</span>
             </li>
           </ul>
 
@@ -300,6 +310,22 @@ function formatSession(date: Date): string {
   width: 1.3rem;
   flex-shrink: 0;
   margin-top: 0.15rem;
+}
+
+.edu-map-link {
+  color: #1c3382;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.edu-map-link:hover {
+  text-decoration: underline;
+}
+
+.edu-map-icon {
+  font-size: 0.72rem;
+  margin-left: 0.2rem;
+  opacity: 0.7;
 }
 
 .edu-sessions {

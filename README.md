@@ -224,6 +224,7 @@ create table education (
   event_date date,            -- anchor / start date of the (first) session
   event_time text,            -- optional, free text e.g. "6:30 PM – 7:30 PM"
   location text,              -- optional
+  map_url text,               -- optional Google Maps link; makes the location clickable
   recurrence_freq text,       -- 'weekly' | 'biweekly' | 'monthly'; null = one-off
   cancelled_dates date[] not null default '{}',  -- session dates to skip
   active boolean not null default true,

@@ -67,6 +67,12 @@
               <input v-model="form.location" class="field-input" placeholder="e.g. Discovery Middle School, Door 31" />
             </div>
 
+            <div class="field-row">
+              <label class="field-label">Map link <span class="html-hint">(optional)</span></label>
+              <input v-model="form.map_url" class="field-input" placeholder="Google Maps URL, e.g. https://maps.app.goo.gl/…" />
+              <p class="field-hint">Paste a Google Maps link. The location becomes clickable on the page.</p>
+            </div>
+
             <div v-if="form.recurrence_freq" class="field-row">
               <label class="field-label">Cancelled dates <span class="html-hint">(optional)</span></label>
               <div class="cancel-add">
@@ -201,6 +207,7 @@ interface FormState {
   event_date: string;
   event_time: string;
   location: string;
+  map_url: string;
   recurrence_freq: '' | RecurrenceFreq;
   cancelled_dates: string[];
   active: boolean;
@@ -218,6 +225,7 @@ function blankForm(): FormState {
     event_date: '',
     event_time: '',
     location: '',
+    map_url: '',
     recurrence_freq: '',
     cancelled_dates: [],
     active: true,
@@ -289,6 +297,7 @@ function startEdit(item: EducationItem) {
     event_date: item.event_date ?? '',
     event_time: item.event_time ?? '',
     location: item.location ?? '',
+    map_url: item.map_url ?? '',
     recurrence_freq: item.recurrence_freq ?? '',
     cancelled_dates: [...(item.cancelled_dates ?? [])].sort(),
     active: item.active,
@@ -367,6 +376,7 @@ async function save() {
     event_date: form.event_date || null,
     event_time: form.event_time.trim() || null,
     location: form.location.trim() || null,
+    map_url: form.map_url.trim() || null,
     recurrence_freq: form.recurrence_freq || null,
     cancelled_dates: form.recurrence_freq ? form.cancelled_dates : [],
     active: form.active,
