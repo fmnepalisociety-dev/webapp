@@ -1,5 +1,26 @@
 import {NeSFM_GENERIC_BUCKET} from '~/composables/useSupabaseImage'
 import {nextSession} from '~/composables/useRecurrence'
+import type {RecurrenceFreq} from '~/types/recurrence'
+
+/**
+ * Extensible per-event data held in the `events.meta` jsonb column. New optional
+ * attributes go here rather than as new columns, so most future changes need no
+ * database migration.
+ */
+export interface EventRecurrence {
+  freq: RecurrenceFreq // 'weekly' | 'biweekly' | 'monthly'
+  start_date: string // YYYY-MM-DD anchor
+  cancelled_dates?: string[] // YYYY-MM-DD sessions to skip
+}
+
+export interface EventMeta {
+  category?: string // e.g. 'education'; absent = general event
+  recurrence?: EventRecurrence | null
+}
+
+export const eventMeta = (e: any): EventMeta => (e?.meta ?? {}) as EventMeta
+export const eventRecurrence = (e: any): EventRecurrence | null => eventMeta(e).recurrence ?? null
+export const eventCategory = (e: any): string => eventMeta(e).category ?? ''
 
 export async function getEvents() {
   const {$supabase} = useNuxtApp()
@@ -33,7 +54,7 @@ export async function getEvent(id: string) {
 export async function getUpcomingEvents() {
   const allEvents = await getEvents()
   const today = new Date()
-  return allEvents.filter((e: any) => !e.recurrence_freq && new Date(e.event_date) >= today)
+  return allEvents.filter((e: any) => !eventRecurrence(e) && new Date(e.event_date) >= today)
 }
 
 // One-off (non-recurring) past events.
@@ -41,7 +62,7 @@ export async function getPastEvents() {
   const allEvents = await getEvents()
   const today = new Date()
   return allEvents
-    .filter((e: any) => !e.recurrence_freq && new Date(e.event_date) < today)
+    .filter((e: any) => !eventRecurrence(e) && new Date(e.event_date) < today)
     .sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
 }
 
@@ -49,14 +70,20 @@ export async function getPastEvents() {
 export async function getRecurringEvents() {
   const allEvents = await getEvents()
   return allEvents
-    .filter((e: any) => !!e.recurrence_freq)
+    .filter((e: any) => !!eventRecurrence(e))
     .sort((a: any, b: any) => {
-      const na = nextSession(a.start_date, a.recurrence_freq, a.cancelled_dates ?? [])
-      const nb = nextSession(b.start_date, b.recurrence_freq, b.cancelled_dates ?? [])
-      const ta = na ? na.date.getTime() : Infinity
-      const tb = nb ? nb.date.getTime() : Infinity
-      return ta - tb
+      const ra = eventRecurrence(a)!
+      const rb = eventRecurrence(b)!
+      const na = nextSession(ra.start_date, ra.freq, ra.cancelled_dates ?? [])
+      const nb = nextSession(rb.start_date, rb.freq, rb.cancelled_dates ?? [])
+      return (na ? na.date.getTime() : Infinity) - (nb ? nb.date.getTime() : Infinity)
     })
+}
+
+// Events tagged with a given category (e.g. 'education').
+export async function getEventsByCategory(category: string) {
+  const allEvents = await getEvents()
+  return allEvents.filter((e: any) => eventCategory(e) === category)
 }
 
 /* -----------------------------
@@ -82,14 +109,8 @@ export interface EventInput {
   // Optional link to a tournament (by its key) whose squads render on the event
   // page. Requires the `tournament_key` column on the `events` table.
   tournament_key: string | null
-  // Recurrence. `recurrence_freq` null = one-off event; otherwise `start_date`
-  // anchors the series and `cancelled_dates` are skipped sessions.
-  start_date: string | null // YYYY-MM-DD anchor for recurring events
-  recurrence_freq: string | null // 'weekly' | 'biweekly' | 'monthly'
-  cancelled_dates: string[] // YYYY-MM-DD sessions to skip
-  // Generic link to other content, e.g. content_type 'education' + the education id.
-  content_type: string | null
-  content_key: string | null
+  // Extensible attributes (category, recurrence, …) in the `meta` jsonb column.
+  meta: EventMeta
 }
 
 // Create an event; the DB auto-generates the id. Returns the new id (or null on failure).

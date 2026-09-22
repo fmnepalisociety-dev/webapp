@@ -102,7 +102,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { getUpcomingEvents, getRecurringEvents, getPastEvents } from '~/composables/useEvents';
+import { getUpcomingEvents, getRecurringEvents, getPastEvents, eventRecurrence } from '~/composables/useEvents';
 import { nextSession, recurrenceLabel } from '~/composables/useRecurrence';
 
 const [upcoming, recurring, past] = await Promise.all([
@@ -120,8 +120,10 @@ function jumpTo(id: string) {
 }
 
 function recurringWhen(event: any): string {
-  const label = recurrenceLabel(event.start_date, event.recurrence_freq);
-  const next = nextSession(event.start_date, event.recurrence_freq, event.cancelled_dates ?? []);
+  const rec = eventRecurrence(event);
+  if (!rec) return 'Recurring';
+  const label = recurrenceLabel(rec.start_date, rec.freq);
+  const next = nextSession(rec.start_date, rec.freq, rec.cancelled_dates ?? []);
   const nextText = next
     ? `next ${next.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
     : '';

@@ -32,6 +32,11 @@
         <span class="admin-card-label">Squad</span>
         <span class="admin-card-desc">Manage football squad &amp; photos</span>
       </NuxtLink>
+      <NuxtLink to="/admin/education" class="admin-card">
+        <font-awesome-icon :icon="['fas', 'graduation-cap']" class="admin-card-icon" />
+        <span class="admin-card-label">Education</span>
+        <span class="admin-card-desc">Nepali Pathsala &amp; programs</span>
+      </NuxtLink>
       <!-- TODO: enable when admin CRUD is built
       <NuxtLink to="/admin/committee" class="admin-card">
         <font-awesome-icon :icon="['fas', 'user-tie']" class="admin-card-icon" />

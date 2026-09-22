@@ -27,23 +27,19 @@
         <TournamentSquads :tournament="tournament" />
       </section>
 
-      <!-- Events linked to an education program point to its page. -->
-      <section v-if="educationItem" class="event-education">
+      <!-- Recurring events list their next sessions (cancellations struck through). -->
+      <section v-if="sessions.length" class="event-education">
         <h2 class="event-education-title">
-          <font-awesome-icon :icon="['fas', 'graduation-cap']" />
-          {{ educationItem.title }}
+          <font-awesome-icon :icon="['fas', 'rotate']" />
+          Upcoming sessions
         </h2>
-        <ul v-if="educationSessions.length" class="event-session-list">
-          <li
-            v-for="s in educationSessions"
-            :key="s.iso"
-            :class="{ 'session--cancelled': s.cancelled }"
-          >
+        <ul class="event-session-list">
+          <li v-for="s in sessions" :key="s.iso" :class="{ 'session--cancelled': s.cancelled }">
             <span>{{ formatSession(s.date) }}</span>
             <span v-if="s.cancelled" class="session-tag">Cancelled</span>
           </li>
         </ul>
-        <NuxtLink to="/education" class="education-link">
+        <NuxtLink v-if="isEducation" to="/education" class="education-link">
           View program details
           <font-awesome-icon :icon="['fas', 'chevron-right']" />
         </NuxtLink>
@@ -55,9 +51,9 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { getEvents } from '~/composables/useEvents';
+import { getEvents, eventRecurrence, eventCategory } from '~/composables/useEvents';
 import { getTournament } from '~/composables/useSquad';
-import { getEducationItem, upcomingSessions } from '~/composables/useEducation';
+import { upcomingSessions } from '~/composables/useRecurrence';
 
 const route = useRoute();
 const eventId = route.params.id as string;
@@ -69,13 +65,10 @@ const event = ref(allEvents.find((e: any) => e.id === eventId) ?? null);
 // `tournament_key` column). Both legs link to the same tournament.
 const tournament = computed(() => getTournament(event.value?.tournament_key));
 
-// Show a linked education program when content_type is 'education'.
-const ev = event.value as any;
-const educationItem =
-  ev?.content_type === 'education' && ev?.content_key
-    ? await getEducationItem(ev.content_key)
-    : null;
-const educationSessions = educationItem ? upcomingSessions(educationItem, 5) : [];
+// Recurring events (incl. education programs) list their next sessions.
+const rec = event.value ? eventRecurrence(event.value) : null;
+const sessions = rec ? upcomingSessions(rec.start_date, rec.freq, rec.cancelled_dates ?? [], 5) : [];
+const isEducation = event.value ? eventCategory(event.value) === 'education' : false;
 
 function formatSession(date: Date): string {
   return date.toLocaleDateString(undefined, {

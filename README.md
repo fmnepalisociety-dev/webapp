@@ -199,69 +199,58 @@ authenticated **write** (insert/update/delete) for admins. Time-window filtering
 (`start_at`/`end_at`) is applied client-side, and dismissed banners are remembered per
 browser via `localStorage`.
 
-## Education
+## Events — recurrence, categories & the `meta` column
 
-The public **`/education`** page introduces the Nepali Pathsala program and lists
-education items — each an uploaded flyer plus schedule details. Managed under
-**Admin → Education**. Each item has a title, description, optional time / location, an
-uploaded flyer image, and an active toggle. An item can repeat (weekly, every other
-week, or monthly) from its start date; the page then shows the **next 5 upcoming
-sessions** computed from that recurrence, with any **cancelled dates** struck through
-and skipped. Only active items appear on the public page; if there are none, the page
-shows the intro plus a "check back soon" note.
+Events carry their extensible attributes in a single **`meta` jsonb** column, so new
+optional fields don't need new columns (a data migration is limited to backfilling
+`meta`). Today `meta` holds:
 
-Flyer images go in the public `nsfm` bucket under the `education/` folder (same bucket
-and storage policies as flyers/events).
-
-Create the table in Supabase (dashboard → SQL editor):
-
-```sql
-create table education (
-  id bigint generated always as identity primary key,
-  title text not null,
-  description text,           -- shown as plain text (preserves line breaks)
-  image_path text,            -- flyer path in nsfm bucket, education/ folder
-  event_date date,            -- anchor / start date of the (first) session
-  event_time text,            -- optional, free text e.g. "6:30 PM – 7:30 PM"
-  location text,              -- optional
-  map_url text,               -- optional Google Maps link; makes the location clickable
-  recurrence_freq text,       -- 'weekly' | 'biweekly' | 'monthly'; null = one-off
-  cancelled_dates date[] not null default '{}',  -- session dates to skip
-  active boolean not null default true,
-  created_at timestamptz not null default now()
-);
+```jsonc
+{
+  "category": "education",          // omitted for a general event
+  "recurrence": {                    // omitted for a one-off event
+    "freq": "weekly",               // 'weekly' | 'biweekly' | 'monthly'
+    "start_date": "2026-09-25",     // YYYY-MM-DD anchor
+    "cancelled_dates": ["2026-10-02"]
+  }
+}
 ```
 
-Set Row Level Security to match the events policies: public **read** on `education`,
-authenticated **write** (insert/update/delete) for admins. Upcoming-session dates and
-cancellation filtering are computed client-side from `event_date` + `recurrence_freq`.
-
-## Recurring events & linked content
-
-Events can repeat and can point at other content instead of duplicating it. The Events
-page (`/events`) has three sections — **Upcoming**, **Recurring**, **Past** — with a jump
-bar at the top; each also has its own route (`/events/upcoming`, `/events/recurring`,
-`/events/past`). Recurring events are those with a `recurrence_freq`; they're pulled out
-of Upcoming/Past into their own bucket, sorted by next session.
-
-An event can link to an education program via `content_type = 'education'` +
-`content_key = <education.id>`; the event detail page then shows the program's upcoming
-sessions and links to `/education` rather than repeating the flyer. (`tournament_key`
-stays as the tournament link; `content_type`/`content_key` is the generic version for
-other content types.)
-
-Add the columns in Supabase (dashboard → SQL editor):
+Add the column in Supabase (dashboard → SQL editor):
 
 ```sql
-alter table public.events add column if not exists start_date date;          -- anchor for recurring events
-alter table public.events add column if not exists recurrence_freq text;      -- 'weekly' | 'biweekly' | 'monthly'; null = one-off
-alter table public.events add column if not exists cancelled_dates date[] not null default '{}';
-alter table public.events add column if not exists content_type text;         -- e.g. 'education'
-alter table public.events add column if not exists content_key text;          -- id/key within content_type
+alter table public.events add column if not exists meta jsonb not null default '{}'::jsonb;
 ```
 
-Recurrence math (next N sessions, cancellations, local-date parsing) lives in
-`app/composables/useRecurrence.ts` and is shared by events and education.
+The earlier typed columns (`start_date`, `recurrence_freq`, `cancelled_dates`,
+`content_type`, `content_key`) are superseded by `meta` and can be dropped once the data
+is moved:
+
+```sql
+alter table public.events
+  drop column if exists start_date,
+  drop column if exists recurrence_freq,
+  drop column if exists cancelled_dates,
+  drop column if exists content_type,
+  drop column if exists content_key;
+```
+
+**Recurring events** (those with `meta.recurrence`) are pulled out of Upcoming/Past into
+their own bucket. The Events page (`/events`) has three sections — **Upcoming**,
+**Recurring**, **Past** — with a jump bar; each also has its own route
+(`/events/upcoming`, `/events/recurring`, `/events/past`). Recurrence math (next N
+sessions, cancellations, local-date parsing) lives in `app/composables/useRecurrence.ts`.
+
+**Education** is a category of event (`meta.category = 'education'`), not a separate
+table. The public **`/education`** page shows education-category events with their flyer,
+description, schedule, and next 5 sessions; **Admin → Education** is a filtered list of
+those events that opens the normal event editor (set the Category field to *Education*).
+Flyer images use the first entry of the event's image gallery in the `nsfm` bucket. The
+old standalone `education` table is removed:
+
+```sql
+drop table if exists public.education;
+```
 
 ## Sports — Squads & Tournaments
 

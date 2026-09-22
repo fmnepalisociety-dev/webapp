@@ -79,9 +79,19 @@
         </div>
       </div>
 
-      <!-- Schedule & recurrence -->
+      <!-- Category & recurrence -->
       <div class="form-card">
-        <h2 class="card-title">Recurrence</h2>
+        <h2 class="card-title">Category & recurrence</h2>
+
+        <div class="field-row">
+          <label class="field-label">Category</label>
+          <select v-model="form.category" class="field-input">
+            <option value="">General event</option>
+            <option value="education">Education program</option>
+          </select>
+          <p class="field-hint">Education events also appear on the /education page.</p>
+        </div>
+
 
         <div class="field-two-col">
           <div class="field-row">
@@ -121,29 +131,6 @@
         </div>
       </div>
 
-      <!-- Linked content -->
-      <div class="form-card">
-        <h2 class="card-title">Linked content</h2>
-        <div class="field-two-col">
-          <div class="field-row">
-            <label class="field-label">Type</label>
-            <select v-model="form.content_type" class="field-input" @change="form.content_key = null">
-              <option :value="null">None</option>
-              <option value="education">Education program</option>
-            </select>
-          </div>
-          <div v-if="form.content_type === 'education'" class="field-row">
-            <label class="field-label">Education item</label>
-            <select v-model="form.content_key" class="field-input">
-              <option :value="null">— Select —</option>
-              <option v-for="item in educationItems" :key="item.id" :value="String(item.id)">
-                {{ item.title }}
-              </option>
-            </select>
-          </div>
-        </div>
-        <p class="field-hint">Links this event to an education program so its page points there instead of duplicating the details.</p>
-      </div>
 
       <!-- Images -->
       <div
@@ -222,11 +209,12 @@ import {
   updateEvent,
   uploadEventImage,
   deleteEventImage,
+  eventCategory,
+  eventRecurrence,
   type EventInput,
+  type EventMeta,
 } from '~/composables/useEvents';
 import {TOURNAMENTS} from '~/composables/useSquad';
-import {getAllEducation} from '~/composables/useEducation';
-import type {EducationItem} from '~/types/education';
 import {NeSFM_GENERIC_BUCKET} from '~/composables/useSupabaseImage';
 
 const props = defineProps<{eventId?: string | null}>();
@@ -251,15 +239,13 @@ const form = reactive({
   body: '',
   promo: '',
   tournament_key: null as string | null,
+  category: '' as '' | 'education',
   start_date: '',
   recurrence_freq: '' as '' | 'weekly' | 'biweekly' | 'monthly',
   cancelled_dates: [] as string[],
-  content_type: null as string | null,
-  content_key: null as string | null,
 });
 
 const newCancelDate = ref('');
-const educationItems = ref<EducationItem[]>([]);
 
 function addCancelDate() {
   const d = newCancelDate.value;
@@ -292,7 +278,6 @@ let nextKey = 0;
 const genKey = () => ++nextKey;
 
 onMounted(async () => {
-  educationItems.value = await getAllEducation();
   if (props.eventId) {
     const ev = await getEvent(props.eventId);
     if (ev) {
@@ -306,11 +291,11 @@ onMounted(async () => {
       form.body = ev.body ?? '';
       form.promo = ev.promo ?? '';
       form.tournament_key = ev.tournament_key ?? null;
-      form.start_date = ev.start_date ?? '';
-      form.recurrence_freq = ev.recurrence_freq ?? '';
-      form.cancelled_dates = [...((ev.cancelled_dates as string[] | null) ?? [])].sort();
-      form.content_type = ev.content_type ?? null;
-      form.content_key = ev.content_key ?? null;
+      form.category = (eventCategory(ev) as '' | 'education') || '';
+      const rec = eventRecurrence(ev);
+      form.recurrence_freq = rec?.freq ?? '';
+      form.start_date = rec?.start_date ?? '';
+      form.cancelled_dates = [...(rec?.cancelled_dates ?? [])].sort();
       for (const path of (ev.image as string[] | null) ?? []) {
         images.push({key: genKey(), path, url: getPublicImageUrl(NeSFM_GENERIC_BUCKET, path) ?? ''});
       }
@@ -320,6 +305,8 @@ onMounted(async () => {
     } else {
       flash('Event not found.', true);
     }
+  } else if (useRoute().query.category === 'education') {
+    form.category = 'education';
   }
   loading.value = false;
 });
@@ -380,8 +367,21 @@ function validate(): string | null {
   if (!form.heading.trim()) return 'Heading is required.';
   if (!form.event_date.trim()) return 'Date is required.';
   if (form.recurrence_freq && !form.start_date) return 'A start date is required for recurring events.';
-  if (form.content_type === 'education' && !form.content_key) return 'Please select an education item to link, or set Type to None.';
   return null;
+}
+
+// Assemble the extensible `meta` jsonb from the category + recurrence fields.
+function buildMeta(): EventMeta {
+  const meta: EventMeta = {};
+  if (form.category) meta.category = form.category;
+  if (form.recurrence_freq) {
+    meta.recurrence = {
+      freq: form.recurrence_freq,
+      start_date: form.start_date,
+      cancelled_dates: form.cancelled_dates,
+    };
+  }
+  return meta;
 }
 
 async function save() {
@@ -431,11 +431,7 @@ async function save() {
     featured: form.featured,
     videos: videos.filter((v) => v.src.trim()).map((v) => ({type: 'youtube', src: v.src.trim()})),
     tournament_key: form.tournament_key || null,
-    recurrence_freq: form.recurrence_freq || null,
-    start_date: form.recurrence_freq ? form.start_date || null : null,
-    cancelled_dates: form.recurrence_freq ? form.cancelled_dates : [],
-    content_type: form.content_type || null,
-    content_key: form.content_type ? form.content_key || null : null,
+    meta: buildMeta(),
   };
   if (!payload.videos?.length) payload.videos = null;
 

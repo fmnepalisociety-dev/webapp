@@ -84,7 +84,7 @@
               </li>
             </ul>
           </div>
-          <p v-else-if="item.event_date" class="edu-sessions-none">
+          <p v-else-if="item.anchor" class="edu-sessions-none">
             No upcoming sessions scheduled right now.
           </p>
         </div>
@@ -95,39 +95,60 @@
 
 <script setup lang="ts">
 import {ref} from 'vue';
-import {getActiveEducation, upcomingSessions} from '~/composables/useEducation';
+import {getEventsByCategory, eventRecurrence, type EventRecurrence} from '~/composables/useEvents';
+import {upcomingSessions, recurrenceLabel as recurrenceLabelFor} from '~/composables/useRecurrence';
 import {NeSFM_GENERIC_BUCKET} from '~/composables/useSupabaseImage';
-import type {EducationItem, Session} from '~/types/education';
+import type {Session} from '~/types/recurrence';
 
 useHead({title: 'Education — Nepali Pathsala'});
 
 const {getPublicImageUrl} = useSupabaseImage();
 
+interface EduItem {
+  id: string;
+  title: string;
+  description: string | null;
+  event_time: string | null;
+  location: string;
+  map_url: string;
+  anchor: string | null;
+  rec: EventRecurrence | null;
+}
+
 const loading = ref(true);
-const items = ref<EducationItem[]>([]);
-const images = ref<Record<number, string | null>>({});
-const sessions = ref<Record<number, Session[]>>({});
+const items = ref<EduItem[]>([]);
+const images = ref<Record<string, string | null>>({});
+const sessions = ref<Record<string, Session[]>>({});
+
+// event_location is stored as "Name [https://map-url]".
+function parseLocation(raw: string): {name: string; url: string} {
+  const m = (raw ?? '').match(/^(.*?)\s*\[(.+)]$/);
+  return m ? {name: m[1].trim(), url: m[2].trim()} : {name: raw ?? '', url: ''};
+}
 
 onMounted(async () => {
-  items.value = await getActiveEducation();
-  for (const item of items.value) {
-    images.value[item.id] = item.image_path
-      ? getPublicImageUrl(NeSFM_GENERIC_BUCKET, item.image_path)
-      : null;
-    sessions.value[item.id] = upcomingSessions(item, 5);
+  const events = await getEventsByCategory('education');
+  for (const e of events as any[]) {
+    const rec = eventRecurrence(e);
+    const loc = parseLocation(e.event_location);
+    items.value.push({
+      id: e.id,
+      title: e.heading,
+      description: e.body ?? null,
+      event_time: e.event_time ?? null,
+      location: loc.name,
+      map_url: loc.url,
+      anchor: rec?.start_date ?? null,
+      rec,
+    });
+    images.value[e.id] = e.image?.[0] ? getPublicImageUrl(NeSFM_GENERIC_BUCKET, e.image[0]) : null;
+    sessions.value[e.id] = rec ? upcomingSessions(rec.start_date, rec.freq, rec.cancelled_dates ?? [], 5) : [];
   }
   loading.value = false;
 });
 
-const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-function recurrenceLabel(item: EducationItem): string {
-  if (!item.recurrence_freq || !item.event_date) return '';
-  const [y, m, d] = item.event_date.split('-').map(Number);
-  const name = WEEKDAYS[new Date(y, m - 1, d).getDay()];
-  if (item.recurrence_freq === 'weekly') return `Weekly on ${name}s`;
-  if (item.recurrence_freq === 'biweekly') return `Every other ${name}`;
-  return 'Monthly';
+function recurrenceLabel(item: EduItem): string {
+  return item.rec ? recurrenceLabelFor(item.rec.start_date, item.rec.freq) : '';
 }
 
 function formatSession(date: Date): string {
