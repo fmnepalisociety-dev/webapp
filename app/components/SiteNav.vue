@@ -4,7 +4,7 @@
       <!-- Compact bar: the header has scrolled away, so the logo lives here. -->
       <div class="hamburger-container">
         <NuxtLink v-if="compact || scrolled" to="/" class="nav-logo" ref="navLogo" aria-label="Home">
-          <img src="/logo.png" alt="NeSFM" />
+          <span class="nav-logo-text">NeSFM</span>
         </NuxtLink>
         <button
           class="hamburger"
@@ -58,11 +58,16 @@
 
       <!-- Condensed state only: the header's actions have scrolled out of view. -->
       <div v-if="!compact && scrolled" class="nav-cta" ref="navCta">
-        <NuxtLink to="/membership" class="nav-cta-btn">
+        <NuxtLink
+          to="/membership"
+          class="nav-cta-btn"
+          aria-label="Become a Member"
+          data-tip="Become a Member"
+        >
           <font-awesome-icon :icon="['fas', 'user-plus']" />
           <span>Become a Member</span>
         </NuxtLink>
-        <NuxtLink to="/donation" class="nav-cta-btn">
+        <NuxtLink to="/donation" class="nav-cta-btn" aria-label="Donate" data-tip="Donate">
           <font-awesome-icon :icon="['fas', 'heart']" />
           <span>Donate</span>
         </NuxtLink>
@@ -578,14 +583,30 @@ watch(isOpen, (open) => {
   flex-shrink: 0;
 }
 
-.nav-logo img {
-  height: 34px;
-  width: auto;
-  display: block;
+.nav-logo {
+  color: #fff;
+  text-decoration: none;
 }
 
-.main-nav.scrolled:not(.compact) .nav-logo img {
-  height: 30px;
+.nav-logo-text {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  background: linear-gradient(180deg, #fff3a6 0%, #ffd700 45%, #f0a800 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px rgba(255, 215, 0, 0.45));
+  transition: filter 0.2s ease;
+}
+
+.nav-logo:hover .nav-logo-text {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 14px rgba(255, 215, 0, 0.8));
+}
+
+.main-nav.scrolled:not(.compact) .nav-logo-text {
+  font-size: 1.15rem;
 }
 
 /* Condensed actions. Under width pressure they shed their labels before the
@@ -623,7 +644,35 @@ watch(isOpen, (open) => {
 }
 
 .main-nav.tight .nav-cta-btn {
+  position: relative;
   padding: 0.3rem 0.55rem;
+}
+
+/* Icon-only buttons get a tooltip naming them on hover or keyboard focus. */
+.main-nav.tight .nav-cta-btn::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translate(-50%, -4px);
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  background: #1c1c1c;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 10;
+}
+
+.main-nav.tight .nav-cta-btn:hover::after,
+.main-nav.tight .nav-cta-btn:focus-visible::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 .main-nav.compact .hamburger {

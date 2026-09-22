@@ -48,6 +48,10 @@ header {
 
 .main {
     flex: 1;
+    /* Auto margins in a flex column shrink the box to its content, so a page
+       with little on it (e.g. no events) would collapse and centre. */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .header-container {

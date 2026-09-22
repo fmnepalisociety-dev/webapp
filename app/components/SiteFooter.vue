@@ -51,7 +51,7 @@
     </div>
 
     <div class="footer-copy">
-      © {{ new Date().getFullYear() }} Nepali Society of Fargo-Moorhead
+      © {{ new Date().getFullYear() }} Nepali Society of Fargo-Moorhead (NeSFM)
     </div>
   </footer>
 </template>
