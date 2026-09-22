@@ -48,6 +48,7 @@ import {
   faRotate,
   faHeart,
   faUserPlus,
+  faPenToSquare,
 } from '@fortawesome/free-solid-svg-icons'
 import {faFacebook, faYoutube} from '@fortawesome/free-brands-svg-icons'
 
@@ -98,6 +99,7 @@ library.add(
   faRotate,
   faHeart,
   faUserPlus,
+  faPenToSquare,
 )
 
 export default defineNuxtPlugin((nuxtApp) => {

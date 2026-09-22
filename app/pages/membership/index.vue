@@ -62,12 +62,12 @@
 <script setup lang="ts">
 import {ref, reactive, computed, nextTick, provide} from 'vue';
 import {flatFields, isEditableField, isSection} from '~/composables/useRsvp';
-import {MEMBERSHIP_FORM, submitApplication} from '~/composables/useMembership';
+import {getMembershipForm, submitApplication} from '~/composables/useMembership';
 import RsvpFieldRenderer from '~/components/RsvpFieldRenderer.vue';
 
 useHead({title: 'Become a Member — Nepali Society of Fargo-Moorhead'});
 
-const config = MEMBERSHIP_FORM;
+const config = await getMembershipForm();
 
 const submitting = ref(false);
 const submitted = ref(false);

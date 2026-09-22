@@ -20,7 +20,10 @@ export type ApplicationStatus =
  * and `number` for the amount paid. In a later phase this moves into a DB-backed,
  * admin-editable config; for now it lives in code.
  */
-export const MEMBERSHIP_FORM: RsvpConfig = {
+export const MEMBERSHIP_FORM_KEY = 'membership_form';
+
+/** Built-in default used when no saved config exists (and as the "reset" target). */
+export const DEFAULT_MEMBERSHIP_FORM: RsvpConfig = {
   active: true,
   fields: [
     {
@@ -91,6 +94,32 @@ export const MEMBERSHIP_FORM: RsvpConfig = {
     },
   ],
 };
+
+/** Load the membership form config from `app_config`, falling back to the default. */
+export async function getMembershipForm(): Promise<RsvpConfig> {
+  const {$supabase} = useNuxtApp();
+  const {data, error} = await $supabase
+    .from('app_config')
+    .select('value')
+    .eq('key', MEMBERSHIP_FORM_KEY)
+    .maybeSingle();
+  if (error) {
+    console.error('[getMembershipForm]', error);
+    return DEFAULT_MEMBERSHIP_FORM;
+  }
+  const value = (data as {value?: RsvpConfig} | null)?.value;
+  return value && Array.isArray(value.fields) ? value : DEFAULT_MEMBERSHIP_FORM;
+}
+
+/** Save (upsert) the membership form config. */
+export async function saveMembershipForm(config: RsvpConfig): Promise<{error: unknown}> {
+  const {$supabase} = useNuxtApp();
+  const {error} = await $supabase
+    .from('app_config')
+    .upsert({key: MEMBERSHIP_FORM_KEY, value: config, updated_at: new Date().toISOString()});
+  if (error) console.error('[saveMembershipForm]', error);
+  return {error};
+}
 
 /** Insert a membership application (public submission). */
 export async function submitApplication(responses: Record<string, unknown>) {

@@ -1,6 +1,12 @@
 <template>
   <div>
-    <h1 class="admin-page-title">Membership Applications</h1>
+    <div class="page-head">
+      <h1 class="admin-page-title">Membership Applications</h1>
+      <NuxtLink to="/admin/membership/form" class="admin-link">
+        <font-awesome-icon :icon="['fas', 'pen-to-square']" />
+        Edit application form
+      </NuxtLink>
+    </div>
 
     <div v-if="saveMsg" :class="['save-msg', saveError ? 'save-msg--error' : 'save-msg--ok']">
       {{ saveMsg }}
@@ -149,18 +155,19 @@ import {
   getApplications,
   updateApplication,
   deleteApplication,
-  MEMBERSHIP_FORM,
+  getMembershipForm,
   APPLICATION_STATUSES,
   type MembershipApplication,
   type ApplicationStatus,
 } from '~/composables/useMembership';
-import {flatFields} from '~/composables/useRsvp';
+import {flatFields, type RsvpField} from '~/composables/useRsvp';
 import {createMember, getAdminMembers} from '~/composables/useMembers';
 
 definePageMeta({layout: 'admin', middleware: 'auth'});
 
 const STATUSES = APPLICATION_STATUSES;
-const formFields = flatFields(MEMBERSHIP_FORM.fields);
+// Field labels for rendering submitted details, sourced from the saved form config.
+const formFields = ref<RsvpField[]>([]);
 
 // Existing membership IDs, used to suggest the next one and to enforce uniqueness.
 const memberIds = ref<string[]>([]);
@@ -199,9 +206,14 @@ const reviewNotes = ref('');
 const register = reactive<{applicant: any; family: any[]}>({applicant: {}, family: []});
 
 onMounted(async () => {
-  const [apps, members] = await Promise.all([getApplications(), getAdminMembers()]);
+  const [apps, members, config] = await Promise.all([
+    getApplications(),
+    getAdminMembers(),
+    getMembershipForm(),
+  ]);
   applications.value = apps;
   memberIds.value = members.map((m) => m.membership_id).filter((x): x is string => !!x);
+  formFields.value = flatFields(config.fields);
   loading.value = false;
 });
 
@@ -231,7 +243,7 @@ function fmtDate(iso: string) {
 }
 
 function detailRows(app: MembershipApplication) {
-  return formFields
+  return formFields.value
     .filter((f) => !['template', 'image', 'lineitems'].includes(f.type))
     .map((f) => ({label: f.label, value: app.responses[f.key]}))
     .filter((r) => r.value !== undefined && r.value !== '' && r.value !== null);
@@ -374,10 +386,18 @@ async function registerMembers(app: MembershipApplication) {
 </script>
 
 <style scoped>
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
 .admin-page-title {
   font-size: 1.5rem;
   color: #1e293b;
-  margin: 0 0 1.25rem;
+  margin: 0;
 }
 
 .admin-loading {

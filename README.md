@@ -252,6 +252,55 @@ old standalone `education` table is removed:
 drop table if exists public.education;
 ```
 
+## Membership
+
+"Become a Member" (header button → `/membership`) is a public application form built on the
+same JSON field engine as event RSVPs (`RsvpConfig` + `RsvpFieldRenderer`): applicant
+details, a `lineitems` field for **family members**, and a payment section (Zelle
+instructions/QR + "Have you paid?" + amount). Submissions go to `membership_applications`.
+
+**Admin → Membership** lists applications by status (`new` / `unpaid` / `processing` /
+`accepted` / `registered` / `rejected`), shows details + family + payment, and lets an
+admin **register** an application — creating rows in `members` for the applicant and chosen
+family (with a suggested next unique membership ID), linking the application via `member_id`
+and marking it `registered`. **Admin → Membership → Edit application form** edits the form
+config as JSON (with a live preview); it's stored in `app_config` and falls back to the
+in-code default (`DEFAULT_MEMBERSHIP_FORM`) when unset.
+
+Create the tables in Supabase (dashboard → SQL editor):
+
+```sql
+-- Public submissions
+create table public.membership_applications (
+  id uuid primary key default gen_random_uuid(),
+  responses jsonb not null,
+  status text not null default 'new',   -- new | unpaid | processing | accepted | registered | rejected
+  member_id int references public.members(id) on delete set null,
+  admin_notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz
+);
+alter table public.membership_applications enable row level security;
+create policy "ma public insert" on public.membership_applications for insert with check (true);
+create policy "ma admin read"    on public.membership_applications for select to authenticated using (true);
+create policy "ma admin update"  on public.membership_applications for update to authenticated using (true) with check (true);
+create policy "ma admin delete"  on public.membership_applications for delete to authenticated using (true);
+
+-- Generic key/value config (holds the membership form under key 'membership_form')
+create table public.app_config (
+  key text primary key,
+  value jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.app_config enable row level security;
+create policy "app_config public read"  on public.app_config for select using (true);
+create policy "app_config admin insert" on public.app_config for insert to authenticated with check (true);
+create policy "app_config admin update" on public.app_config for update to authenticated using (true) with check (true);
+```
+
+Membership IDs are enforced unique in the admin flow; for a hard guarantee add
+`create unique index on public.members (membership_id) where membership_id is not null;`.
+
 ## Sports — Squads & Tournaments
 
 Squads are organised by **tournament**. Each tournament has two teams — **NeSFM** (our own
