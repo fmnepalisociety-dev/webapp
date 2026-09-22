@@ -5,6 +5,7 @@ export interface AuditEntry {
   action: 'INSERT' | 'UPDATE' | 'DELETE';
   actor_id: string | null;
   actor_email: string | null;
+  actor_role: string | null;
   old_data: Record<string, any> | null;
   new_data: Record<string, any> | null;
   created_at: string;

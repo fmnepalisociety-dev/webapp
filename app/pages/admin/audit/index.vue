@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1 class="admin-page-title">Audit Log</h1>
-    <p class="hint">Every create, update, and delete made by a logged-in admin, with who did it. Public submissions (RSVPs, applications, orders) are not logged. Newest first.</p>
+    <p class="hint">Every create, update, and delete by an admin or the system (service key), with who did it. Front-facing public submissions (RSVPs, applications, orders) are not logged. Newest first.</p>
 
     <div class="filter-bar">
       <select v-model="tableFilter" class="filter-select">
@@ -34,7 +34,7 @@
         <template v-for="e in filtered" :key="e.id">
           <tr>
             <td class="nowrap">{{ fmt(e.created_at) }}</td>
-            <td>{{ e.actor_email || 'admin' }}</td>
+            <td>{{ who(e) }}</td>
             <td><span :class="['action-badge', actionClass(e.action)]">{{ label(e.action) }}</span></td>
             <td>{{ e.table_name }}</td>
             <td class="mono">{{ shortId(e.record_id) }}</td>
@@ -98,6 +98,11 @@ function toggle(id: number) {
 function fmt(iso: string) {
   const d = new Date(iso);
   return isNaN(d.getTime()) ? iso : d.toLocaleString();
+}
+
+function who(e: AuditEntry) {
+  if (e.actor_email) return e.actor_email;
+  return e.actor_role === 'service_role' ? 'system' : 'admin';
 }
 
 const label = (a: string) => ({INSERT: 'Create', UPDATE: 'Update', DELETE: 'Delete'})[a] ?? a;

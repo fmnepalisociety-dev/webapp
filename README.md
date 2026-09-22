@@ -303,47 +303,51 @@ Membership IDs are enforced unique in the admin flow; for a hard guarantee add
 
 ## Audit log
 
-Every create/update/delete **made by a logged-in admin** is recorded in `audit_log` by a
-Postgres trigger, along with who did it (from the request's auth token). Viewable at
-**Admin → Audit Log** (filter by table/action, expand to see the before/after JSON).
+Create/update/delete on **any table** is recorded in `audit_log` by a Postgres trigger,
+along with who did it. Viewable at **Admin → Audit Log** (filter by table/action, expand to
+see before/after JSON).
 
-The trigger **skips writes with no authenticated admin** (`auth.uid()` is null) — so
-front-facing public submissions (event RSVPs, membership applications, product orders) and
-service-key/system writes are **not** logged. Admin edits/deletes of those rows still are.
+Who gets logged is decided by the request **role**:
+- `authenticated` (a logged-in admin) → logged, with their email.
+- `service_role` (service-key / system / scripted changes) → logged as **system**.
+- `anon` (front-facing public visitors: RSVPs, membership applications, product orders) →
+  **not** logged. (An admin editing/deleting those rows still is.)
 
-Create the table, trigger function, and triggers in Supabase (dashboard → SQL editor):
+Run once in Supabase (dashboard → SQL editor). It attaches to every existing table and,
+if your role allows event triggers, to future tables automatically:
 
 ```sql
-create table public.audit_log (
+-- 1. Audit table
+create table if not exists public.audit_log (
   id bigint generated always as identity primary key,
   table_name text not null,
   record_id text,
   action text not null,          -- INSERT | UPDATE | DELETE
-  actor_id uuid,                 -- auth.uid() of the admin (null for service-key/system writes)
+  actor_id uuid,                 -- auth.uid() (null for service-key/system writes)
   actor_email text,              -- email claim from the JWT
+  actor_role text,               -- authenticated | service_role
   old_data jsonb,
   new_data jsonb,
   created_at timestamptz not null default now()
 );
 alter table public.audit_log enable row level security;
--- Admins read; nobody writes directly (only the SECURITY DEFINER trigger below).
 create policy "audit_log admin read" on public.audit_log for select to authenticated using (true);
 
+-- 2. Trigger function — logs admin + system, skips anonymous public submissions
 create or replace function public.log_audit()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
-  -- Only audit logged-in admin actions. Skip anonymous public submissions
-  -- (RSVPs, membership applications, orders) and service-key/system writes.
-  if auth.uid() is null then
-    return coalesce(new, old);
+  if auth.role() = 'anon' then
+    return coalesce(new, old);   -- skip front-facing public visitors
   end if;
-  insert into public.audit_log(table_name, record_id, action, actor_id, actor_email, old_data, new_data)
+  insert into public.audit_log(table_name, record_id, action, actor_id, actor_email, actor_role, old_data, new_data)
   values (
     tg_table_name,
     coalesce(to_jsonb(new) ->> 'id', to_jsonb(old) ->> 'id'),
     tg_op,
     auth.uid(),
     nullif(auth.jwt() ->> 'email', ''),
+    auth.role(),
     case when tg_op in ('UPDATE','DELETE') then to_jsonb(old) else null end,
     case when tg_op in ('INSERT','UPDATE') then to_jsonb(new) else null end
   );
@@ -351,16 +355,44 @@ begin
 end;
 $$;
 
--- Attach to each admin-managed table (drop any you don't want audited):
-create trigger audit_events          after insert or update or delete on public.events                  for each row execute function public.log_audit();
-create trigger audit_members         after insert or update or delete on public.members                 for each row execute function public.log_audit();
-create trigger audit_membership_apps after insert or update or delete on public.membership_applications for each row execute function public.log_audit();
-create trigger audit_app_config      after insert or update or delete on public.app_config              for each row execute function public.log_audit();
-create trigger audit_flyers          after insert or update or delete on public.flyers                  for each row execute function public.log_audit();
-create trigger audit_banners         after insert or update or delete on public.banners                 for each row execute function public.log_audit();
-create trigger audit_products        after insert or update or delete on public.products                for each row execute function public.log_audit();
-create trigger audit_product_orders  after insert or update or delete on public.product_orders          for each row execute function public.log_audit();
-create trigger audit_players         after insert or update or delete on public.players                 for each row execute function public.log_audit();
+-- 3. Helper to (re)attach the audit trigger to one table
+create or replace function public.attach_audit(tbl regclass)
+returns void language plpgsql as $$
+begin
+  execute format('drop trigger if exists audit_trg on %s', tbl);
+  execute format('create trigger audit_trg after insert or update or delete on %s for each row execute function public.log_audit()', tbl);
+end;
+$$;
+
+-- 4. Attach to every existing table in public (except audit_log itself)
+do $$
+declare r record;
+begin
+  for r in select format('%I.%I', schemaname, tablename)::regclass as tbl
+           from pg_tables where schemaname = 'public' and tablename <> 'audit_log'
+  loop
+    perform public.attach_audit(r.tbl);
+  end loop;
+end $$;
+
+-- 5. OPTIONAL: auto-attach to future tables. Needs permission to create event
+--    triggers; if Supabase rejects this, skip it and just run
+--    `select public.attach_audit('public.<new_table>');` when you add a table.
+create or replace function public.auto_attach_audit()
+returns event_trigger language plpgsql as $$
+declare obj record;
+begin
+  for obj in select * from pg_event_trigger_ddl_commands() where command_tag = 'CREATE TABLE'
+  loop
+    if obj.schema_name = 'public' and obj.object_identity <> 'public.audit_log' then
+      perform public.attach_audit(obj.object_identity::regclass);
+    end if;
+  end loop;
+end;
+$$;
+drop event trigger if exists audit_auto;
+create event trigger audit_auto on ddl_command_end
+  when tag in ('CREATE TABLE') execute function public.auto_attach_audit();
 ```
 
 ## Sports — Squads & Tournaments
