@@ -49,9 +49,13 @@
         </div>
       </div>
 
-      <!-- Donate call-to-action, right-aligned just above the nav -->
+      <!-- Calls-to-action, right-aligned just above the nav -->
       <div class="header-actions">
-        <NuxtLink to="/donation" class="donate-btn">
+        <NuxtLink to="/membership" class="cta-btn">
+          <font-awesome-icon :icon="['fas', 'user-plus']" />
+          <span>Become a Member</span>
+        </NuxtLink>
+        <NuxtLink to="/donation" class="cta-btn">
           <font-awesome-icon :icon="['fas', 'heart']" />
           <span>Donate</span>
         </NuxtLink>
@@ -68,22 +72,26 @@
   gap: 1.5rem;
 }
 
-/* Donate button */
+/* Call-to-action buttons */
 .header-actions {
   width: 100%;
   display: flex;
+  flex-direction: row;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   margin-top: 0.75rem;
 }
 
-.donate-btn {
+.cta-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1.35rem;
+  gap: 0.4rem;
+  padding: 0.35rem 0.9rem;
   background: #fff;
   color: #a31432;
   font-weight: 700;
+  font-size: 0.82rem;
   letter-spacing: 0.02em;
   border-radius: 999px;
   text-decoration: none;
@@ -91,7 +99,7 @@
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 
-.donate-btn:hover {
+.cta-btn:hover {
   transform: translateY(-1px);
   background: #ffd700;
   color: #1c3382;

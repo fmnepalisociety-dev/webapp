@@ -47,6 +47,7 @@ import {
   faGraduationCap,
   faRotate,
   faHeart,
+  faUserPlus,
 } from '@fortawesome/free-solid-svg-icons'
 import {faFacebook, faYoutube} from '@fortawesome/free-brands-svg-icons'
 
@@ -96,6 +97,7 @@ library.add(
   faGraduationCap,
   faRotate,
   faHeart,
+  faUserPlus,
 )
 
 export default defineNuxtPlugin((nuxtApp) => {

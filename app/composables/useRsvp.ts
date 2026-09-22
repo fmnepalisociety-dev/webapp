@@ -14,10 +14,11 @@ export interface RsvpField {
   required_if?: { field: string; value: string };
   options?: string[];
   value?: string;
-  // For type === 'lineitems': the columns of each row, and an optional unit
-  // price used to show a running total.
+  // For type === 'lineitems': the columns of each row, an optional unit price
+  // used to show a running total, and an optional label for the add-row button.
   item_fields?: LineItemField[];
   unit_price?: number;
+  add_label?: string;
 }
 
 // A blank row for a line-items field (every column empty).

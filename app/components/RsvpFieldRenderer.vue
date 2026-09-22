@@ -59,7 +59,7 @@
         </div>
 
         <button type="button" class="lineitem-add" @click="addRow">
-          <font-awesome-icon :icon="['fas', 'plus']" /> Add item
+          <font-awesome-icon :icon="['fas', 'plus']" /> {{ field.add_label || 'Add item' }}
         </button>
 
         <div v-if="field.unit_price" class="lineitem-total">
