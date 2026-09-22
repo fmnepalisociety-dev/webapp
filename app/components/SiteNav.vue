@@ -1,8 +1,11 @@
 <template>
-  <nav class="main-nav" :class="mode">
+  <nav class="main-nav" :class="[mode, { scrolled }]">
     <div class="nav-inner" ref="navInner">
-      <!-- Hamburger (compact) -->
+      <!-- Compact bar: the header has scrolled away, so the logo lives here. -->
       <div class="hamburger-container">
+        <NuxtLink v-if="compact || scrolled" to="/" class="nav-logo" ref="navLogo" aria-label="Home">
+          <img src="/logo.png" alt="NeSFM" />
+        </NuxtLink>
         <button
           class="hamburger"
           @click="toggleMenu"
@@ -52,6 +55,18 @@
           </li>
         </template>
       </ul>
+
+      <!-- Condensed state only: the header's actions have scrolled out of view. -->
+      <div v-if="!compact && scrolled" class="nav-cta" ref="navCta">
+        <NuxtLink to="/membership" class="nav-cta-btn">
+          <font-awesome-icon :icon="['fas', 'user-plus']" />
+          <span>Become a Member</span>
+        </NuxtLink>
+        <NuxtLink to="/donation" class="nav-cta-btn">
+          <font-awesome-icon :icon="['fas', 'heart']" />
+          <span>Donate</span>
+        </NuxtLink>
+      </div>
     </div>
 
     <!-- Mobile slide-out drawer (from the left; tap the dimmed area to close) -->
@@ -98,6 +113,17 @@
                   </div>
                 </section>
               </template>
+            </div>
+
+            <div class="drawer-cta">
+              <NuxtLink to="/membership" class="drawer-btn" @click="closeMenu">
+                <font-awesome-icon :icon="['fas', 'user-plus']" />
+                Become a Member
+              </NuxtLink>
+              <NuxtLink to="/donation" class="drawer-btn" @click="closeMenu">
+                <font-awesome-icon :icon="['fas', 'heart']" />
+                Donate
+              </NuxtLink>
             </div>
           </aside>
         </div>
@@ -182,6 +208,8 @@ const compact = computed(() => mode.value === 'compact')
 
 const navInner = ref<HTMLElement | null>(null)
 const navList = ref<HTMLElement | null>(null)
+const navLogo = ref<HTMLElement | null>(null)
+const navCta = ref<HTMLElement | null>(null)
 let relaxedWidth = 0
 let tightWidth = 0
 let ro: ResizeObserver | null = null
@@ -199,10 +227,19 @@ async function measureWidths() {
   mode.value = prev
 }
 
+/** Width the top-level list can use, minus whatever the condensed slots take. */
+function availableWidth(inner: HTMLElement): number {
+  const slot = (el: HTMLElement | null) => {
+    const node = (el as any)?.$el ?? el
+    return node instanceof HTMLElement ? node.offsetWidth + 16 : 0
+  }
+  return inner.clientWidth - 32 - slot(navLogo.value) - slot(navCta.value)
+}
+
 function decide() {
   const inner = navInner.value
   if (!inner || !relaxedWidth) return
-  const avail = inner.clientWidth - 32
+  const avail = availableWidth(inner)
   if (mode.value !== 'compact') {
     if (tightWidth > avail) mode.value = 'compact'
     else mode.value = relaxedWidth <= avail ? 'relaxed' : 'tight'
@@ -210,6 +247,25 @@ function decide() {
     mode.value = relaxedWidth <= avail - 24 ? 'relaxed' : 'tight'
   }
 }
+
+/* ---------- condensed (scrolled) state ----------
+ * The header scrolls away on long pages, so past it the sticky bar takes over
+ * its job: logo on the left, actions on the right. Re-measure on the way in and
+ * out, since those slots eat width the top-level list was using. */
+const scrolled = ref(false)
+const CONDENSE_AT = 140
+
+function onScroll() {
+  const y = window.scrollY
+  // Hysteresis, so a bar-height wobble can't flip this back and forth.
+  if (!scrolled.value && y > CONDENSE_AT) scrolled.value = true
+  else if (scrolled.value && y < CONDENSE_AT - 40) scrolled.value = false
+}
+
+watch(scrolled, async () => {
+  await nextTick()
+  decide()
+})
 
 /* ---------- desktop dropdowns ----------
  * Hover is driven from script rather than :hover so that only one menu is ever
@@ -241,7 +297,10 @@ const closeMenu = () => (isOpen.value = false)
 
 onMounted(async () => {
   await measureWidths()
+  onScroll()
+  await nextTick()
   decide()
+  window.addEventListener('scroll', onScroll, {passive: true})
   if (typeof ResizeObserver !== 'undefined' && navInner.value) {
     ro = new ResizeObserver(() => decide())
     ro.observe(navInner.value)
@@ -251,6 +310,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   ro?.disconnect()
   cancelClose()
+  window.removeEventListener('scroll', onScroll)
 })
 
 watch(compact, () => {
@@ -287,6 +347,24 @@ watch(isOpen, (open) => {
   justify-content: center;
   align-items: center;
   position: relative;
+  /* Fixed height in both states, so condensing doesn't jog the page. */
+  min-height: 52px;
+  box-sizing: border-box;
+}
+
+/* Condensed: logo | links | actions */
+.main-nav.scrolled .nav-inner {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.main-nav.scrolled .nav-list {
+  flex: 1;
+  justify-content: center;
+}
+
+.main-nav.scrolled {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* =========================
@@ -489,8 +567,63 @@ watch(isOpen, (open) => {
 .main-nav.compact .hamburger-container {
   width: 100%;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   padding: 8px 36px 8px 16px;
+}
+
+.nav-logo {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.nav-logo img {
+  height: 34px;
+  width: auto;
+  display: block;
+}
+
+.main-nav.scrolled:not(.compact) .nav-logo img {
+  height: 30px;
+}
+
+/* Condensed actions. Under width pressure they shed their labels before the
+   nav itself tightens, so the link text survives longest. */
+.nav-cta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.nav-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  background: #fff;
+  color: #a31432;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.nav-cta-btn:hover {
+  background: #ffd700;
+  color: #1c3382;
+  text-decoration: none;
+}
+
+.main-nav.tight .nav-cta-btn span {
+  display: none;
+}
+
+.main-nav.tight .nav-cta-btn {
+  padding: 0.3rem 0.55rem;
 }
 
 .main-nav.compact .hamburger {
@@ -527,6 +660,8 @@ watch(isOpen, (open) => {
   left: 0;
   bottom: 0;
   width: min(82vw, 320px);
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(160deg, rgba(28, 51, 130, 0.99), rgba(163, 20, 50, 0.97));
   color: #fff;
   overflow-y: auto;
@@ -575,6 +710,39 @@ watch(isOpen, (open) => {
   flex-direction: column;
   gap: 0.4rem;
 }
+
+/* Pinned under the links with `margin-top: auto` rather than a fixed position,
+   so on a short screen they follow the list instead of covering it. */
+.drawer-cta {
+  margin-top: auto;
+  padding-top: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.drawer-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  background: #fff;
+  color: #a31432;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.drawer-btn:active {
+  background: #ffd700;
+  color: #1c3382;
+}
+
+
 
 .drawer-section {
   display: flex;
