@@ -67,10 +67,6 @@
         </li>
 
         <li>
-          <NuxtLink to="/donation" @click="closeMenu">Donation</NuxtLink>
-        </li>
-
-        <li>
           <NuxtLink to="/shop" @click="closeMenu">NeSFM-Wear</NuxtLink>
         </li>
 

@@ -48,6 +48,14 @@
           />
         </div>
       </div>
+
+      <!-- Donate call-to-action, right-aligned just above the nav -->
+      <div class="header-actions">
+        <NuxtLink to="/donation" class="donate-btn">
+          <font-awesome-icon :icon="['fas', 'heart']" />
+          <span>Donate</span>
+        </NuxtLink>
+      </div>
     </div>
   </header>
 </template>
@@ -58,6 +66,36 @@
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 1.5rem;
+}
+
+/* Donate button */
+.header-actions {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+}
+
+.donate-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.35rem;
+  background: #fff;
+  color: #a31432;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.donate-btn:hover {
+  transform: translateY(-1px);
+  background: #ffd700;
+  color: #1c3382;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
 }
 
 /* Logo */
@@ -156,6 +194,11 @@
   /* Hide flags on small devices */
   .flags-column {
     display: none;
+  }
+
+  .header-actions {
+    justify-content: center;
+    margin-top: 1rem;
   }
 }
 </style>
