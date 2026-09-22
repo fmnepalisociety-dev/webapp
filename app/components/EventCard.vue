@@ -30,6 +30,45 @@
         </span>
       </div>
 
+      <!-- Recurring events carry their next sessions (cancellations struck through).
+           Lists get a one-line summary; the detail view gets the full schedule. -->
+      <template v-if="sessions.length">
+        <div v-if="expanded" class="event-sessions">
+          <p class="event-sessions-label">
+            <font-awesome-icon :icon="['fas', 'rotate']" />
+            Upcoming sessions
+            <span v-if="recurrenceText" class="event-recurring">{{ recurrenceText }}</span>
+          </p>
+          <ul class="event-session-list">
+            <li
+              v-for="s in sessions"
+              :key="s.iso"
+              :class="{ 'event-session--cancelled': s.cancelled }"
+            >
+              <span class="event-session-date">{{ formatSession(s.date) }}</span>
+              <span v-if="s.cancelled" class="event-session-tag">Cancelled</span>
+            </li>
+          </ul>
+        </div>
+
+        <div v-else class="event-sessions-compact">
+          <span v-if="recurrenceText" class="session-chip session-chip--recurring">
+            <font-awesome-icon :icon="['fas', 'rotate']" />
+            {{ recurrenceText }}
+          </span>
+          <span v-if="nextThree.length" class="session-chip">
+            <font-awesome-icon :icon="['fas', 'calendar-check']" />
+            Next:
+            <template v-for="(s, i) in nextThree" :key="s.iso">
+              <span v-if="i" class="session-sep">~</span>
+              <span :class="{ 'session-chip--cancelled': s.cancelled }">
+                {{ formatSessionShort(s.date) }}
+              </span>
+            </template>
+          </span>
+        </div>
+      </template>
+
       <!-- Actions: Info + RSVP -->
       <div v-if="hasRsvp || hasInfo" class="actions-row">
         <NuxtLink v-if="hasInfo" :to="`/events/${event.id}/info`" class="btn btn-outline-blue">
@@ -139,6 +178,8 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, nextTick } from 'vue';
 import { isRsvpOpen, type RsvpConfig } from '~/composables/useRsvp';
+import { eventRecurrence } from '~/composables/useEvents';
+import { upcomingSessions, recurrenceLabel } from '~/composables/useRecurrence';
 
 const props = defineProps<{
   event: {
@@ -153,6 +194,7 @@ const props = defineProps<{
     rsvp?: RsvpConfig | null;
     event_info?: any[] | null;
     videos?: { type: string; src: string }[] | null;
+    meta?: Record<string, any> | null;
   };
   expanded?: boolean;
 }>();
@@ -248,6 +290,37 @@ const locationUrl = computed(() => {
   return match ? match[2].trim() : null;
 });
 
+/* Recurring events list their next sessions, the same way the Education page
+   does. Detail view shows more of them than a card in a list. */
+const rec = computed(() => eventRecurrence(props.event));
+
+const sessions = computed(() => {
+  const r = rec.value;
+  if (!r) return [];
+  return upcomingSessions(r.start_date, r.freq, r.cancelled_dates ?? [], 5);
+});
+
+// Lists summarise the next three dates on one line (cancellations included so a
+// skipped week is visible, struck through).
+const nextThree = computed(() => sessions.value.slice(0, 3));
+
+const recurrenceText = computed(() =>
+  rec.value ? recurrenceLabel(rec.value.start_date, rec.value.freq) : ''
+);
+
+function formatSession(date: Date): string {
+  return date.toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+function formatSessionShort(date: Date): string {
+  return date.toLocaleDateString(undefined, {weekday: 'short', month: 'short', day: 'numeric'});
+}
+
 const videos = computed(() => props.event.videos ?? []);
 
 function youtubeId(url: string): string | null {
@@ -323,6 +396,111 @@ function youtubeId(url: string): string | null {
 
 .location-link:hover {
   text-decoration: underline;
+}
+
+/* ========== Recurring sessions ========== */
+.event-sessions-compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.session-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1e3a5f;
+  background: #eef2ff;
+  padding: 0.2rem 0.6rem;
+  border-radius: 1rem;
+}
+
+.session-chip svg {
+  font-size: 0.7rem;
+  color: #2563eb;
+}
+
+.session-chip--recurring {
+  color: #a31432;
+  background: rgba(163, 20, 50, 0.08);
+}
+
+.session-chip--recurring svg {
+  color: #a31432;
+}
+
+.session-sep {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.session-chip--cancelled {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
+
+.event-sessions {
+  margin-bottom: 0.75rem;
+}
+
+.event-sessions-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #1e3a5f;
+}
+
+.event-recurring {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #a31432;
+  background: rgba(163, 20, 50, 0.08);
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+}
+
+.event-session-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.event-session-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.event-session--cancelled .event-session-date {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
+
+.event-session-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #a31432;
+  background: rgba(163, 20, 50, 0.1);
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
 }
 
 /* Actions row */

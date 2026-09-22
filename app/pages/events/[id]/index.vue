@@ -27,19 +27,9 @@
         <TournamentSquads :tournament="tournament" />
       </section>
 
-      <!-- Recurring events list their next sessions (cancellations struck through). -->
-      <section v-if="sessions.length" class="event-education">
-        <h2 class="event-education-title">
-          <font-awesome-icon :icon="['fas', 'rotate']" />
-          Upcoming sessions
-        </h2>
-        <ul class="event-session-list">
-          <li v-for="s in sessions" :key="s.iso" :class="{ 'session--cancelled': s.cancelled }">
-            <span>{{ formatSession(s.date) }}</span>
-            <span v-if="s.cancelled" class="session-tag">Cancelled</span>
-          </li>
-        </ul>
-        <NuxtLink v-if="isEducation" to="/education" class="education-link">
+      <!-- The card itself lists the sessions; education programs also link out. -->
+      <section v-if="isEducation" class="event-education">
+        <NuxtLink to="/education" class="education-link">
           View program details
           <font-awesome-icon :icon="['fas', 'chevron-right']" />
         </NuxtLink>
@@ -51,9 +41,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { getEvents, eventRecurrence, eventCategory } from '~/composables/useEvents';
+import { getEvents, eventCategory } from '~/composables/useEvents';
 import { getTournament } from '~/composables/useSquad';
-import { upcomingSessions } from '~/composables/useRecurrence';
 
 const route = useRoute();
 const eventId = route.params.id as string;
@@ -65,19 +54,8 @@ const event = ref(allEvents.find((e: any) => e.id === eventId) ?? null);
 // `tournament_key` column). Both legs link to the same tournament.
 const tournament = computed(() => getTournament(event.value?.tournament_key));
 
-// Recurring events (incl. education programs) list their next sessions.
-const rec = event.value ? eventRecurrence(event.value) : null;
-const sessions = rec ? upcomingSessions(rec.start_date, rec.freq, rec.cancelled_dates ?? [], 5) : [];
+// Education programs get a link through to the dedicated program page.
 const isEducation = event.value ? eventCategory(event.value) === 'education' : false;
-
-function formatSession(date: Date): string {
-  return date.toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
 </script>
 
 <style scoped>
@@ -102,49 +80,6 @@ function formatSession(date: Date): string {
   border-radius: 0.9rem;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-}
-
-.event-education-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: #1c3382;
-  margin: 0 0 1rem;
-}
-
-.event-session-list {
-  list-style: none;
-  margin: 0 0 1rem;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.event-session-list li {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 0.95rem;
-  color: #333;
-}
-
-.session--cancelled span:first-child {
-  text-decoration: line-through;
-  color: #94a3b8;
-}
-
-.session-tag {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #a31432;
-  background: rgba(163, 20, 50, 0.1);
-  padding: 0.1rem 0.45rem;
-  border-radius: 999px;
 }
 
 .education-link {
