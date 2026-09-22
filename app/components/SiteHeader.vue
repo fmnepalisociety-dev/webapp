@@ -59,6 +59,11 @@
           <font-awesome-icon :icon="['fas', 'heart']" />
           <span>Donate</span>
         </NuxtLink>
+        <!-- Tertiary action: outlined so it sits behind the two above. -->
+        <NuxtLink to="/contacts" class="cta-btn cta-btn--ghost" aria-label="Contact us" title="Contact us">
+          <font-awesome-icon :icon="['fas', 'envelope']" />
+          <span>Contact</span>
+        </NuxtLink>
       </div>
     </div>
   </header>
@@ -72,15 +77,17 @@
   gap: 1.5rem;
 }
 
-/* Call-to-action buttons */
+/* Call-to-action buttons, centered under the header text and pulled down toward
+   the nav, so they group with the bar below rather than with the text above. */
 .header-actions {
   width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: flex-end;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 0.75rem;
+  margin-top: 1.25rem;
+  margin-bottom: -1.1rem;
 }
 
 .cta-btn {
@@ -104,6 +111,19 @@
   background: #ffd700;
   color: #1c3382;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+}
+
+.cta-btn--ghost {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: none;
+}
+
+.cta-btn--ghost:hover {
+  background: #ffd700;
+  color: #1c3382;
+  border-color: #ffd700;
 }
 
 /* Logo */
@@ -150,14 +170,18 @@
   color: rgba(255, 255, 255, 0.9);
   letter-spacing: 0.04em;
   font-weight: 500;
-  text-decoration: none;
   cursor: pointer;
-  transition: color 0.2s;
+  /* Faint underline so these read as links before you hover them. */
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.4);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 0.2s, text-decoration-color 0.2s;
 }
 
 .nonprofit-tag:hover {
   color: #fff;
-  text-decoration: underline;
+  text-decoration-color: #ffd700;
 }
 
 /* Flags */
@@ -205,8 +229,30 @@
   }
 
   .header-actions {
-    justify-content: center;
     margin-top: 1rem;
+    margin-bottom: -0.9rem;
+  }
+}
+
+/* Three worded pills don't fit one row on a phone. Stacking the icon over the
+   label keeps every word — same trick as the nav's tight tier. */
+@media (max-width: 520px) {
+  .header-actions {
+    gap: 0.4rem;
+  }
+
+  .cta-btn {
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.72rem;
+    line-height: 1.25;
+    text-align: center;
+    border-radius: 0.75rem;
+  }
+
+  .cta-btn svg {
+    font-size: 0.9rem;
   }
 }
 </style>

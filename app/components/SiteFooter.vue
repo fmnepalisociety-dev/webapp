@@ -162,36 +162,53 @@ footer a:hover {
   margin: 4px 0 0;
 }
 
+/* Filled, like the header's primary actions — the outlined links below are the
+   quieter tier. */
 .footer-cta {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.35rem 0.85rem;
-  border: 1px solid rgba(255, 255, 255, 0.45);
+  padding: 0.35rem 0.9rem;
   border-radius: 999px;
-  color: #fff;
-  font-weight: 600;
-  font-size: 0.85rem;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  background: #fff;
+  color: #a31432;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 
 .footer-cta:hover {
+  transform: translateY(-1px);
   background: #ffd700;
   color: #1c3382;
-  border-color: #ffd700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
   text-decoration: none;
 }
 
 .footer-bottom-links {
-  gap: 1.5rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
+/* Outlined buttons, so these read as actions rather than fine print. */
 .footer-links {
+  padding: 0.3rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
   text-decoration: none;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .footer-links:hover {
-  text-decoration: underline;
+  background: #ffd700;
+  color: #1c3382;
+  border-color: #ffd700;
+  text-decoration: none;
 }
 
 @media (max-width: 512px) {
