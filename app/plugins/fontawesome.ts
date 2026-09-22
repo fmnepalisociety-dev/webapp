@@ -44,6 +44,7 @@ import {
   faBullhorn,
   faFutbol,
   faUpDownLeftRight,
+  faGraduationCap,
 } from '@fortawesome/free-solid-svg-icons'
 import {faFacebook, faYoutube} from '@fortawesome/free-brands-svg-icons'
 
@@ -90,6 +91,8 @@ library.add(
   faBullhorn,
   faFutbol,
   faUpDownLeftRight,
+  faGraduationCap,
+  faDoorOpen,
 )
 
 export default defineNuxtPlugin((nuxtApp) => {

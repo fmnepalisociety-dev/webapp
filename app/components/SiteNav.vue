@@ -60,6 +60,10 @@
         </li>
 
         <li>
+          <NuxtLink to="/education" @click="closeMenu">Education</NuxtLink>
+        </li>
+
+        <li>
           <NuxtLink to="/donation" @click="closeMenu">Donation</NuxtLink>
         </li>
 
