@@ -6,11 +6,14 @@
         <button
           class="hamburger"
           @click="toggleMenu"
-          aria-label="Toggle navigation"
+          :aria-label="isOpen ? 'Close navigation' : 'Open navigation'"
         >
-          <span :class="{ open: isOpen }"></span>
-          <span :class="{ open: isOpen }"></span>
-          <span :class="{ open: isOpen }"></span>
+          <span class="hamburger-label">{{ isOpen ? 'Close' : 'Menu' }}</span>
+          <span class="hamburger-bars">
+            <span :class="{ open: isOpen }"></span>
+            <span :class="{ open: isOpen }"></span>
+            <span :class="{ open: isOpen }"></span>
+          </span>
         </button>
       </div>
 
@@ -215,6 +218,8 @@ const closeMenu = () => (isOpen.value = false)
    ========================= */
 .hamburger {
   display: none;
+  align-items: center;
+  gap: 10px;
   position: absolute;
   right: 16px;
   top: 12px;
@@ -224,7 +229,18 @@ const closeMenu = () => (isOpen.value = false)
   z-index: 1100;
 }
 
-.hamburger span {
+.hamburger-label {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+}
+
+.hamburger-bars {
+  display: inline-block;
+}
+
+.hamburger-bars span {
   display: block;
   width: 28px;
   height: 3px;
@@ -233,15 +249,15 @@ const closeMenu = () => (isOpen.value = false)
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-.hamburger span.open:nth-child(1) {
+.hamburger-bars span.open:nth-child(1) {
   transform: translateY(8px) rotate(45deg);
 }
 
-.hamburger span.open:nth-child(2) {
+.hamburger-bars span.open:nth-child(2) {
   opacity: 0;
 }
 
-.hamburger span.open:nth-child(3) {
+.hamburger-bars span.open:nth-child(3) {
   transform: translateY(-8px) rotate(-45deg);
 }
 
@@ -263,7 +279,7 @@ const closeMenu = () => (isOpen.value = false)
   }
 
   .hamburger {
-    display: block;
+    display: inline-flex;
     position: static;
     padding: 6px;
     background: none;
