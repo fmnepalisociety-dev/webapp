@@ -17,6 +17,11 @@
         <span class="admin-card-label">Members</span>
         <span class="admin-card-desc">Add &amp; edit members</span>
       </NuxtLink>
+      <NuxtLink to="/admin/membership" class="admin-card">
+        <font-awesome-icon :icon="['fas', 'user-plus']" class="admin-card-icon" />
+        <span class="admin-card-label">Membership</span>
+        <span class="admin-card-desc">Review applications</span>
+      </NuxtLink>
       <NuxtLink to="/admin/products" class="admin-card">
         <font-awesome-icon :icon="['fas', 'bag-shopping']" class="admin-card-icon" />
         <span class="admin-card-label">Wear</span>

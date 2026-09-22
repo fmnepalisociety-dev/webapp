@@ -103,3 +103,59 @@ export async function submitApplication(responses: Record<string, unknown>) {
     throw new Error('Failed to submit your application. Please try again.');
   }
 }
+
+/* -----------------------------
+ * Admin
+ * --------------------------- */
+
+export interface MembershipApplication {
+  id: string;
+  responses: Record<string, any>;
+  status: ApplicationStatus;
+  member_id: number | null;
+  admin_notes: string | null;
+  created_at: string;
+  updated_at: string | null;
+}
+
+export const APPLICATION_STATUSES: ApplicationStatus[] = [
+  'new',
+  'unpaid',
+  'processing',
+  'accepted',
+  'registered',
+  'rejected',
+];
+
+export async function getApplications(): Promise<MembershipApplication[]> {
+  const {$supabase} = useNuxtApp();
+  const {data, error} = await $supabase
+    .from('membership_applications')
+    .select('*')
+    .order('created_at', {ascending: false});
+  if (error) {
+    console.error('[getApplications]', error);
+    return [];
+  }
+  return (data as MembershipApplication[]) ?? [];
+}
+
+export async function updateApplication(
+  id: string,
+  patch: Partial<Pick<MembershipApplication, 'status' | 'admin_notes' | 'member_id'>>
+): Promise<{error: unknown}> {
+  const {$supabase} = useNuxtApp();
+  const {error} = await $supabase
+    .from('membership_applications')
+    .update({...patch, updated_at: new Date().toISOString()})
+    .eq('id', id);
+  if (error) console.error('[updateApplication]', error);
+  return {error};
+}
+
+export async function deleteApplication(id: string): Promise<{error: unknown}> {
+  const {$supabase} = useNuxtApp();
+  const {error} = await $supabase.from('membership_applications').delete().eq('id', id);
+  if (error) console.error('[deleteApplication]', error);
+  return {error};
+}

@@ -54,7 +54,8 @@ export async function getAdminMembers(): Promise<AdminMember[]> {
 
 // The members table's `id` PK has no DB default, so we compute the next id
 // ourselves (max + 1). On a rare race (duplicate PK, code 23505) we retry once.
-export async function createMember(input: MemberInput): Promise<{error: unknown}> {
+// Returns the new member id (or null on failure).
+export async function createMember(input: MemberInput): Promise<{id: number | null; error: unknown}> {
   const {$supabase} = useNuxtApp()
 
   const nextId = async () => {
@@ -66,12 +67,17 @@ export async function createMember(input: MemberInput): Promise<{error: unknown}
     return (((data?.[0] as {id: number} | undefined)?.id ?? 0) as number) + 1
   }
 
-  let {error} = await $supabase.from('members').insert({id: await nextId(), ...input})
+  let id = await nextId()
+  let {error} = await $supabase.from('members').insert({id, ...input})
   if ((error as any)?.code === '23505') {
-    ;({error} = await $supabase.from('members').insert({id: await nextId(), ...input}))
+    id = await nextId()
+    ;({error} = await $supabase.from('members').insert({id, ...input}))
   }
-  if (error) console.error('[members:create]', error)
-  return {error}
+  if (error) {
+    console.error('[members:create]', error)
+    return {id: null, error}
+  }
+  return {id, error: null}
 }
 
 export async function updateMember(

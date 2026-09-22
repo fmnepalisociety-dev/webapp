@@ -17,6 +17,10 @@
           <font-awesome-icon :icon="['fas', 'users']" />
           Members
         </NuxtLink>
+        <NuxtLink to="/admin/membership" class="admin-nav-link">
+          <font-awesome-icon :icon="['fas', 'user-plus']" />
+          Membership
+        </NuxtLink>
         <NuxtLink to="/admin/products" class="admin-nav-link">
           <font-awesome-icon :icon="['fas', 'bag-shopping']" />
           Wear
