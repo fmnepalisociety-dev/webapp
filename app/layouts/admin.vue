@@ -37,6 +37,10 @@
           <font-awesome-icon :icon="['fas', 'graduation-cap']" />
           Education
         </NuxtLink>
+        <NuxtLink to="/admin/audit" class="admin-nav-link">
+          <font-awesome-icon :icon="['fas', 'clock-rotate-left']" />
+          Audit Log
+        </NuxtLink>
         <!-- TODO: enable when admin CRUD is built
         <NuxtLink to="/admin/committee" class="admin-nav-link">
           <font-awesome-icon :icon="['fas', 'user-tie']" />

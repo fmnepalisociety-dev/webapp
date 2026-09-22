@@ -42,6 +42,11 @@
         <span class="admin-card-label">Education</span>
         <span class="admin-card-desc">Nepali Pathsala &amp; programs</span>
       </NuxtLink>
+      <NuxtLink to="/admin/audit" class="admin-card">
+        <font-awesome-icon :icon="['fas', 'clock-rotate-left']" class="admin-card-icon" />
+        <span class="admin-card-label">Audit Log</span>
+        <span class="admin-card-desc">Who changed what</span>
+      </NuxtLink>
       <!-- TODO: enable when admin CRUD is built
       <NuxtLink to="/admin/committee" class="admin-card">
         <font-awesome-icon :icon="['fas', 'user-tie']" class="admin-card-icon" />

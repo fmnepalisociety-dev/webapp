@@ -301,6 +301,68 @@ create policy "app_config admin update" on public.app_config for update to authe
 Membership IDs are enforced unique in the admin flow; for a hard guarantee add
 `create unique index on public.members (membership_id) where membership_id is not null;`.
 
+## Audit log
+
+Every create/update/delete **made by a logged-in admin** is recorded in `audit_log` by a
+Postgres trigger, along with who did it (from the request's auth token). Viewable at
+**Admin → Audit Log** (filter by table/action, expand to see the before/after JSON).
+
+The trigger **skips writes with no authenticated admin** (`auth.uid()` is null) — so
+front-facing public submissions (event RSVPs, membership applications, product orders) and
+service-key/system writes are **not** logged. Admin edits/deletes of those rows still are.
+
+Create the table, trigger function, and triggers in Supabase (dashboard → SQL editor):
+
+```sql
+create table public.audit_log (
+  id bigint generated always as identity primary key,
+  table_name text not null,
+  record_id text,
+  action text not null,          -- INSERT | UPDATE | DELETE
+  actor_id uuid,                 -- auth.uid() of the admin (null for service-key/system writes)
+  actor_email text,              -- email claim from the JWT
+  old_data jsonb,
+  new_data jsonb,
+  created_at timestamptz not null default now()
+);
+alter table public.audit_log enable row level security;
+-- Admins read; nobody writes directly (only the SECURITY DEFINER trigger below).
+create policy "audit_log admin read" on public.audit_log for select to authenticated using (true);
+
+create or replace function public.log_audit()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  -- Only audit logged-in admin actions. Skip anonymous public submissions
+  -- (RSVPs, membership applications, orders) and service-key/system writes.
+  if auth.uid() is null then
+    return coalesce(new, old);
+  end if;
+  insert into public.audit_log(table_name, record_id, action, actor_id, actor_email, old_data, new_data)
+  values (
+    tg_table_name,
+    coalesce(to_jsonb(new) ->> 'id', to_jsonb(old) ->> 'id'),
+    tg_op,
+    auth.uid(),
+    nullif(auth.jwt() ->> 'email', ''),
+    case when tg_op in ('UPDATE','DELETE') then to_jsonb(old) else null end,
+    case when tg_op in ('INSERT','UPDATE') then to_jsonb(new) else null end
+  );
+  return coalesce(new, old);
+end;
+$$;
+
+-- Attach to each admin-managed table (drop any you don't want audited):
+create trigger audit_events          after insert or update or delete on public.events                  for each row execute function public.log_audit();
+create trigger audit_members         after insert or update or delete on public.members                 for each row execute function public.log_audit();
+create trigger audit_membership_apps after insert or update or delete on public.membership_applications for each row execute function public.log_audit();
+create trigger audit_app_config      after insert or update or delete on public.app_config              for each row execute function public.log_audit();
+create trigger audit_flyers          after insert or update or delete on public.flyers                  for each row execute function public.log_audit();
+create trigger audit_banners         after insert or update or delete on public.banners                 for each row execute function public.log_audit();
+create trigger audit_products        after insert or update or delete on public.products                for each row execute function public.log_audit();
+create trigger audit_product_orders  after insert or update or delete on public.product_orders          for each row execute function public.log_audit();
+create trigger audit_players         after insert or update or delete on public.players                 for each row execute function public.log_audit();
+```
+
 ## Sports — Squads & Tournaments
 
 Squads are organised by **tournament**. Each tournament has two teams — **NeSFM** (our own
