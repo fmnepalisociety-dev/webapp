@@ -1,4 +1,6 @@
-export type RecurrenceFreq = 'weekly' | 'biweekly' | 'monthly';
+import type {RecurrenceFreq} from '~/types/recurrence';
+
+export type {RecurrenceFreq, Session} from '~/types/recurrence';
 
 export interface EducationItem {
   id: number;
@@ -13,10 +15,4 @@ export interface EducationItem {
   cancelled_dates: string[]; // YYYY-MM-DD dates with no session
   active: boolean;
   created_at?: string;
-}
-
-export interface Session {
-  iso: string; // YYYY-MM-DD
-  date: Date; // local Date for the session
-  cancelled: boolean;
 }

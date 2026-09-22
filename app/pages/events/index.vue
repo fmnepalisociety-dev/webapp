@@ -3,8 +3,24 @@
 
     <h1 class="page-title">Events</h1>
 
-    <!-- Upcoming Events List -->
-    <section class="event-section">
+    <!-- Jump bar -->
+    <nav class="jump-bar">
+      <button class="jump-chip jump-chip--upcoming" @click="jumpTo('upcoming')">
+        <font-awesome-icon :icon="['fas', 'calendar-check']" />
+        Upcoming
+      </button>
+      <button class="jump-chip jump-chip--recurring" @click="jumpTo('recurring')">
+        <font-awesome-icon :icon="['fas', 'rotate']" />
+        Recurring
+      </button>
+      <button class="jump-chip jump-chip--past" @click="jumpTo('past')">
+        <font-awesome-icon :icon="['fas', 'clock-rotate-left']" />
+        Past
+      </button>
+    </nav>
+
+    <!-- Upcoming -->
+    <section id="upcoming" class="event-section">
       <NuxtLink to="/events/upcoming" class="section-header section-header--upcoming">
         <font-awesome-icon :icon="['fas', 'calendar-check']" />
         <span>Upcoming Events</span>
@@ -27,15 +43,36 @@
       </ul>
     </section>
 
-    <!-- Upcoming Event Banners -->
-    <EventCard
-      v-for="event in upcomingEvents"
-      :key="'detail-' + event.id"
-      :event="event"
-    />
+    <EventCard v-for="event in upcomingEvents" :key="'up-' + event.id" :event="event" />
 
-    <!-- Past Events List -->
-    <section class="event-section">
+    <!-- Recurring -->
+    <section id="recurring" class="event-section">
+      <NuxtLink to="/events/recurring" class="section-header section-header--recurring">
+        <font-awesome-icon :icon="['fas', 'rotate']" />
+        <span>Recurring Events</span>
+        <font-awesome-icon :icon="['fas', 'chevron-right']" class="section-arrow" />
+      </NuxtLink>
+      <ul class="event-list">
+        <li v-for="event in recurringEvents" :key="event.id" class="event-item">
+          <NuxtLink :to="`/events/${event.id}`" class="event-link">
+            <div class="event-link-content">
+              <span class="event-name">{{ event.heading }}</span>
+              <span class="event-date">
+                <font-awesome-icon :icon="['fas', 'rotate']" class="date-icon" />
+                {{ recurringWhen(event) }}
+              </span>
+            </div>
+            <font-awesome-icon :icon="['fas', 'chevron-right']" class="event-chevron" />
+          </NuxtLink>
+        </li>
+        <li v-if="recurringEvents.length === 0" class="event-empty">No recurring events</li>
+      </ul>
+    </section>
+
+    <EventCard v-for="event in recurringEvents" :key="'rec-' + event.id" :event="event" />
+
+    <!-- Past -->
+    <section id="past" class="event-section">
       <NuxtLink to="/events/past" class="section-header section-header--past">
         <font-awesome-icon :icon="['fas', 'clock-rotate-left']" />
         <span>Past Events</span>
@@ -58,24 +95,38 @@
       </ul>
     </section>
 
-    <!-- Past Event Banners -->
-    <EventCard
-      v-for="event in pastEvents"
-      :key="'detail-' + event.id"
-      :event="event"
-    />
+    <EventCard v-for="event in pastEvents" :key="'past-' + event.id" :event="event" />
 
   </main>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { getUpcomingEvents, getPastEvents } from '~/composables/useEvents';
+import { getUpcomingEvents, getRecurringEvents, getPastEvents } from '~/composables/useEvents';
+import { nextSession, recurrenceLabel } from '~/composables/useRecurrence';
 
-const [upcoming, past] = await Promise.all([getUpcomingEvents(), getPastEvents()]);
+const [upcoming, recurring, past] = await Promise.all([
+  getUpcomingEvents(),
+  getRecurringEvents(),
+  getPastEvents(),
+]);
 
 const upcomingEvents = ref(upcoming);
+const recurringEvents = ref(recurring);
 const pastEvents = ref(past);
+
+function jumpTo(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function recurringWhen(event: any): string {
+  const label = recurrenceLabel(event.start_date, event.recurrence_freq);
+  const next = nextSession(event.start_date, event.recurrence_freq, event.cancelled_dates ?? []);
+  const nextText = next
+    ? `next ${next.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
+    : '';
+  return [label, nextText].filter(Boolean).join(' · ') || 'Recurring';
+}
 </script>
 
 <style scoped>
@@ -89,7 +140,48 @@ const pastEvents = ref(past);
   font-size: 1.75rem;
   font-weight: 800;
   color: #1e3a5f;
+  margin-bottom: 1rem;
+}
+
+/* Jump bar */
+.jump-bar {
+  display: flex;
+  gap: 0.5rem;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.jump-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #374151;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.jump-chip:hover {
+  background: #f0f7ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.jump-chip--recurring:hover {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #a31432;
+}
+
+.jump-chip--past:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #4b5563;
 }
 
 .event-section {
@@ -97,6 +189,7 @@ const pastEvents = ref(past);
   border-radius: 0.75rem;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  scroll-margin-top: 5rem;
 }
 
 .section-header {
@@ -117,6 +210,10 @@ const pastEvents = ref(past);
 
 .section-header--upcoming {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.section-header--recurring {
+  background: linear-gradient(135deg, #a31432, #7f1d1d);
 }
 
 .section-header--past {

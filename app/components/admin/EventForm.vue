@@ -79,6 +79,72 @@
         </div>
       </div>
 
+      <!-- Schedule & recurrence -->
+      <div class="form-card">
+        <h2 class="card-title">Recurrence</h2>
+
+        <div class="field-two-col">
+          <div class="field-row">
+            <label class="field-label">Repeats</label>
+            <select v-model="form.recurrence_freq" class="field-input">
+              <option value="">One-off event</option>
+              <option value="weekly">Weekly</option>
+              <option value="biweekly">Every other week</option>
+              <option value="monthly">Monthly</option>
+            </select>
+            <p class="field-hint">Recurring events show in the Recurring section, sorted by their next session.</p>
+          </div>
+          <div v-if="form.recurrence_freq" class="field-row">
+            <label class="field-label">Start date</label>
+            <input v-model="form.start_date" type="date" class="field-input" />
+            <p class="field-hint">Anchors the series. The next sessions are computed from here.</p>
+          </div>
+        </div>
+
+        <div v-if="form.recurrence_freq" class="field-row">
+          <label class="field-label">Cancelled dates <span class="html-hint">(optional)</span></label>
+          <div class="cancel-add">
+            <input v-model="newCancelDate" type="date" class="field-input" />
+            <button type="button" class="add-btn add-btn--sm" :disabled="!newCancelDate" @click="addCancelDate">
+              Add
+            </button>
+          </div>
+          <ul v-if="form.cancelled_dates.length" class="cancel-list">
+            <li v-for="d in form.cancelled_dates" :key="d">
+              <span>{{ d }}</span>
+              <button type="button" class="cancel-remove" @click="removeCancelDate(d)">
+                <font-awesome-icon :icon="['fas', 'xmark']" />
+              </button>
+            </li>
+          </ul>
+          <p class="field-hint">Skipped sessions; shown struck through wherever sessions are listed.</p>
+        </div>
+      </div>
+
+      <!-- Linked content -->
+      <div class="form-card">
+        <h2 class="card-title">Linked content</h2>
+        <div class="field-two-col">
+          <div class="field-row">
+            <label class="field-label">Type</label>
+            <select v-model="form.content_type" class="field-input" @change="form.content_key = null">
+              <option :value="null">None</option>
+              <option value="education">Education program</option>
+            </select>
+          </div>
+          <div v-if="form.content_type === 'education'" class="field-row">
+            <label class="field-label">Education item</label>
+            <select v-model="form.content_key" class="field-input">
+              <option :value="null">— Select —</option>
+              <option v-for="item in educationItems" :key="item.id" :value="String(item.id)">
+                {{ item.title }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <p class="field-hint">Links this event to an education program so its page points there instead of duplicating the details.</p>
+      </div>
+
       <!-- Images -->
       <div
         :class="['form-card', imgDrag ? 'form-card--drag' : '']"
@@ -159,6 +225,8 @@ import {
   type EventInput,
 } from '~/composables/useEvents';
 import {TOURNAMENTS} from '~/composables/useSquad';
+import {getAllEducation} from '~/composables/useEducation';
+import type {EducationItem} from '~/types/education';
 import {NeSFM_GENERIC_BUCKET} from '~/composables/useSupabaseImage';
 
 const props = defineProps<{eventId?: string | null}>();
@@ -183,7 +251,27 @@ const form = reactive({
   body: '',
   promo: '',
   tournament_key: null as string | null,
+  start_date: '',
+  recurrence_freq: '' as '' | 'weekly' | 'biweekly' | 'monthly',
+  cancelled_dates: [] as string[],
+  content_type: null as string | null,
+  content_key: null as string | null,
 });
+
+const newCancelDate = ref('');
+const educationItems = ref<EducationItem[]>([]);
+
+function addCancelDate() {
+  const d = newCancelDate.value;
+  if (d && !form.cancelled_dates.includes(d)) {
+    form.cancelled_dates = [...form.cancelled_dates, d].sort();
+  }
+  newCancelDate.value = '';
+}
+
+function removeCancelDate(d: string) {
+  form.cancelled_dates = form.cancelled_dates.filter((x) => x !== d);
+}
 
 interface ImageSlot {
   key: number;
@@ -204,6 +292,7 @@ let nextKey = 0;
 const genKey = () => ++nextKey;
 
 onMounted(async () => {
+  educationItems.value = await getAllEducation();
   if (props.eventId) {
     const ev = await getEvent(props.eventId);
     if (ev) {
@@ -217,6 +306,11 @@ onMounted(async () => {
       form.body = ev.body ?? '';
       form.promo = ev.promo ?? '';
       form.tournament_key = ev.tournament_key ?? null;
+      form.start_date = ev.start_date ?? '';
+      form.recurrence_freq = ev.recurrence_freq ?? '';
+      form.cancelled_dates = [...((ev.cancelled_dates as string[] | null) ?? [])].sort();
+      form.content_type = ev.content_type ?? null;
+      form.content_key = ev.content_key ?? null;
       for (const path of (ev.image as string[] | null) ?? []) {
         images.push({key: genKey(), path, url: getPublicImageUrl(NeSFM_GENERIC_BUCKET, path) ?? ''});
       }
@@ -285,6 +379,8 @@ function flash(msg: string, isError = false) {
 function validate(): string | null {
   if (!form.heading.trim()) return 'Heading is required.';
   if (!form.event_date.trim()) return 'Date is required.';
+  if (form.recurrence_freq && !form.start_date) return 'A start date is required for recurring events.';
+  if (form.content_type === 'education' && !form.content_key) return 'Please select an education item to link, or set Type to None.';
   return null;
 }
 
@@ -335,6 +431,11 @@ async function save() {
     featured: form.featured,
     videos: videos.filter((v) => v.src.trim()).map((v) => ({type: 'youtube', src: v.src.trim()})),
     tournament_key: form.tournament_key || null,
+    recurrence_freq: form.recurrence_freq || null,
+    start_date: form.recurrence_freq ? form.start_date || null : null,
+    cancelled_dates: form.recurrence_freq ? form.cancelled_dates : [],
+    content_type: form.content_type || null,
+    content_key: form.content_type ? form.content_key || null : null,
   };
   if (!payload.videos?.length) payload.videos = null;
 
@@ -646,6 +747,53 @@ function yearFrom(dateStr: string): number {
   color: #94a3b8;
   font-size: 0.85rem;
   margin: 0;
+}
+
+/* Cancelled dates */
+.cancel-add {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.cancel-add .field-input {
+  flex: 1;
+}
+
+.cancel-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.cancel-list li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.35rem 0.2rem 0.6rem;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.cancel-remove {
+  background: none;
+  border: none;
+  color: #b91c1c;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.cancel-remove:hover {
+  color: #7f1d1d;
 }
 
 /* Images */

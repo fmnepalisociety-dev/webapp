@@ -236,6 +236,33 @@ Set Row Level Security to match the events policies: public **read** on `educati
 authenticated **write** (insert/update/delete) for admins. Upcoming-session dates and
 cancellation filtering are computed client-side from `event_date` + `recurrence_freq`.
 
+## Recurring events & linked content
+
+Events can repeat and can point at other content instead of duplicating it. The Events
+page (`/events`) has three sections — **Upcoming**, **Recurring**, **Past** — with a jump
+bar at the top; each also has its own route (`/events/upcoming`, `/events/recurring`,
+`/events/past`). Recurring events are those with a `recurrence_freq`; they're pulled out
+of Upcoming/Past into their own bucket, sorted by next session.
+
+An event can link to an education program via `content_type = 'education'` +
+`content_key = <education.id>`; the event detail page then shows the program's upcoming
+sessions and links to `/education` rather than repeating the flyer. (`tournament_key`
+stays as the tournament link; `content_type`/`content_key` is the generic version for
+other content types.)
+
+Add the columns in Supabase (dashboard → SQL editor):
+
+```sql
+alter table public.events add column if not exists start_date date;          -- anchor for recurring events
+alter table public.events add column if not exists recurrence_freq text;      -- 'weekly' | 'biweekly' | 'monthly'; null = one-off
+alter table public.events add column if not exists cancelled_dates date[] not null default '{}';
+alter table public.events add column if not exists content_type text;         -- e.g. 'education'
+alter table public.events add column if not exists content_key text;          -- id/key within content_type
+```
+
+Recurrence math (next N sessions, cancellations, local-date parsing) lives in
+`app/composables/useRecurrence.ts` and is shared by events and education.
+
 ## Sports — Squads & Tournaments
 
 Squads are organised by **tournament**. Each tournament has two teams — **NeSFM** (our own

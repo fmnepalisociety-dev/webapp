@@ -1,63 +1,23 @@
-import type {EducationItem, RecurrenceFreq, Session} from '~/types/education';
+import type {EducationItem, Session} from '~/types/education';
+import {upcomingSessions as recurrenceSessions} from '~/composables/useRecurrence';
 import {NeSFM_GENERIC_BUCKET} from '~/composables/useSupabaseImage';
 
 const TABLE = 'education';
 
-/* -----------------------------
- * Local-date helpers
- * A bare "YYYY-MM-DD" parses as UTC midnight, which shifts a day in western
- * timezones. Build/read dates in local time so the weekday is always right.
- * --------------------------- */
-
-export function parseLocalDate(iso: string): Date {
-  const [y, m, d] = iso.split('-').map(Number);
-  return new Date(y, m - 1, d);
-}
-
-export function toIsoDate(d: Date): string {
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}
-
-function stepDate(d: Date, freq: RecurrenceFreq) {
-  if (freq === 'weekly') d.setDate(d.getDate() + 7);
-  else if (freq === 'biweekly') d.setDate(d.getDate() + 14);
-  else d.setMonth(d.getMonth() + 1);
-}
-
-/**
- * The next `count` upcoming sessions (today or later) for an item, derived from
- * its anchor date and recurrence. Cancelled dates are still returned (flagged)
- * so they can be shown struck through, but don't count toward `count`.
- */
+/** The next `count` upcoming sessions for an education item. */
 export function upcomingSessions(item: EducationItem, count = 5): Session[] {
-  if (!item.event_date) return [];
+  return recurrenceSessions(item.event_date, item.recurrence_freq, item.cancelled_dates ?? [], count);
+}
 
-  const anchor = parseLocalDate(item.event_date);
-  const cancelled = new Set(item.cancelled_dates ?? []);
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const out: Session[] = [];
-
-  if (!item.recurrence_freq) {
-    if (anchor >= today) out.push({iso: item.event_date, date: anchor, cancelled: cancelled.has(item.event_date)});
-    return out;
+/** Fetch a single education item by id (used when an event links to it). */
+export async function getEducationItem(id: number | string): Promise<EducationItem | null> {
+  const {$supabase} = useNuxtApp();
+  const {data, error} = await $supabase.from(TABLE).select('*').eq('id', id).single();
+  if (error) {
+    console.error('Error fetching education item:', error);
+    return null;
   }
-
-  const cur = new Date(anchor);
-  let guard = 0;
-  while (cur < today && guard++ < 2000) stepDate(cur, item.recurrence_freq);
-
-  let kept = 0;
-  guard = 0;
-  while (kept < count && guard++ < 2000) {
-    const iso = toIsoDate(cur);
-    const isCancelled = cancelled.has(iso);
-    out.push({iso, date: new Date(cur), cancelled: isCancelled});
-    if (!isCancelled) kept++;
-    stepDate(cur, item.recurrence_freq);
-  }
-  return out;
+  return data as EducationItem;
 }
 
 /** Public list: active education items, newest first. */

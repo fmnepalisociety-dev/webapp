@@ -30,6 +30,9 @@
               <NuxtLink to="/events/upcoming" @click="closeMenu">Upcoming</NuxtLink>
             </li>
             <li>
+              <NuxtLink to="/events/recurring" @click="closeMenu">Recurring</NuxtLink>
+            </li>
+            <li>
               <NuxtLink to="/events/past" @click="closeMenu">Past</NuxtLink>
             </li>
           </ul>
