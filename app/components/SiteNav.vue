@@ -23,15 +23,23 @@
           <li v-if="item.type === 'link'">
             <NuxtLink :to="item.to!">
               <font-awesome-icon :icon="item.icon!" class="nav-icon" />
-              {{ item.label }}
+              <span class="nav-text">{{ item.label }}</span>
             </NuxtLink>
           </li>
 
-          <li v-else class="has-dropdown">
+          <li
+            v-else
+            class="has-dropdown"
+            :class="{ 'is-open': openKey === item.label }"
+            @mouseenter="openDropdown(item.label)"
+            @mouseleave="scheduleClose"
+          >
             <span class="nav-parent">
               <font-awesome-icon :icon="item.icon!" class="nav-icon" />
-              {{ item.label }}
-              <font-awesome-icon :icon="['fas', 'chevron-down']" class="parent-caret" />
+              <span class="nav-text">
+                {{ item.label }}
+                <font-awesome-icon :icon="['fas', 'chevron-down']" class="parent-caret" />
+              </span>
             </span>
             <ul class="dropdown">
               <li v-for="link in item.items" :key="link.to">
@@ -203,6 +211,29 @@ function decide() {
   }
 }
 
+/* ---------- desktop dropdowns ----------
+ * Hover is driven from script rather than :hover so that only one menu is ever
+ * open: moving to another parent swaps immediately, while leaving the bar keeps
+ * the current menu around briefly for a forgiving pointer path. */
+const openKey = ref<string | null>(null)
+const CLOSE_DELAY = 350
+let closeTimer: ReturnType<typeof setTimeout> | null = null
+
+function cancelClose() {
+  if (closeTimer) clearTimeout(closeTimer)
+  closeTimer = null
+}
+
+function openDropdown(key: string) {
+  cancelClose()
+  openKey.value = key
+}
+
+function scheduleClose() {
+  cancelClose()
+  closeTimer = setTimeout(() => (openKey.value = null), CLOSE_DELAY)
+}
+
 /* ---------- mobile overlay ---------- */
 const isOpen = ref(false)
 const toggleMenu = () => (isOpen.value = !isOpen.value)
@@ -217,9 +248,16 @@ onMounted(async () => {
   }
 })
 
-onBeforeUnmount(() => ro?.disconnect())
+onBeforeUnmount(() => {
+  ro?.disconnect()
+  cancelClose()
+})
 
-watch(compact, () => (isOpen.value = false))
+watch(compact, () => {
+  isOpen.value = false
+  cancelClose()
+  openKey.value = null
+})
 
 // Lock body scroll while the overlay is open.
 watch(isOpen, (open) => {
@@ -289,6 +327,12 @@ watch(isOpen, (open) => {
   opacity: 0.9;
 }
 
+.nav-text {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
 .parent-caret {
   font-size: 0.65rem;
   margin-left: 0.4rem;
@@ -296,19 +340,25 @@ watch(isOpen, (open) => {
   transition: transform 0.2s ease;
 }
 
-/* tight tier */
+/* tight tier — icon sits above the label so each item needs less width */
 .main-nav.tight .nav-list {
-  gap: 4px;
+  gap: 2px;
 }
 
-.main-nav.tight .nav-list a,
+.main-nav.tight .nav-list > li > a,
 .main-nav.tight .nav-parent {
+  flex-direction: column;
+  gap: 3px;
   letter-spacing: 0.2px;
-  padding: 10px 10px;
+  padding: 6px 9px;
+  font-size: 0.92rem;
+  border-radius: 12px;
 }
 
-.main-nav.tight .nav-icon {
-  margin-right: 0.4rem;
+.main-nav.tight .nav-list > li > a > .nav-icon,
+.main-nav.tight .nav-parent > .nav-icon {
+  margin-right: 0;
+  font-size: 0.95rem;
 }
 
 /* =========================
@@ -316,6 +366,16 @@ watch(isOpen, (open) => {
    ========================= */
 .has-dropdown {
   position: relative;
+}
+
+/* Invisible bridge across the gap, so moving down to the menu keeps :hover. */
+.has-dropdown::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 12px;
 }
 
 .dropdown {
@@ -333,10 +393,10 @@ watch(isOpen, (open) => {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.25s;
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.2s;
 }
 
-.has-dropdown:hover > .dropdown {
+.has-dropdown.is-open > .dropdown {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
