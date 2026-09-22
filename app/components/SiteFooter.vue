@@ -37,10 +37,21 @@
           <p>3273 Evergreen Rd N, Fargo, ND 58102</p>
           <p>EIN: 41-3684284 | 501(c)(3) Public Charity</p>
         </div>
-        <div class="footer-copy">
-          © {{ new Date().getFullYear() }} Nepali Society of Fargo-Moorhead
+        <div class="footer-cta-row">
+          <NuxtLink to="/membership" class="footer-cta">
+            <FontAwesomeIcon :icon="['fas','user-plus']"/>
+            Become a Member
+          </NuxtLink>
+          <NuxtLink to="/donation" class="footer-cta">
+            <FontAwesomeIcon :icon="['fas','heart']"/>
+            Donate
+          </NuxtLink>
         </div>
       </div>
+    </div>
+
+    <div class="footer-copy">
+      © {{ new Date().getFullYear() }} Nepali Society of Fargo-Moorhead
     </div>
   </footer>
 </template>
@@ -128,6 +139,11 @@ footer a:hover {
 }
 
 .footer-copy {
+  max-width: 900px;
+  margin: 18px auto 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  text-align: center;
   font-size: 0.9em;
   opacity: 0.9;
 }
@@ -136,6 +152,34 @@ footer a:hover {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.footer-cta-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 4px 0 0;
+}
+
+.footer-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.footer-cta:hover {
+  background: #ffd700;
+  color: #1c3382;
+  border-color: #ffd700;
+  text-decoration: none;
 }
 
 .footer-bottom-links {
