@@ -199,6 +199,38 @@ authenticated **write** (insert/update/delete) for admins. Time-window filtering
 (`start_at`/`end_at`) is applied client-side, and dismissed banners are remembered per
 browser via `localStorage`.
 
+## Education
+
+The public **`/education`** page introduces the Nepali Pathsala program and lists
+education items — each an uploaded flyer plus optional schedule details. Managed under
+**Admin → Education**. Each item has a title, description, optional date / time /
+location, an optional **recurring** label (e.g. "Weekly on Fridays"), an uploaded flyer
+image, and an active toggle. Only active items appear on the public page; if there are
+none, the page shows the intro plus a "check back soon" note.
+
+Flyer images go in the public `nsfm` bucket under the `education/` folder (same bucket
+and storage policies as flyers/events).
+
+Create the table in Supabase (dashboard → SQL editor):
+
+```sql
+create table education (
+  id bigint generated always as identity primary key,
+  title text not null,
+  description text,           -- shown as plain text (preserves line breaks)
+  image_path text,            -- flyer path in nsfm bucket, education/ folder
+  event_date date,            -- optional session date
+  event_time text,            -- optional, free text e.g. "6:30 PM – 7:30 PM"
+  location text,              -- optional
+  recurring text,             -- optional label, null = one-off session
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+```
+
+Set Row Level Security to match the events policies: public **read** on `education`,
+authenticated **write** (insert/update/delete) for admins.
+
 ## Sports — Squads & Tournaments
 
 Squads are organised by **tournament**. Each tournament has two teams — **NeSFM** (our own

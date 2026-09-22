@@ -29,6 +29,10 @@
           <font-awesome-icon :icon="['fas', 'futbol']" />
           Squad
         </NuxtLink>
+        <NuxtLink to="/admin/education" class="admin-nav-link">
+          <font-awesome-icon :icon="['fas', 'graduation-cap']" />
+          Education
+        </NuxtLink>
         <!-- TODO: enable when admin CRUD is built
         <NuxtLink to="/admin/committee" class="admin-nav-link">
           <font-awesome-icon :icon="['fas', 'user-tie']" />
