@@ -42,7 +42,7 @@
 
             <div class="field-two-col">
               <div class="field-row">
-                <label class="field-label">Date <span class="html-hint">(optional)</span></label>
+                <label class="field-label">{{ form.recurrence_freq ? 'Start date' : 'Date' }} <span class="html-hint">(optional)</span></label>
                 <input v-model="form.event_date" type="date" class="field-input" />
               </div>
               <div class="field-row">
@@ -52,14 +52,38 @@
             </div>
 
             <div class="field-row">
+              <label class="field-label">Repeats</label>
+              <select v-model="form.recurrence_freq" class="field-input field-select">
+                <option value="">One-off session</option>
+                <option value="weekly">Weekly</option>
+                <option value="biweekly">Every other week</option>
+                <option value="monthly">Monthly</option>
+              </select>
+              <p class="field-hint">The public page lists the next 5 upcoming sessions from the start date.</p>
+            </div>
+
+            <div class="field-row">
               <label class="field-label">Location <span class="html-hint">(optional)</span></label>
               <input v-model="form.location" class="field-input" placeholder="e.g. Discovery Middle School, Door 31" />
             </div>
 
-            <div class="field-row">
-              <label class="field-label">Recurring <span class="html-hint">(optional)</span></label>
-              <input v-model="form.recurring" class="field-input" placeholder="e.g. Weekly on Fridays" />
-              <p class="field-hint">Leave blank for a one-off session. Shown as a badge on the page.</p>
+            <div v-if="form.recurrence_freq" class="field-row">
+              <label class="field-label">Cancelled dates <span class="html-hint">(optional)</span></label>
+              <div class="cancel-add">
+                <input v-model="newCancelDate" type="date" class="field-input" />
+                <button type="button" class="ghost-btn ghost-btn--sm" :disabled="!newCancelDate" @click="addCancelDate">
+                  Add
+                </button>
+              </div>
+              <ul v-if="form.cancelled_dates.length" class="cancel-list">
+                <li v-for="d in form.cancelled_dates" :key="d">
+                  <span>{{ d }}</span>
+                  <button type="button" class="cancel-remove" @click="removeCancelDate(d)">
+                    <font-awesome-icon :icon="['fas', 'xmark']" />
+                  </button>
+                </li>
+              </ul>
+              <p class="field-hint">Sessions on these dates show as cancelled and don't count toward the upcoming 5.</p>
             </div>
 
             <div class="field-row field-row--inline">
@@ -151,7 +175,7 @@ import {
   type EducationInput,
 } from '~/composables/useEducation';
 import {NeSFM_GENERIC_BUCKET} from '~/composables/useSupabaseImage';
-import type {EducationItem} from '~/types/education';
+import type {EducationItem, RecurrenceFreq} from '~/types/education';
 
 definePageMeta({layout: 'admin', middleware: 'auth'});
 
@@ -177,12 +201,14 @@ interface FormState {
   event_date: string;
   event_time: string;
   location: string;
-  recurring: string;
+  recurrence_freq: '' | RecurrenceFreq;
+  cancelled_dates: string[];
   active: boolean;
   image_path: string; // existing path when editing
 }
 
 const form = reactive<FormState>(blankForm());
+const newCancelDate = ref('');
 
 function blankForm(): FormState {
   return {
@@ -192,10 +218,23 @@ function blankForm(): FormState {
     event_date: '',
     event_time: '',
     location: '',
-    recurring: '',
+    recurrence_freq: '',
+    cancelled_dates: [],
     active: true,
     image_path: '',
   };
+}
+
+function addCancelDate() {
+  const d = newCancelDate.value;
+  if (d && !form.cancelled_dates.includes(d)) {
+    form.cancelled_dates = [...form.cancelled_dates, d].sort();
+  }
+  newCancelDate.value = '';
+}
+
+function removeCancelDate(d: string) {
+  form.cancelled_dates = form.cancelled_dates.filter((x) => x !== d);
 }
 
 onMounted(async () => {
@@ -212,11 +251,17 @@ function buildThumbs() {
   }
 }
 
+const REPEAT_LABEL: Record<RecurrenceFreq, string> = {
+  weekly: 'Weekly',
+  biweekly: 'Every other week',
+  monthly: 'Monthly',
+};
+
 function scheduleText(item: EducationItem): string {
   const parts: string[] = [];
-  if (item.event_date) parts.push(fmt(item.event_date));
+  if (item.recurrence_freq) parts.push(REPEAT_LABEL[item.recurrence_freq]);
+  if (item.event_date) parts.push(`${item.recurrence_freq ? 'from ' : ''}${fmt(item.event_date)}`);
   if (item.event_time) parts.push(item.event_time);
-  if (item.recurring) parts.push(item.recurring);
   return parts.length ? parts.join(' · ') : '—';
 }
 
@@ -230,6 +275,7 @@ function fmt(date: string): string {
 
 function startCreate() {
   Object.assign(form, blankForm());
+  newCancelDate.value = '';
   pendingFile.value = null;
   previewUrl.value = null;
   editing.value = true;
@@ -243,10 +289,12 @@ function startEdit(item: EducationItem) {
     event_date: item.event_date ?? '',
     event_time: item.event_time ?? '',
     location: item.location ?? '',
-    recurring: item.recurring ?? '',
+    recurrence_freq: item.recurrence_freq ?? '',
+    cancelled_dates: [...(item.cancelled_dates ?? [])].sort(),
     active: item.active,
     image_path: item.image_path ?? '',
   });
+  newCancelDate.value = '';
   pendingFile.value = null;
   previewUrl.value = item.image_path
     ? getPublicImageUrl(NeSFM_GENERIC_BUCKET, item.image_path)
@@ -319,7 +367,8 @@ async function save() {
     event_date: form.event_date || null,
     event_time: form.event_time.trim() || null,
     location: form.location.trim() || null,
-    recurring: form.recurring.trim() || null,
+    recurrence_freq: form.recurrence_freq || null,
+    cancelled_dates: form.recurrence_freq ? form.cancelled_dates : [],
     active: form.active,
   };
 
@@ -588,6 +637,57 @@ async function refresh() {
   width: 1.1rem;
   height: 1.1rem;
   cursor: pointer;
+}
+
+.ghost-btn--sm {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.cancel-add {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.cancel-add .field-input {
+  flex: 1;
+}
+
+.cancel-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.cancel-list li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.35rem 0.2rem 0.6rem;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.cancel-remove {
+  background: none;
+  border: none;
+  color: #b91c1c;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.cancel-remove:hover {
+  color: #7f1d1d;
 }
 
 /* Image column */

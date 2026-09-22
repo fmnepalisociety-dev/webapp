@@ -202,11 +202,13 @@ browser via `localStorage`.
 ## Education
 
 The public **`/education`** page introduces the Nepali Pathsala program and lists
-education items — each an uploaded flyer plus optional schedule details. Managed under
-**Admin → Education**. Each item has a title, description, optional date / time /
-location, an optional **recurring** label (e.g. "Weekly on Fridays"), an uploaded flyer
-image, and an active toggle. Only active items appear on the public page; if there are
-none, the page shows the intro plus a "check back soon" note.
+education items — each an uploaded flyer plus schedule details. Managed under
+**Admin → Education**. Each item has a title, description, optional time / location, an
+uploaded flyer image, and an active toggle. An item can repeat (weekly, every other
+week, or monthly) from its start date; the page then shows the **next 5 upcoming
+sessions** computed from that recurrence, with any **cancelled dates** struck through
+and skipped. Only active items appear on the public page; if there are none, the page
+shows the intro plus a "check back soon" note.
 
 Flyer images go in the public `nsfm` bucket under the `education/` folder (same bucket
 and storage policies as flyers/events).
@@ -219,17 +221,19 @@ create table education (
   title text not null,
   description text,           -- shown as plain text (preserves line breaks)
   image_path text,            -- flyer path in nsfm bucket, education/ folder
-  event_date date,            -- optional session date
+  event_date date,            -- anchor / start date of the (first) session
   event_time text,            -- optional, free text e.g. "6:30 PM – 7:30 PM"
   location text,              -- optional
-  recurring text,             -- optional label, null = one-off session
+  recurrence_freq text,       -- 'weekly' | 'biweekly' | 'monthly'; null = one-off
+  cancelled_dates date[] not null default '{}',  -- session dates to skip
   active boolean not null default true,
   created_at timestamptz not null default now()
 );
 ```
 
 Set Row Level Security to match the events policies: public **read** on `education`,
-authenticated **write** (insert/update/delete) for admins.
+authenticated **write** (insert/update/delete) for admins. Upcoming-session dates and
+cancellation filtering are computed client-side from `event_date` + `recurrence_freq`.
 
 ## Sports — Squads & Tournaments
 

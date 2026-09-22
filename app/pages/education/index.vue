@@ -15,12 +15,11 @@
       <h2 class="edu-intro-title">Nepali Pathsala — नेपाली पाठशाला</h2>
       <p>
         Nepali Pathsala is our community learning program to help the next generation
-        stay connected to the Nepali language, culture, and heritage. Let’s keep our
-        language, culture, and heritage alive!
+        stay connected to the Nepali language, culture, and heritage.
       </p>
       <p class="edu-intro-np">
-        आउनुहोस्, हाम्रो भाषा, संस्कृति र पहिचानलाई जीवित राखौं! विद्यालय उमेरका
-        बालबालिकाहरूलाई स्वागत छ।
+        नेपाली पाठशाला हाम्रो सामुदायिक शिक्षा कार्यक्रम हो, जसले नयाँ पुस्तालाई नेपाली
+        भाषा, संस्कृति र सम्पदासँग जोडिराख्न मद्दत गर्छ।
       </p>
     </section>
 
@@ -40,19 +39,15 @@
         <div class="edu-card-body">
           <div class="edu-card-head">
             <h3 class="edu-card-title">{{ item.title }}</h3>
-            <span v-if="item.recurring" class="edu-recurring">
+            <span v-if="recurrenceLabel(item)" class="edu-recurring">
               <font-awesome-icon :icon="['fas', 'rotate']" />
-              {{ item.recurring }}
+              {{ recurrenceLabel(item) }}
             </span>
           </div>
 
           <p v-if="item.description" class="edu-card-desc">{{ item.description }}</p>
 
-          <ul v-if="hasDetails(item)" class="edu-details">
-            <li v-if="item.event_date">
-              <font-awesome-icon :icon="['fas', 'calendar-days']" class="edu-detail-icon" />
-              <span>{{ formatDate(item.event_date) }}</span>
-            </li>
+          <ul v-if="item.event_time || item.location" class="edu-details">
             <li v-if="item.event_time">
               <font-awesome-icon :icon="['fas', 'clock']" class="edu-detail-icon" />
               <span>{{ item.event_time }}</span>
@@ -62,6 +57,26 @@
               <span>{{ item.location }}</span>
             </li>
           </ul>
+
+          <div v-if="sessions[item.id]?.length" class="edu-sessions">
+            <p class="edu-sessions-label">
+              <font-awesome-icon :icon="['fas', 'calendar-days']" />
+              Upcoming sessions
+            </p>
+            <ul class="edu-session-list">
+              <li
+                v-for="s in sessions[item.id]"
+                :key="s.iso"
+                :class="{ 'edu-session--cancelled': s.cancelled }"
+              >
+                <span class="edu-session-date">{{ formatSession(s.date) }}</span>
+                <span v-if="s.cancelled" class="edu-session-tag">Cancelled</span>
+              </li>
+            </ul>
+          </div>
+          <p v-else-if="item.event_date" class="edu-sessions-none">
+            No upcoming sessions scheduled right now.
+          </p>
         </div>
       </article>
     </section>
@@ -70,9 +85,9 @@
 
 <script setup lang="ts">
 import {ref} from 'vue';
-import {getActiveEducation} from '~/composables/useEducation';
+import {getActiveEducation, upcomingSessions} from '~/composables/useEducation';
 import {NeSFM_GENERIC_BUCKET} from '~/composables/useSupabaseImage';
-import type {EducationItem} from '~/types/education';
+import type {EducationItem, Session} from '~/types/education';
 
 useHead({title: 'Education — Nepali Pathsala'});
 
@@ -81,6 +96,7 @@ const {getPublicImageUrl} = useSupabaseImage();
 const loading = ref(true);
 const items = ref<EducationItem[]>([]);
 const images = ref<Record<number, string | null>>({});
+const sessions = ref<Record<number, Session[]>>({});
 
 onMounted(async () => {
   items.value = await getActiveEducation();
@@ -88,18 +104,24 @@ onMounted(async () => {
     images.value[item.id] = item.image_path
       ? getPublicImageUrl(NeSFM_GENERIC_BUCKET, item.image_path)
       : null;
+    sessions.value[item.id] = upcomingSessions(item, 5);
   }
   loading.value = false;
 });
 
-function hasDetails(item: EducationItem): boolean {
-  return Boolean(item.event_date || item.event_time || item.location);
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+function recurrenceLabel(item: EducationItem): string {
+  if (!item.recurrence_freq || !item.event_date) return '';
+  const [y, m, d] = item.event_date.split('-').map(Number);
+  const name = WEEKDAYS[new Date(y, m - 1, d).getDay()];
+  if (item.recurrence_freq === 'weekly') return `Weekly on ${name}s`;
+  if (item.recurrence_freq === 'biweekly') return `Every other ${name}`;
+  return 'Monthly';
 }
 
-function formatDate(date: string): string {
-  const d = new Date(date);
-  if (isNaN(d.getTime())) return date;
-  return d.toLocaleDateString(undefined, {
+function formatSession(date: Date): string {
+  return date.toLocaleDateString(undefined, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -256,7 +278,7 @@ function formatDate(date: string): string {
 
 .edu-details {
   list-style: none;
-  margin: 0;
+  margin: 0 0 1.25rem;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -278,6 +300,62 @@ function formatDate(date: string): string {
   width: 1.3rem;
   flex-shrink: 0;
   margin-top: 0.15rem;
+}
+
+.edu-sessions {
+  border-top: 1px solid #eee;
+  padding-top: 1.1rem;
+}
+
+.edu-sessions-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #1c3382;
+}
+
+.edu-session-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.edu-session-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.edu-session--cancelled .edu-session-date {
+  text-decoration: line-through;
+  color: #94a3b8;
+}
+
+.edu-session-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #a31432;
+  background: rgba(163, 20, 50, 0.1);
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+}
+
+.edu-sessions-none {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #64748b;
 }
 
 @media (max-width: 768px) {
