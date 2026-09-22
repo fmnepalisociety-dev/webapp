@@ -1,7 +1,7 @@
 <template>
   <nav class="main-nav" :class="mode">
     <div class="nav-inner" ref="navInner">
-      <!-- Hamburger -->
+      <!-- Hamburger (compact) -->
       <div class="hamburger-container">
         <button
           class="hamburger"
@@ -17,105 +17,158 @@
         </button>
       </div>
 
-      <!-- Menu -->
-      <ul class="nav-list" ref="navList" :class="{ open: isOpen }">
-        <li>
-          <NuxtLink to="/" @click="closeMenu">Home</NuxtLink>
-        </li>
+      <!-- Top-level bar (desktop) -->
+      <ul class="nav-list" ref="navList">
+        <template v-for="item in NAV" :key="item.label">
+          <li v-if="item.type === 'link'">
+            <NuxtLink :to="item.to!">
+              <font-awesome-icon :icon="item.icon!" class="nav-icon" />
+              {{ item.label }}
+            </NuxtLink>
+          </li>
 
-        <li class="has-dropdown" :class="{ 'submenu-open': isSubOpen('activities') }">
-          <span class="nav-parent" @click="onParentClick('activities')">
-            Activities
-            <font-awesome-icon :icon="['fas', 'chevron-down']" class="parent-caret" />
-          </span>
-          <ul class="dropdown">
-            <li>
-              <NuxtLink to="/events" @click="closeMenu">Events</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/events/upcoming" @click="closeMenu">Upcoming</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/events/recurring" @click="closeMenu">Recurring</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/events/past" @click="closeMenu">Past</NuxtLink>
-            </li>
-          </ul>
-        </li>
-
-        <li class="has-dropdown" :class="{ 'submenu-open': isSubOpen('community') }">
-          <span class="nav-parent" @click="onParentClick('community')">
-            Community
-            <font-awesome-icon :icon="['fas', 'chevron-down']" class="parent-caret" />
-          </span>
-          <ul class="dropdown">
-            <li>
-              <NuxtLink to="/members" @click="closeMenu">Members</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/committee" @click="closeMenu">Committee</NuxtLink>
-            </li>
-          </ul>
-        </li>
-
-        <li class="has-dropdown" :class="{ 'submenu-open': isSubOpen('sports') }">
-          <span class="nav-parent" @click="onParentClick('sports')">
-            Sports
-            <font-awesome-icon :icon="['fas', 'chevron-down']" class="parent-caret" />
-          </span>
-          <ul class="dropdown">
-            <li>
-              <NuxtLink to="/sports/football" @click="closeMenu">Football</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/sports/everest-cup" @click="closeMenu">Everest Cup</NuxtLink>
-            </li>
-          </ul>
-        </li>
-
-        <li>
-          <NuxtLink to="/education" @click="closeMenu">Education</NuxtLink>
-        </li>
-
-        <li>
-          <NuxtLink to="/shop" @click="closeMenu">NeSFM-Wear</NuxtLink>
-        </li>
-
-        <li class="has-dropdown" :class="{ 'submenu-open': isSubOpen('about') }">
-          <span class="nav-parent" @click="onParentClick('about')">
-            About Us
-            <font-awesome-icon :icon="['fas', 'chevron-down']" class="parent-caret" />
-          </span>
-          <ul class="dropdown">
-            <li>
-              <NuxtLink to="/about" @click="closeMenu">About</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/about/president-message" @click="closeMenu">President’s Message</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/about/origin-story" @click="closeMenu">Origin Story</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/contacts" @click="closeMenu">Contact</NuxtLink>
-            </li>
-          </ul>
-        </li>
+          <li v-else class="has-dropdown">
+            <span class="nav-parent">
+              <font-awesome-icon :icon="item.icon!" class="nav-icon" />
+              {{ item.label }}
+              <font-awesome-icon :icon="['fas', 'chevron-down']" class="parent-caret" />
+            </span>
+            <ul class="dropdown">
+              <li v-for="link in item.items" :key="link.to">
+                <NuxtLink :to="link.to">
+                  <font-awesome-icon :icon="link.icon" class="drop-icon" />
+                  <span>{{ link.label }}</span>
+                </NuxtLink>
+              </li>
+            </ul>
+          </li>
+        </template>
       </ul>
     </div>
+
+    <!-- Mobile slide-out drawer (from the left; tap the dimmed area to close) -->
+    <Teleport to="body">
+      <Transition name="drawer">
+        <div v-if="compact && isOpen" class="drawer-root">
+          <div class="drawer-scrim" @click="closeMenu"></div>
+          <aside class="drawer">
+            <div class="drawer-head">
+              <span class="drawer-title">Menu</span>
+              <button class="drawer-close" @click="closeMenu" aria-label="Close menu">
+                <font-awesome-icon :icon="['fas', 'xmark']" />
+              </button>
+            </div>
+
+            <div class="drawer-body">
+              <template v-for="item in NAV" :key="item.label">
+                <NuxtLink
+                  v-if="item.type === 'link'"
+                  :to="item.to!"
+                  class="drawer-link drawer-link--top"
+                  @click="closeMenu"
+                >
+                  <font-awesome-icon :icon="item.icon!" class="drawer-icon" />
+                  {{ item.label }}
+                </NuxtLink>
+
+                <section v-else class="drawer-section">
+                  <p class="drawer-section-title">
+                    <font-awesome-icon :icon="item.icon!" />
+                    {{ item.label }}
+                  </p>
+                  <div class="drawer-sub">
+                    <NuxtLink
+                      v-for="link in item.items"
+                      :key="link.to"
+                      :to="link.to"
+                      class="drawer-link drawer-link--sub"
+                      @click="closeMenu"
+                    >
+                      <font-awesome-icon :icon="link.icon" class="drawer-icon" />
+                      {{ link.label }}
+                    </NuxtLink>
+                  </div>
+                </section>
+              </template>
+            </div>
+          </aside>
+        </div>
+      </Transition>
+    </Teleport>
   </nav>
 </template>
 
 <script setup lang="ts">
 import {ref, computed, watch, onMounted, onBeforeUnmount, nextTick} from 'vue'
 
-type NavMode = 'relaxed' | 'tight' | 'compact'
-const ALL_SUBS = ['activities', 'community', 'sports', 'about']
+type IconTuple = [string, string]
+interface NavLink {
+  label: string
+  to: string
+  icon: IconTuple
+}
+interface NavItem {
+  type: 'link' | 'group'
+  label: string
+  to?: string
+  key?: string
+  icon: IconTuple
+  items?: NavLink[]
+}
 
-const isOpen = ref(false)
-// Progressive layout: roomy spacing when there's space, tighter spacing when it
-// gets cramped, and the hamburger only when even the tight row won't fit.
+// Data-driven — swap any icon here (register new ones in plugins/fontawesome.ts).
+const NAV: NavItem[] = [
+  {type: 'link', label: 'Home', to: '/', icon: ['fas', 'house']},
+  {
+    type: 'group',
+    key: 'activities',
+    label: 'Activities',
+    icon: ['fas', 'calendar-days'],
+    items: [
+      {label: 'Events', to: '/events', icon: ['fas', 'calendar-days']},
+      {label: 'Upcoming', to: '/events/upcoming', icon: ['fas', 'calendar-check']},
+      {label: 'Recurring', to: '/events/recurring', icon: ['fas', 'rotate']},
+      {label: 'Past', to: '/events/past', icon: ['fas', 'clock-rotate-left']},
+    ],
+  },
+  {
+    type: 'group',
+    key: 'community',
+    label: 'Community',
+    icon: ['fas', 'users'],
+    items: [
+      {label: 'Members', to: '/members', icon: ['fas', 'users']},
+      {label: 'Committee', to: '/committee', icon: ['fas', 'user-tie']},
+    ],
+  },
+  {
+    type: 'group',
+    key: 'sports',
+    label: 'Sports',
+    icon: ['fas', 'futbol'],
+    items: [
+      {label: 'Football', to: '/sports/football', icon: ['fas', 'futbol']},
+      {label: 'Everest Cup', to: '/sports/everest-cup', icon: ['fas', 'trophy']},
+    ],
+  },
+  {type: 'link', label: 'Education', to: '/education', icon: ['fas', 'graduation-cap']},
+  {type: 'link', label: 'NeSFM-Wear', to: '/shop', icon: ['fas', 'bag-shopping']},
+  {
+    type: 'group',
+    key: 'about',
+    label: 'About Us',
+    icon: ['fas', 'circle-info'],
+    items: [
+      {label: 'About', to: '/about', icon: ['fas', 'circle-info']},
+      {label: 'President’s Message', to: '/about/president-message', icon: ['fas', 'user-tie']},
+      {label: 'Origin Story', to: '/about/origin-story', icon: ['fas', 'clock-rotate-left']},
+      {label: 'Contact', to: '/contacts', icon: ['fas', 'envelope']},
+    ],
+  },
+]
+
+/* ---------- responsive width tiers ---------- */
+type NavMode = 'relaxed' | 'tight' | 'compact'
 const mode = ref<NavMode>('relaxed')
 const compact = computed(() => mode.value === 'compact')
 
@@ -125,26 +178,6 @@ let relaxedWidth = 0
 let tightWidth = 0
 let ro: ResizeObserver | null = null
 
-const toggleMenu = () => {
-  isOpen.value = !isOpen.value
-  if (isOpen.value) openSubs.value = new Set(ALL_SUBS) // open fully so everything shows
-}
-const closeMenu = () => {
-  isOpen.value = false
-  openSubs.value = new Set()
-}
-
-// Submenu accordion (compact mode). Opens fully by default; tap a parent to collapse it.
-const openSubs = ref<Set<string>>(new Set())
-const isSubOpen = (key: string) => openSubs.value.has(key)
-function onParentClick(key: string) {
-  if (!compact.value) return
-  const next = new Set(openSubs.value)
-  next.has(key) ? next.delete(key) : next.add(key)
-  openSubs.value = next
-}
-
-// Cache the row width the links need at each spacing (content is static).
 async function measureWidths() {
   const list = navList.value
   if (!list) return
@@ -158,11 +191,10 @@ async function measureWidths() {
   mode.value = prev
 }
 
-// Pick the roomiest layout that fits, with hysteresis on the hamburger boundary.
 function decide() {
   const inner = navInner.value
   if (!inner || !relaxedWidth) return
-  const avail = inner.clientWidth - 32 // content area inside the 16px side padding
+  const avail = inner.clientWidth - 32
   if (mode.value !== 'compact') {
     if (tightWidth > avail) mode.value = 'compact'
     else mode.value = relaxedWidth <= avail ? 'relaxed' : 'tight'
@@ -170,6 +202,11 @@ function decide() {
     mode.value = relaxedWidth <= avail - 24 ? 'relaxed' : 'tight'
   }
 }
+
+/* ---------- mobile overlay ---------- */
+const isOpen = ref(false)
+const toggleMenu = () => (isOpen.value = !isOpen.value)
+const closeMenu = () => (isOpen.value = false)
 
 onMounted(async () => {
   await measureWidths()
@@ -182,10 +219,13 @@ onMounted(async () => {
 
 onBeforeUnmount(() => ro?.disconnect())
 
-// Reset menu state when crossing the hamburger boundary.
-watch(compact, () => {
-  isOpen.value = false
-  openSubs.value = new Set()
+watch(compact, () => (isOpen.value = false))
+
+// Lock body scroll while the overlay is open.
+watch(isOpen, (open) => {
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = open && compact.value ? 'hidden' : ''
+  }
 })
 </script>
 
@@ -197,11 +237,7 @@ watch(compact, () => {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: linear-gradient(
-    90deg,
-    rgba(28, 51, 130, 0.95),
-    rgba(163, 20, 50, 0.92)
-  );
+  background: linear-gradient(90deg, rgba(28, 51, 130, 0.95), rgba(163, 20, 50, 0.92));
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -216,46 +252,29 @@ watch(compact, () => {
 }
 
 /* =========================
-   DESKTOP MENU
+   TOP-LEVEL BAR
    ========================= */
 .nav-list {
   list-style: none;
   display: flex;
-  gap: 22px; /* relaxed default */
+  gap: 16px;
   margin: 0;
   padding: 0;
 }
 
 .nav-list a,
 .nav-parent {
+  display: inline-flex;
+  align-items: center;
   color: #fff;
   font-weight: 600;
-  letter-spacing: 0.5px;
-  padding: 12px 16px; /* relaxed default */
+  letter-spacing: 0.4px;
+  padding: 11px 14px;
   border-radius: 999px;
   cursor: pointer;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 0.25s ease, color 0.25s ease;
-}
-
-/* Tight tier — links pack closer before the hamburger takes over */
-.main-nav.tight .nav-list {
-  gap: 6px;
-}
-
-.main-nav.tight .nav-list a,
-.main-nav.tight .nav-parent {
-  letter-spacing: 0.2px;
-  padding: 10px 11px;
-}
-
-/* Submenu caret — only shown in compact (accordion) mode */
-.parent-caret {
-  display: none;
-  font-size: 0.7rem;
-  margin-left: 0.35rem;
-  transition: transform 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .nav-list a:hover,
@@ -264,8 +283,36 @@ watch(compact, () => {
   color: #ffd700;
 }
 
+.nav-icon {
+  margin-right: 0.5rem;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.parent-caret {
+  font-size: 0.65rem;
+  margin-left: 0.4rem;
+  opacity: 0.75;
+  transition: transform 0.2s ease;
+}
+
+/* tight tier */
+.main-nav.tight .nav-list {
+  gap: 4px;
+}
+
+.main-nav.tight .nav-list a,
+.main-nav.tight .nav-parent {
+  letter-spacing: 0.2px;
+  padding: 10px 10px;
+}
+
+.main-nav.tight .nav-icon {
+  margin-right: 0.4rem;
+}
+
 /* =========================
-   DROPDOWNS (DESKTOP FIXED)
+   DESKTOP DROPDOWNS (per parent, own items only)
    ========================= */
 .has-dropdown {
   position: relative;
@@ -275,21 +322,17 @@ watch(compact, () => {
   position: absolute;
   top: calc(100% + 8px);
   left: 50%;
-  transform: translateX(-50%); /* fixed, centered */
-  min-width: 180px;
-  padding: 6px 0;
-  background: linear-gradient(
-    15deg,
-    rgba(28, 51, 130, 0.9),
-    rgba(163, 20, 50, 0.8)
-  );
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
-
+  transform: translateX(-50%);
+  min-width: 210px;
+  padding: 6px;
+  margin: 0;
+  list-style: none;
+  background: linear-gradient(15deg, rgba(28, 51, 130, 0.96), rgba(163, 20, 50, 0.92));
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-
   transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.25s;
 }
 
@@ -302,21 +345,34 @@ watch(compact, () => {
 }
 
 .dropdown li {
-  text-align: center;
   list-style: none;
 }
 
 .dropdown a {
-  display: block;
-  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 8px 12px;
+  border-radius: 7px;
   font-size: 0.9rem;
-  text-decoration: none;
   color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease, transform 0.15s ease;
 }
 
 .dropdown a:hover {
   background: rgba(255, 215, 0, 0.2);
   color: #ffd700;
+  transform: translateX(2px);
+}
+
+.drop-icon {
+  width: 1.05rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #ffd700;
+  opacity: 0.9;
 }
 
 /* =========================
@@ -358,24 +414,16 @@ watch(compact, () => {
 .hamburger-bars span.open:nth-child(1) {
   transform: translateY(8px) rotate(45deg);
 }
-
 .hamburger-bars span.open:nth-child(2) {
   opacity: 0;
 }
-
 .hamburger-bars span.open:nth-child(3) {
   transform: translateY(-8px) rotate(-45deg);
 }
 
-/* =========================
-   COMPACT MENU (links don't fit → hamburger)
-   Toggled by the `compact` class from JS overflow measurement, not a fixed
-   breakpoint, so it collapses exactly when the links stop fitting.
-   ========================= */
+/* Compact: show hamburger, hide the desktop bar (overlay takes over) */
 .main-nav.compact .nav-inner {
-  flex-direction: column;
   padding: 0;
-  position: relative;
 }
 
 .main-nav.compact .hamburger-container {
@@ -389,102 +437,173 @@ watch(compact, () => {
   display: inline-flex;
   position: static;
   padding: 6px;
-  background: none;
 }
 
 .main-nav.compact .nav-list {
+  display: none;
+}
+</style>
+
+<style>
+/* =========================
+   MOBILE SLIDE-OUT DRAWER (teleported to body, so unscoped)
+   Panel slides from the left; the dimmed scrim on the right dismisses it.
+   ========================= */
+.drawer-root {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+}
+
+.drawer-scrim {
   position: absolute;
-  top: 100%;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.drawer {
+  position: absolute;
+  top: 0;
   left: 0;
-  right: 0;
-  flex-direction: column;
-  gap: 0;
-  padding: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(28, 51, 130, 0.95),
-    rgba(163, 20, 50, 0.9)
-  );
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.35s ease;
-  display: block;
+  bottom: 0;
+  width: min(82vw, 320px);
+  background: linear-gradient(160deg, rgba(28, 51, 130, 0.99), rgba(163, 20, 50, 0.97));
+  color: #fff;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-shadow: 2px 0 24px rgba(0, 0, 0, 0.35);
+  padding: 0.75rem 0.9rem 1.5rem;
 }
 
-.main-nav.compact .nav-list li {
-  margin: 0;
-}
-
-.main-nav.compact .nav-list.open {
-  max-height: 90vh;
-  padding: 8px 0;
-}
-
-.main-nav.compact .nav-list > li > a,
-.main-nav.compact .nav-parent {
-  display: block;
-  padding: 6px 20px;
-  font-size: 0.9rem;
-  line-height: 1.2;
-  border-radius: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.main-nav.compact .nav-parent {
+.drawer-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0.15rem 0 0.55rem;
+  margin-bottom: 0.45rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.main-nav.compact .parent-caret {
-  display: inline-block;
+.drawer-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
 }
 
-.main-nav.compact .has-dropdown.submenu-open .parent-caret {
-  transform: rotate(180deg);
+.drawer-close {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #fff;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  font-size: 1.05rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Accordion: each submenu stays collapsed until its parent is tapped */
-.main-nav.compact .has-dropdown .dropdown {
-  position: static !important;
-  top: auto !important;
-  left: auto !important;
-  transform: none !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto;
-  box-shadow: none;
-  margin: 0;
-  border-radius: 0;
-  background: rgba(0, 0, 0, 0.12);
-  max-height: 0;
-  overflow: hidden;
-  padding: 0;
-  transition: max-height 0.3s ease;
+.drawer-close:hover {
+  background: rgba(255, 255, 255, 0.28);
 }
 
-.main-nav.compact .has-dropdown.submenu-open .dropdown {
-  max-height: 20rem;
-  padding: 0 0 4px;
+.drawer-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
-.main-nav.compact .dropdown li {
-  text-align: left;
-  margin: 0;
+.drawer-section {
+  display: flex;
+  flex-direction: column;
 }
 
-.main-nav.compact .dropdown a {
-  display: block;
-  padding: 5px 16px 5px 36px;
-  font-size: 0.82rem;
-  line-height: 1.2;
-  color: rgba(255, 255, 255, 0.85);
-  text-decoration: none;
-}
-
-.main-nav.compact .dropdown a:hover {
-  background: rgba(255, 255, 255, 0.1);
+.drawer-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.4rem 0 0.15rem;
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
   color: #ffd700;
+}
+
+.drawer-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  text-decoration: none;
+  color: #fff;
+}
+
+.drawer-link:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Top-level items: bold, full-width, with a divider */
+.drawer-link--top {
+  padding: 0.6rem 0.35rem;
+  font-size: 1.02rem;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.drawer-link--top .drawer-icon {
+  font-size: 0.9rem;
+  color: #ffd700;
+  opacity: 0.95;
+}
+
+/* Sub-items: indented under a left rail, lighter and smaller */
+.drawer-sub {
+  display: flex;
+  flex-direction: column;
+  margin: 0.1rem 0 0.2rem 1.15rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.drawer-link--sub {
+  padding: 0.4rem 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.drawer-link--sub .drawer-icon {
+  font-size: 0.72rem;
+  color: #ffd700;
+  opacity: 0.65;
+}
+
+.drawer-icon {
+  width: 1.2rem;
+  text-align: center;
+}
+
+/* transitions: scrim fades, panel slides in from the left */
+.drawer-enter-active .drawer-scrim,
+.drawer-leave-active .drawer-scrim {
+  transition: opacity 0.25s ease;
+}
+
+.drawer-enter-active .drawer,
+.drawer-leave-active .drawer {
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drawer-enter-from .drawer-scrim,
+.drawer-leave-to .drawer-scrim {
+  opacity: 0;
+}
+
+.drawer-enter-from .drawer,
+.drawer-leave-to .drawer {
+  transform: translateX(-100%);
 }
 </style>

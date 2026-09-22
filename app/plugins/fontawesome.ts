@@ -49,6 +49,8 @@ import {
   faHeart,
   faUserPlus,
   faPenToSquare,
+  faHouse,
+  faTrophy,
 } from '@fortawesome/free-solid-svg-icons'
 import {faFacebook, faYoutube} from '@fortawesome/free-brands-svg-icons'
 
@@ -100,6 +102,8 @@ library.add(
   faHeart,
   faUserPlus,
   faPenToSquare,
+  faHouse,
+  faTrophy,
 )
 
 export default defineNuxtPlugin((nuxtApp) => {
