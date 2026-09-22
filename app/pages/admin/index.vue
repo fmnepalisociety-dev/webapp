@@ -42,7 +42,7 @@
         <span class="admin-card-label">Education</span>
         <span class="admin-card-desc">Nepali Pathsala &amp; programs</span>
       </NuxtLink>
-      <NuxtLink to="/admin/audit" class="admin-card">
+      <NuxtLink v-if="auditUnlocked" to="/admin/audit" class="admin-card">
         <font-awesome-icon :icon="['fas', 'clock-rotate-left']" class="admin-card-icon" />
         <span class="admin-card-label">Audit Log</span>
         <span class="admin-card-desc">Who changed what</span>
@@ -60,6 +60,12 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin', middleware: 'auth' });
+
+// Mirrors the layout's hidden Audit Log toggle (unlocked via the corner tap).
+const auditUnlocked = ref(false);
+onMounted(() => {
+  if (localStorage.getItem('nesfm-audit-unlocked') === '1') auditUnlocked.value = true;
+});
 </script>
 
 <style scoped>

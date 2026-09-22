@@ -1,5 +1,8 @@
 <template>
   <div class="admin-shell">
+    <!-- Hidden hotspot: tap 10× to reveal the Audit Log link -->
+    <div class="audit-hotspot" @click="tapAuditCorner" aria-hidden="true"></div>
+
     <aside class="admin-sidebar">
       <div class="admin-brand">
         <NuxtLink to="/admin">NeSFM Admin</NuxtLink>
@@ -37,7 +40,7 @@
           <font-awesome-icon :icon="['fas', 'graduation-cap']" />
           Education
         </NuxtLink>
-        <NuxtLink to="/admin/audit" class="admin-nav-link">
+        <NuxtLink v-if="auditUnlocked" to="/admin/audit" class="admin-nav-link">
           <font-awesome-icon :icon="['fas', 'clock-rotate-left']" />
           Audit Log
         </NuxtLink>
@@ -71,12 +74,44 @@
 
 <script setup lang="ts">
 const { logout } = useAuth();
+
+// Audit Log is hidden until an admin taps the top-right corner 10 times (quickly).
+// Once unlocked it stays revealed on that browser.
+const AUDIT_KEY = 'nesfm-audit-unlocked';
+const auditUnlocked = ref(false);
+let taps = 0;
+let tapTimer: ReturnType<typeof setTimeout> | null = null;
+
+onMounted(() => {
+  if (localStorage.getItem(AUDIT_KEY) === '1') auditUnlocked.value = true;
+});
+
+function tapAuditCorner() {
+  if (auditUnlocked.value) return;
+  taps += 1;
+  if (tapTimer) clearTimeout(tapTimer);
+  tapTimer = setTimeout(() => (taps = 0), 2000); // reset if the taps are too slow
+  if (taps >= 10) {
+    auditUnlocked.value = true;
+    localStorage.setItem(AUDIT_KEY, '1');
+  }
+}
 </script>
 
 <style scoped>
 .admin-shell {
   display: flex;
   min-height: 100vh;
+}
+
+/* Invisible tap target in the very top-right corner */
+.audit-hotspot {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  z-index: 2000;
 }
 
 .admin-sidebar {
