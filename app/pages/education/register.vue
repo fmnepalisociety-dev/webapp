@@ -8,6 +8,10 @@
       </p>
       <div class="confirmation-details">
         <table class="details-table">
+          <tr v-if="children.length">
+            <td class="details-label">Children</td>
+            <td class="details-value">{{ children.map((c) => c.name).join(', ') }}</td>
+          </tr>
           <tr v-for="field in submittedFields" :key="field.key">
             <td class="details-label">{{ field.label }}</td>
             <td class="details-value">{{ field.value }}</td>
@@ -109,7 +113,12 @@ for (const field of flatFields(config.fields)) {
   }
 }
 
-const childName = computed(() => submittedData.value.kid_name || 'Your child');
+const children = computed(() =>
+  Array.isArray(submittedData.value.children)
+    ? submittedData.value.children.filter((c: any) => c && c.name)
+    : []
+);
+const childName = computed(() => children.value.map((c: any) => c.name).join(', ') || 'Your child');
 
 const submittedFields = computed(() =>
   flatFields(config.fields)

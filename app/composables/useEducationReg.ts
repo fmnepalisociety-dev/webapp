@@ -42,11 +42,21 @@ export const DEFAULT_EDUCATION_FORM: RsvpConfig = {
   active: true,
   fields: [
     {
-      section: 'Student',
+      section: 'Children',
       fields: [
-        {key: 'kid_name', label: "Child's full name", type: 'text', required: true},
-        {key: 'kid_age', label: "Child's age", type: 'number', required: true},
-        {key: 'kid_grade', label: "Child's grade", type: 'text', required: true},
+        {
+          key: 'children',
+          label: 'Children',
+          type: 'lineitems',
+          required: true,
+          add_label: 'Add child',
+          price_per_row: 35,
+          item_fields: [
+            {key: 'name', label: 'Full name', type: 'text'},
+            {key: 'age', label: 'Age', type: 'number'},
+            {key: 'grade', label: 'Grade', type: 'text'},
+          ],
+        },
       ],
     },
     {
@@ -74,6 +84,13 @@ export const DEFAULT_EDUCATION_FORM: RsvpConfig = {
           value:
             '<p style="margin:0 0 0.5rem">The fee is <strong>$35</strong> for the Fall session, running <strong>September–December 2026</strong>.</p>' +
             '<p style="margin:0">Pay via <strong>Zelle</strong> to <strong>kandelsl@gmail.com</strong> — please include the child\'s name in the payment notes.</p>',
+        },
+        {
+          key: 'amount_due',
+          label: '',
+          type: 'template',
+          value:
+            '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:0.5rem;padding:0.6rem 0.85rem;color:#15803d;font-weight:700">Amount due: {{children_count}} × $35 = ${{children_total}}</div>',
         },
         {key: 'zelle', label: 'Zelle', type: 'image', value: '/img/payment/nesfm-zelle.jpeg'},
         {

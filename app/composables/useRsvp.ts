@@ -14,10 +14,12 @@ export interface RsvpField {
   required_if?: { field: string; value: string };
   options?: string[];
   value?: string;
-  // For type === 'lineitems': the columns of each row, an optional unit price
-  // used to show a running total, and an optional label for the add-row button.
+  // For type === 'lineitems': the columns of each row, an optional label for the
+  // add-row button, and pricing. `unit_price` multiplies a quantity sub-field;
+  // `price_per_row` charges a flat amount per filled row (e.g. $35 per child).
   item_fields?: LineItemField[];
   unit_price?: number;
+  price_per_row?: number;
   add_label?: string;
 }
 

@@ -82,6 +82,11 @@
           <strong>${{ totalQty * field.unit_price }}</strong>
         </div>
 
+        <div v-if="field.price_per_row" class="lineitem-total">
+          <span>{{ rowCount }} × ${{ field.price_per_row }}</span>
+          <strong>${{ rowCount * field.price_per_row }}</strong>
+        </div>
+
         <span v-if="errorMsg" class="field-error">{{ errorMsg }}</span>
       </div>
     </template>
@@ -197,6 +202,24 @@ const totalQty = computed(() => {
   if (!key) return 0;
   return rows.value.reduce((sum, r) => sum + (Math.max(0, parseFloat(r[key]) || 0)), 0);
 });
+
+// Count of rows that have any value entered (for flat per-row pricing).
+const rowCount = computed(
+  () => rows.value.filter((r) => Object.values(r).some((v) => v !== '' && v != null)).length
+);
+
+// Expose the count and total on the form data so other fields (e.g. a template
+// showing "amount due") can reference `<key>_count` and `<key>_total`.
+watch(
+  rowCount,
+  (n) => {
+    if (props.field.price_per_row != null) {
+      props.formData[`${props.field.key}_count`] = n;
+      props.formData[`${props.field.key}_total`] = n * props.field.price_per_row;
+    }
+  },
+  {immediate: true}
+);
 
 function addRow() {
   if (!Array.isArray(props.formData[props.field.key])) props.formData[props.field.key] = [];

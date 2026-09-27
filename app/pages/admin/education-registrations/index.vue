@@ -56,7 +56,7 @@
       <div v-for="reg in filtered" :key="reg.id" class="app-card">
         <div class="app-summary" @click="toggle(reg)">
           <div class="app-summary-main">
-            <span class="app-name">{{ reg.responses.kid_name || 'Child' }}</span>
+            <span class="app-name">{{ childNames(reg) }}</span>
             <span class="app-sub">
               {{ reg.responses.parent_name }} · {{ reg.responses.parent_email }}
             </span>
@@ -73,6 +73,23 @@
         <div v-if="activeId === reg.id" class="app-review">
           <div class="review-section">
             <h3 class="review-heading">Registration</h3>
+
+            <template v-if="childrenOf(reg).length">
+              <h4 class="review-subheading">Children</h4>
+              <table class="kids-table">
+                <thead>
+                  <tr><th>Name</th><th>Age</th><th>Grade</th></tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(k, i) in childrenOf(reg)" :key="i">
+                    <td>{{ k.name }}</td>
+                    <td>{{ k.age }}</td>
+                    <td>{{ k.grade }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </template>
+
             <table class="detail-table">
               <tr v-for="row in detailRows(reg)" :key="row.label">
                 <td class="detail-label">{{ row.label }}</td>
@@ -172,6 +189,20 @@ const countByStatus = (s: RegistrationStatus) => inSession.value.filter((r) => r
 function termLabel(slug: string | null): string {
   if (!slug) return '—';
   return termBySlug.value[slug] || slug;
+}
+
+function childrenOf(reg: EducationRegistration): any[] {
+  const c = reg.responses.children;
+  if (Array.isArray(c)) return c.filter((x) => x && (x.name || x.age || x.grade));
+  // Older single-child registrations stored kid_name/kid_age/kid_grade directly.
+  if (reg.responses.kid_name) {
+    return [{name: reg.responses.kid_name, age: reg.responses.kid_age, grade: reg.responses.kid_grade}];
+  }
+  return [];
+}
+
+function childNames(reg: EducationRegistration): string {
+  return childrenOf(reg).map((k) => k.name).filter(Boolean).join(', ') || 'Child';
 }
 
 function payText(reg: EducationRegistration): string {
@@ -441,6 +472,36 @@ async function remove(reg: EducationRegistration) {
 .detail-table td {
   padding: 0.35rem 0.5rem;
   border-bottom: 1px solid #eef2f7;
+}
+
+.review-subheading {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+  margin: 0.2rem 0 0.4rem;
+}
+
+.kids-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  margin-bottom: 0.75rem;
+}
+
+.kids-table th {
+  text-align: left;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.kids-table td {
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid #eef2f7;
+  color: #1e293b;
 }
 
 .detail-label {
