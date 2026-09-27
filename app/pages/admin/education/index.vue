@@ -2,10 +2,16 @@
   <div>
     <div class="education-header">
       <h1 class="admin-page-title">Education</h1>
-      <NuxtLink to="/admin/events/new?category=education" class="admin-btn">
-        <font-awesome-icon :icon="['fas', 'plus']" />
-        New Education Event
-      </NuxtLink>
+      <div class="education-header-actions">
+        <NuxtLink to="/admin/education-registrations" class="admin-link admin-link--reg">
+          <font-awesome-icon :icon="['fas', 'user-plus']" />
+          Pathsala Registrations
+        </NuxtLink>
+        <NuxtLink to="/admin/events/new?category=education" class="admin-btn">
+          <font-awesome-icon :icon="['fas', 'plus']" />
+          New Education Event
+        </NuxtLink>
+      </div>
     </div>
 
     <p class="admin-hint">
@@ -90,7 +96,21 @@ function scheduleText(e: any): string {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
   margin-bottom: 1rem;
+}
+
+.education-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-link--reg {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .admin-hint {

@@ -40,7 +40,7 @@
       <NuxtLink to="/admin/education" class="admin-card">
         <font-awesome-icon :icon="['fas', 'graduation-cap']" class="admin-card-icon" />
         <span class="admin-card-label">Education</span>
-        <span class="admin-card-desc">Nepali Pathsala &amp; programs</span>
+        <span class="admin-card-desc">Programs &amp; Pathsala registrations</span>
       </NuxtLink>
       <NuxtLink v-if="auditUnlocked" to="/admin/audit" class="admin-card">
         <font-awesome-icon :icon="['fas', 'clock-rotate-left']" class="admin-card-icon" />
