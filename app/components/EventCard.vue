@@ -134,6 +134,9 @@
       </div>
     </div>
 
+    <!-- Education programs: register CTA for the current session -->
+    <EduRegisterCta v-if="isEducation" />
+
     <!-- Videos (detail view only) -->
     <div v-if="expanded && videos.length" class="event-videos">
       <h3 class="videos-heading">Videos</h3>
@@ -178,7 +181,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, nextTick } from 'vue';
 import { isRsvpOpen, type RsvpConfig } from '~/composables/useRsvp';
-import { eventRecurrence } from '~/composables/useEvents';
+import { eventRecurrence, eventCategory } from '~/composables/useEvents';
 import { upcomingSessions, recurrenceLabel } from '~/composables/useRecurrence';
 
 const props = defineProps<{
@@ -293,6 +296,9 @@ const locationUrl = computed(() => {
 /* Recurring events list their next sessions, the same way the Education page
    does. Detail view shows more of them than a card in a list. */
 const rec = computed(() => eventRecurrence(props.event));
+
+// Education-category events show the current session's registration CTA.
+const isEducation = computed(() => eventCategory(props.event) === 'education');
 
 const sessions = computed(() => {
   const r = rec.value;
