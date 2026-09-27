@@ -301,6 +301,57 @@ create policy "app_config admin update" on public.app_config for update to authe
 Membership IDs are enforced unique in the admin flow; for a hard guarantee add
 `create unique index on public.members (membership_id) where membership_id is not null;`.
 
+## Education registration (Nepali Pathsala)
+
+A per-term registration form for the Nepali Pathsala classes, built on the same RSVP
+field engine as membership. The **`/education`** page shows a **Register Now** banner (when
+open) linking to **`/education/register`**, which collects the child, parent/guardian,
+NeSFM-member status, and payment. Submissions go to `education_registrations`; each is
+**stamped with the current term** (e.g. `Fall 2026`) so one session's — and future
+sessions' — registrations pull cleanly.
+
+Everything configurable lives in the generic `app_config` table (jsonb), so no redeploy is
+needed to change terms/copy/fields, and **each session is its own config** so future terms
+can be prepared ahead of time:
+
+- **`education:<slug>`** — one blob per session, e.g. `education:2026_fall`. Holds the
+  period, fee, open flag, CTA banner, and the form:
+  ```jsonc
+  { "slug": "2026_fall", "term": "Fall 2026", "starts": "2026-09-01", "ends": "2026-12-31",
+    "fee": 35, "open": true,
+    "banner": { "active": true, "title": "…", "subtitle": "…", "button_label": "Register Now!" },
+    "form": { /* RsvpConfig */ } }
+  ```
+- **`education_current`** — the slug the public site uses by default (a jsonb string, e.g.
+  `"2026_fall"`). Prepare a future session as `education:2027_spring`, then flip this to it.
+
+The register page uses the current session, or a specific one via `?session=<slug>`; each
+registration is stamped with the slug in `education_registrations.session`. Defaults live in
+`DEFAULT_SESSION` / `DEFAULT_EDUCATION_FORM` in `app/composables/useEducationReg.ts`.
+
+Create the submissions table in Supabase (dashboard → SQL editor). `app_config` already
+exists from the membership feature:
+
+```sql
+create table public.education_registrations (
+  id uuid primary key default gen_random_uuid(),
+  responses jsonb not null,
+  status text not null default 'new',   -- new | unpaid | processing | confirmed | waitlisted | rejected
+  session text,                          -- term the registration was submitted for, e.g. "Fall 2026"
+  admin_notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz
+);
+alter table public.education_registrations enable row level security;
+create policy "er public insert" on public.education_registrations for insert with check (true);
+create policy "er admin read"    on public.education_registrations for select to authenticated using (true);
+create policy "er admin update"  on public.education_registrations for update to authenticated using (true) with check (true);
+create policy "er admin delete"  on public.education_registrations for delete to authenticated using (true);
+```
+
+Same public-insert / admin-only-read shape as `membership_applications`. A future admin
+panel reviews and acts on the registrations; the session/banner/form become editable there.
+
 ## Audit log
 
 Create/update/delete on **any table** is recorded in `audit_log` by a Postgres trigger,

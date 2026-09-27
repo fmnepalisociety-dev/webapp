@@ -23,6 +23,17 @@
       </p>
     </section>
 
+    <section v-if="banner.active" class="edu-register">
+      <div class="edu-register-text">
+        <strong>{{ banner.title }}</strong>
+        <span v-if="banner.subtitle">{{ banner.subtitle }}</span>
+      </div>
+      <NuxtLink to="/education/register" class="edu-register-btn">
+        <font-awesome-icon :icon="['fas', 'user-plus']" />
+        {{ banner.button_label }}
+      </NuxtLink>
+    </section>
+
     <div v-if="loading" class="edu-status">Loading…</div>
 
     <p v-else-if="!items.length" class="edu-note">
@@ -98,6 +109,7 @@ import {ref} from 'vue';
 import {getEventsByCategory, eventRecurrence, type EventRecurrence} from '~/composables/useEvents';
 import {upcomingSessions, recurrenceLabel as recurrenceLabelFor} from '~/composables/useRecurrence';
 import {NeSFM_GENERIC_BUCKET} from '~/composables/useSupabaseImage';
+import {getCurrentSession, DEFAULT_SESSION, type RegisterBanner} from '~/composables/useEducationReg';
 import type {Session} from '~/types/recurrence';
 
 useHead({title: 'Education — Nepali Pathsala'});
@@ -119,6 +131,7 @@ const loading = ref(true);
 const items = ref<EduItem[]>([]);
 const images = ref<Record<string, string | null>>({});
 const sessions = ref<Record<string, Session[]>>({});
+const banner = ref<RegisterBanner>(DEFAULT_SESSION.banner);
 
 // event_location is stored as "Name [https://map-url]".
 function parseLocation(raw: string): {name: string; url: string} {
@@ -127,6 +140,7 @@ function parseLocation(raw: string): {name: string; url: string} {
 }
 
 onMounted(async () => {
+  banner.value = (await getCurrentSession()).banner;
   const events = await getEventsByCategory('education');
   for (const e of events as any[]) {
     const rec = eventRecurrence(e);
@@ -233,6 +247,55 @@ function formatSession(date: Date): string {
 .edu-intro-np {
   color: #a31432;
   font-weight: 600;
+}
+
+.edu-register {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.1rem 1.4rem;
+  border-radius: 0.9rem;
+  background: linear-gradient(120deg, rgba(28, 51, 130, 0.95), rgba(163, 20, 50, 0.9));
+  color: #fff;
+}
+
+.edu-register-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.edu-register-text strong {
+  font-size: 1.05rem;
+}
+
+.edu-register-text span {
+  font-size: 0.88rem;
+  opacity: 0.9;
+}
+
+.edu-register-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.4rem;
+  background: #fff;
+  color: #a31432;
+  font-weight: 700;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.edu-register-btn:hover {
+  transform: translateY(-1px);
+  background: #ffd700;
+  color: #1c3382;
 }
 
 .edu-status {
