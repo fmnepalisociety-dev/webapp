@@ -26,7 +26,7 @@
     <section v-if="banner.active" class="edu-register">
       <div class="edu-register-text">
         <strong>{{ banner.title }}</strong>
-        <span v-if="banner.subtitle">{{ banner.subtitle }}</span>
+        <span v-if="banner.subtitle" v-html="banner.subtitle"></span>
       </div>
       <NuxtLink to="/education/register" class="edu-register-btn">
         <font-awesome-icon :icon="['fas', 'user-plus']" />
@@ -100,6 +100,17 @@
           </p>
         </div>
       </article>
+    </section>
+
+    <section v-if="banner.active" class="edu-register edu-register--bottom">
+      <div class="edu-register-text">
+        <strong>{{ banner.title }}</strong>
+        <span v-if="banner.subtitle" v-html="banner.subtitle"></span>
+      </div>
+      <NuxtLink to="/education/register" class="edu-register-btn">
+        <font-awesome-icon :icon="['fas', 'user-plus']" />
+        {{ banner.button_label }}
+      </NuxtLink>
     </section>
   </main>
 </template>
@@ -260,6 +271,15 @@ function formatSession(date: Date): string {
   border-radius: 0.9rem;
   background: linear-gradient(120deg, rgba(28, 51, 130, 0.95), rgba(163, 20, 50, 0.9));
   color: #fff;
+}
+
+.edu-register--bottom {
+  margin-top: 1.5rem;
+  margin-bottom: 0;
+}
+
+.edu-register-text :deep(p) {
+  margin: 0;
 }
 
 .edu-register-text {

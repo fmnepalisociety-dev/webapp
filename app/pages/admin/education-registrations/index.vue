@@ -14,7 +14,7 @@
     </div>
 
     <!-- Session (term) filter -->
-    <div class="filter-bar" v-if="sessionSlugs.length > 1">
+    <div class="filter-bar" v-if="sessionSlugs.length">
       <button
         :class="['filter-chip', sessionFilter === 'all' ? 'filter-chip--active' : '']"
         @click="sessionFilter = 'all'"
@@ -148,7 +148,13 @@ onMounted(async () => {
   loading.value = false;
 });
 
-const sessionSlugs = computed(() => [...new Set(regs.value.map((r) => r.session).filter(Boolean))] as string[]);
+// Filter options: every configured session plus any slug seen in registrations.
+const sessionSlugs = computed(
+  () =>
+    [
+      ...new Set([...Object.keys(termBySlug.value), ...regs.value.map((r) => r.session).filter(Boolean)]),
+    ] as string[]
+);
 
 const inSession = computed(() =>
   sessionFilter.value === 'all' ? regs.value : regs.value.filter((r) => r.session === sessionFilter.value)

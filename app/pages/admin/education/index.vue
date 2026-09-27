@@ -3,6 +3,10 @@
     <div class="education-header">
       <h1 class="admin-page-title">Education</h1>
       <div class="education-header-actions">
+        <NuxtLink to="/admin/education/sessions" class="admin-link admin-link--reg">
+          <font-awesome-icon :icon="['fas', 'pen-to-square']" />
+          Registration Form
+        </NuxtLink>
         <NuxtLink to="/admin/education-registrations" class="admin-link admin-link--reg">
           <font-awesome-icon :icon="['fas', 'user-plus']" />
           Pathsala Registrations
