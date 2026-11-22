@@ -34,6 +34,30 @@
           </div>
         </header>
 
+        <section class="campaign-document" aria-labelledby="campaign-document-title">
+          <div class="campaign-document-copy">
+            <span class="campaign-document-badge">PDF record</span>
+            <div>
+              <h4 id="campaign-document-title">Donor Contributions &amp; Financial Summary</h4>
+              <p>
+                View the complete donor ledger, Danaher company match, campaign fees, and transfer
+                reconciliation in one document.
+              </p>
+            </div>
+          </div>
+          <div class="campaign-document-actions">
+            <a
+              href="/docs/campaigns/nesfm-nepal-flood-relief-campaign-2026-donor-summary.pdf"
+              target="_blank"
+              rel="noopener"
+              class="campaign-document-link campaign-document-link-primary"
+            >
+              View PDF
+              <font-awesome-icon :icon="['fas', 'arrow-up-right-from-square']" />
+            </a>
+          </div>
+        </section>
+
         <div class="campaign-body">
           <p>
             The Nepali Society of Fargo–Moorhead (NeSFM) is pleased to announce the successful
@@ -267,6 +291,79 @@ h2 {
   gap: 1.5rem;
   padding: clamp(1.25rem, 4vw, 2rem);
   background: linear-gradient(135deg, #f8fafc, #eef2ff);
+}
+
+.campaign-document {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1rem clamp(1.25rem, 4vw, 2rem);
+  border-top: 1px solid #dbe4f0;
+  border-bottom: 1px solid #dbe4f0;
+  background: #fff;
+}
+
+.campaign-document-copy {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.campaign-document-badge {
+  flex: 0 0 auto;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.4rem;
+  background: #b11236;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.campaign-document h4 {
+  margin: 0;
+  color: #1e3a5f;
+  font-size: 1rem;
+}
+
+.campaign-document p {
+  margin: 0.2rem 0 0;
+  color: #64748b;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.campaign-document-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.55rem;
+}
+
+.campaign-document-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.35rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-decoration: none;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.campaign-document-link:hover {
+  transform: translateY(-1px);
+}
+
+.campaign-document-link-primary {
+  background: #1c3382;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(28, 51, 130, 0.18);
 }
 
 h3 {
@@ -535,6 +632,20 @@ h3 {
   .vigil-gallery,
   .receipt-grid {
     grid-template-columns: 1fr;
+  }
+
+  .campaign-document,
+  .campaign-document-copy {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .campaign-document-actions {
+    width: 100%;
+  }
+
+  .campaign-document-link {
+    flex: 1;
   }
 
   .financial-summary dd {
